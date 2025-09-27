@@ -2,6 +2,7 @@
 import Footer from "./Footer";
 import Header from "./Header";
 import { Outlet } from "react-router-dom";
+import "@/assets/scss/page.scss";
 
 // type HomePageLayoutProps = {
 //   children: ReactNode;

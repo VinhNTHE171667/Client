@@ -1,0 +1,93 @@
+.testimonialsSection {
+    padding: 6rem 0;
+    background: #f8f9fa;
+
+    .headingWrapper {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .heading {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--color-primary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .subHeading {
+        color: #666;
+        max-width: 600px;
+        margin: 0.5rem auto 0;
+    }
+
+    .slider {
+        .slick-dots {
+            bottom: -35px;
+
+            li button:before {
+                color: var(--color-primary);
+                opacity: 0.5;
+            }
+
+            li.slick-active button:before {
+                opacity: 1;
+            }
+        }
+    }
+
+    .testimonialCard {
+        background: #fff;
+        border-radius: 1rem;
+        padding: 10rem 2rem;
+        margin: 0 0.75rem;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+
+        .message {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-left: 1.5rem;
+
+            &::before {
+                content: "“";
+                position: absolute;
+                left: 0;
+                top: -10px;
+                font-size: 2rem;
+                color: var(--color-primary);
+            }
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+
+            img {
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 3px solid var(--color-primary);
+            }
+
+            h5 {
+                font-size: 1.1rem;
+                font-weight: 600;
+                margin-bottom: 0.2rem;
+            }
+
+            span {
+                font-size: 0.9rem;
+                color: #777;
+            }
+        }
+    }
+}

@@ -4,7 +4,7 @@ import AboutSection from ".";
 const AboutPage = () => {
   return (
     <>
-      <HeroSection title="About Us" />
+      <HeroSection title="Giới thiệu" />
       <AboutSection />
     </>
   );

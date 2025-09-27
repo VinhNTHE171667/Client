@@ -1,137 +1,88 @@
-import img_carousel_1 from "@/assets/img/carousel-1.jpg";
-import img_carousel_2 from "@/assets/img/carousel-2.jpg";
-import img_carousel_3 from "@/assets/img/carousel-3.jpg";
+import Slider from "react-slick";
+import img1 from "@/assets/img/carousel-1.jpg";
+import img2 from "@/assets/img/carousel-2.jpg";
+import img3 from "@/assets/img/carousel-3.jpg";
+
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+
 import AboutSection from "../About";
+import styles from "./Homepage.module.scss";
+import classNames from "classnames/bind";
+import ServiceSection from "./_components/ServiceSection";
+import QualitySection from "./_components/QualitySection";
+import ContactSection from "./_components/ContactSection";
+import TestimonialsSection from "./_components/TestimonialsSection";
+
+const cx = classNames.bind(styles);
 
 const Homepage = () => {
+  const settings = {
+    dots: false,
+    arrows: true,
+    infinite: true,
+    autoplay: true,
+    autoplaySpeed: 6000,
+    speed: 800,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    nextArrow: <div className="slick-next">›</div>,
+    prevArrow: <div className="slick-prev">‹</div>,
+  };
+
+  const slides = [
+    {
+      img: img1,
+      title: "Liệu pháp Massage Thư Giãn",
+      desc: "Trải nghiệm massage toàn thân giúp giảm căng thẳng, xua tan mệt mỏi và mang lại cảm giác thư thái tuyệt đối.",
+    },
+    {
+      img: img2,
+      title: "Chăm sóc Da Mặt Chuyên Sâu",
+      desc: "Liệu trình làm sạch, dưỡng ẩm và tái tạo da, giúp da sáng khỏe và mềm mịn hơn mỗi ngày.",
+    },
+    {
+      img: img3,
+      title: "Trị Liệu Giảm Mỡ & Săn Chắc Da",
+      desc: "Phương pháp hiện đại hỗ trợ giảm mỡ thừa, cải thiện độ đàn hồi và mang lại vóc dáng thon gọn.",
+    },
+  ];
 
   return (
     <>
-      <section>
-        <div className="container-fluid carousel-header px-0">
-          <div
-            id="carouselId"
-            className="carousel slide"
-            data-bs-ride="carousel"
-          >
-            <ol className="carousel-indicators">
-              {/* <li
-                data-bs-target="#carouselId"
-                data-bs-slide-to="0"
-                className="active"
-              ></li>
-              <li data-bs-target="#carouselId" data-bs-slide-to="1"></li>
-              <li data-bs-target="#carouselId" data-bs-slide-to="2"></li> */}
-            </ol>
-            <div className="carousel-inner" role="listbox">
-              <div className="carousel-item active">
-                <img src={img_carousel_1} className="img-fluid" alt="Image" />
-                <div className="carousel-caption">
-                  <div className="p-3" style={{ maxWidth: 900 }}>
-                    <h4 className="text-primary text-uppercase mb-3">
-                      Spa & Beauty Center
-                    </h4>
-                    <h1 className="display-1 text-capitalize text-dark mb-3">
-                      Massage Treatment
-                    </h1>
-                    <p className="mx-md-5 fs-4 px-4 mb-5 text-dark">
-                      Lorem rebum magna dolore amet lorem eirmod magna erat diam
-                      stet. Sadips duo stet amet amet ndiam elitr ipsum
-                    </p>
-                    <div className="d-flex align-items-center justify-content-center">
-                      <a
-                        className="btn btn-light btn-light-outline-0 rounded-pill py-3 px-5 me-4"
-                        href="#"
-                      >
-                        Get Start
-                      </a>
-                      <a
-                        className="btn btn-primary btn-primary-outline-0 rounded-pill py-3 px-5"
-                        href="#"
-                      >
-                        Book Now
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="carousel-item">
-                <img src={img_carousel_2} className="img-fluid" alt="Image" />
-                <div className="carousel-caption">
-                  <div className="p-3" style={{ maxWidth: 900 }}>
-                    <h4
-                      className="text-primary text-uppercase mb-3 fw-bold"
-                      style={{ letterSpacing: "3px" }}
-                    >
-                      Spa & Beauty Center
-                    </h4>
-                    <h1 className="display-1 text-capitalize text-dark mb-3">
-                      Facial Treatment
-                    </h1>
-                    <p className="mx-md-5 fs-4 px-5 mb-5 text-dark">
-                      Lorem rebum magna dolore amet lorem eirmod magna erat diam
-                      stet. Sadips duo stet amet amet ndiam elitr ipsum
-                    </p>
-                    <div className="d-flex align-items-center justify-content-center">
-                      <a
-                        className="btn btn-light btn-light-outline-0 rounded-pill py-3 px-5 me-4"
-                        href="#"
-                      >
-                        Get Start
-                      </a>
-                      <a
-                        className="btn btn-primary btn-primary-outline-0 rounded-pill py-3 px-5"
-                        href="#"
-                      >
-                        Book Now
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="carousel-item">
-                <img src={img_carousel_3} className="img-fluid" alt="Image" />
-                <div className="carousel-caption">
-                  <div className="p-3" style={{ maxWidth: "900px" }}>
-                    <h4
-                      className="text-primary text-uppercase mb-3"
-                      style={{ letterSpacing: "3px" }}
-                    >
-                      Spa & Beauty Center
-                    </h4>
-                    <h1 className="display-1 text-capitalize text-dark">
-                      Cellulite Treatment
-                    </h1>
-                    <p className="mx-md-5 fs-4 px-5 mb-5 text-dark">
-                      Lorem rebum magna dolore amet lorem eirmod magna erat diam
-                      stet. Sadips duo stet amet amet ndiam elitr ipsum
-                    </p>
-                    <div className="d-flex align-items-center justify-content-center">
-                      <a
-                        className="btn btn-light btn-light-outline-0 rounded-pill py-3 px-5 me-4"
-                        href="#"
-                      >
-                        Get Start
-                      </a>
-                      <a
-                        className="btn btn-primary btn-primary-outline-0 rounded-pill py-3 px-5"
-                        href="#"
-                      >
-                        Book Now
-                      </a>
-                    </div>
-                  </div>
+      <section className={cx("heroSlider")}>
+        <Slider {...settings}>
+          {slides.map((s, idx) => (
+            <div key={idx} className={cx("slideItem")}>
+              <img src={s.img} alt={s.title} className={cx("slideImg")} />
+              <div className={cx("overlay")} />
+              <div className={cx("caption")}>
+                <h4 className="text-uppercase mb-3">GenSpa Center</h4>
+                <h1 className="display-1 text-capitalize mb-3">{s.title}</h1>
+                <p className="mx-md-5 fs-4 px-4 mb-5">{s.desc}</p>
+                <div className="d-flex align-items-center justify-content-center gap-4">
+                  <a className="cus-btn-secondary py-3 px-4" href="#">
+                    Đăng ký
+                  </a>
+                  <a className="cus-btn-primary py-3 px-4" href="#">
+                    Đặt ngay
+                  </a>
                 </div>
               </div>
             </div>
-
-          </div>
-        </div>
+          ))}
+        </Slider>
       </section>
 
+      <ServiceSection />
+
+      <QualitySection />
 
       <AboutSection />
 
+      <ContactSection />
+
+      <TestimonialsSection />
     </>
   );
 };

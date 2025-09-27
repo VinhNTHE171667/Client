@@ -1,0 +1,51 @@
+.service {
+    padding: 5rem 0;
+    background: #fff;
+
+    .subTitle {
+        text-transform: uppercase;
+        font-weight: 600;
+        color: var(--color-primary);
+        margin-bottom: 1rem;
+    }
+
+    .heading {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--color-dark);
+    }
+
+    .box {
+        background: #f8f9fa;
+        padding: 2rem 1.5rem;
+        border-radius: 0.75rem;
+        transition: all 0.3s ease;
+        height: 100%;
+
+        i {
+            font-size: 2.8rem;
+            color: var(--color-primary);
+            margin-bottom: 1rem;
+        }
+
+        h5 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        &:hover {
+            background: var(--color-primary);
+            color: #fff;
+
+            i {
+                color: #fff;
+            }
+        }
+    }
+}

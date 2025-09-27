@@ -1,0 +1,51 @@
+.link-logo-img {
+    display: inline-block;
+}
+
+.link-logo-img img {
+    width: auto;
+    max-width: 70px;
+    height: auto;
+}
+
+.nav-link {
+    position: relative;
+    text-decoration: none;
+    color: var(--color-primary);
+
+    &::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -15px;
+        width: 0;
+        height: 2px;
+        background: var(--color-primary);
+        transition: width 0.3s ease;
+    }
+
+    &:hover::after {
+        width: 100%;
+    }
+
+    &.active {
+        color: var(--color-accent);
+
+        &::after {
+            width: 100%;
+            background-color: var(--color-accent);
+            font-weight: 900 !important;
+        }
+    }
+
+    @media (max-width: 992) {
+
+        &::after {
+            display: none;
+        }
+
+        &:hover::after {
+            width: 0;
+        }
+    }
+}

@@ -1,0 +1,105 @@
+.contactSection {
+    padding: 6rem 0;
+    background: #eef3f8;
+
+    .headingWrapper {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .heading {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--color-primary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .subHeading {
+        color: #555;
+        margin-top: 0.5rem;
+    }
+
+    .content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2.5rem;
+
+        @media (max-width: 992px) {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Info block */
+    .info {
+        background: #fff;
+        padding: 2rem;
+        border-radius: 1rem;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+
+        .infoItem {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            color: #333;
+
+            i {
+                font-size: 1.3rem;
+                color: var(--color-primary);
+            }
+        }
+
+        .map {
+            margin-top: 1.5rem;
+            width: 100%;
+            height: 250px;
+            border: none;
+            border-radius: 0.8rem;
+        }
+    }
+
+    /* Contact form */
+    .form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        background: #fff;
+        padding: 2rem;
+        border-radius: 1rem;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
+
+            &:focus {
+                border-color: var(--color-primary);
+                box-shadow: 0 0 0 2px rgba(0, 128, 255, 0.1);
+            }
+        }
+
+        .btnSubmit {
+            padding: 0.9rem 1rem;
+            background: var(--color-primary);
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: 0.3s;
+
+            &:hover {
+                background: rgba(0, 0, 0, 0.05)
+            }
+        }
+    }
+}
