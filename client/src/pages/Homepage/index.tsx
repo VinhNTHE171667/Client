@@ -13,6 +13,7 @@ import ServiceSection from "./_components/ServiceSection";
 import QualitySection from "./_components/QualitySection";
 import ContactSection from "./_components/ContactSection";
 import TestimonialsSection from "./_components/TestimonialsSection";
+import GallerySection from "./_components/GallerySection";
 
 const cx = classNames.bind(styles);
 
@@ -83,6 +84,8 @@ const Homepage = () => {
       <ContactSection />
 
       <TestimonialsSection />
+
+      <GallerySection />
     </>
   );
 };
