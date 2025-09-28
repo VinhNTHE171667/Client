@@ -1,6 +1,7 @@
 import React from "react";
 import Slider from "react-slick";
 import styles from "./TestimonialsSection.module.scss";
+import avatar from "@/assets/img/Utils/noAvatars.png";
 import classNames from "classnames/bind";
 
 const cx = classNames.bind(styles);
@@ -15,21 +16,21 @@ interface Testimonial {
 const testimonials: Testimonial[] = [
   {
     name: "Nguyễn Thị Lan",
-    avatar: "/img/testimonial1.jpg",
+    avatar: avatar,
     position: "Khách Hàng Thân Thiết",
     message:
       "Dịch vụ ở đây thật tuyệt vời, nhân viên thân thiện và chuyên nghiệp. Mình cảm thấy thư giãn hoàn toàn mỗi lần đến.",
   },
   {
     name: "Trần Minh Quân",
-    avatar: "/img/testimonial2.jpg",
+    avatar: avatar,
     position: "Doanh Nhân",
     message:
       "Không gian sạch sẽ, sang trọng. Liệu trình massage rất bài bản và mang lại hiệu quả rõ rệt.",
   },
   {
     name: "Lê Thu Hà",
-    avatar: "/img/testimonial3.jpg",
+    avatar: avatar,
     position: "Khách Hàng",
     message:
       "Mình cực thích facial treatment ở đây, da cải thiện rõ rệt sau vài buổi. Rất hài lòng!",
