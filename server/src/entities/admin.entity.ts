@@ -3,6 +3,7 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
@@ -22,12 +23,12 @@ export class Admin {
   @Column({ default: true })
   isActive: boolean;
 
-  @Column()
-  refreshToken: string;
+  @Column({ nullable: true })
+  refreshToken?: string;
 
   @CreateDateColumn({})
   createdAt: Date;
 
-  @CreateDateColumn({})
+  @UpdateDateColumn()
   updatedAt: Date;
 }
