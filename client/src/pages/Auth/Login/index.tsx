@@ -61,11 +61,10 @@ const LoginPage = () => {
         } else if (res.data.role === RoleEnum.Customer) {
           navigate(configRoutes.home);
         } else {
-          navigate("/"); // fallback
+          navigate("/");
         }
       } else if (res.error) {
         const msg = res.error.data?.message?.join(", ") || "Đăng nhập thất bại";
-        // tuỳ bạn dùng toast hay alert
         console.error(msg);
       }
     } catch (err) {
