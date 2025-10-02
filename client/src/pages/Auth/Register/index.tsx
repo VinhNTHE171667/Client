@@ -22,7 +22,12 @@ const RegisterPage = () => {
       if (values.birth_date) {
         values.birth_date = dayjs(values.birth_date).format("DD/MM/YYYY");
       }
-      console.log("✅ Values:", values);
+
+      if (errors) {
+        setErrors({});
+      }
+
+      // console.log(" Values:", values);
     } catch (err: any) {
       const errorObj: { [key: string]: string } = {};
       err.errorFields.forEach((e: any) => {

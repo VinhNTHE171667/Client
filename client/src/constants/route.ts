@@ -3,6 +3,8 @@ export const configRoutes = {
   about: "/about",
   login: "/login",
   register: "/register",
+
+  adminDashboard: "/admin/dashboard",
 };
 
 export const configError = {

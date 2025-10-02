@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   DeleteDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 export enum Gender {
@@ -14,9 +15,8 @@ export enum Gender {
 
 export enum CustomerType {
   Regular = 'regular',
-  Vip = 'vip',
   Member = 'member',
-  Trial = 'trial',
+  Vip = 'vip',
 }
 
 @Entity()
@@ -64,13 +64,13 @@ export class Customer {
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   total_spent: number;
 
-  @Column()
-  refreshToken: string;
+  @Column({ nullable: true })
+  refreshToken?: string;
 
   @CreateDateColumn({})
   createdAt: Date;
 
-  @CreateDateColumn({})
+  @UpdateDateColumn()
   updatedAt: Date;
 
   @DeleteDateColumn({ nullable: true })

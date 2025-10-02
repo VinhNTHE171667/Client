@@ -9,6 +9,6 @@ export function Auth(...roles: RoleEnum[]) {
     SetMetadata('roles', roles),
     UseGuards(AuthGuard, RolesGuard),
     ApiBearerAuth(),
-    ApiUnauthorizedResponse({ description: 'Chưa xác th' }),
+    ApiUnauthorizedResponse({ description: 'Chưa xác thực' }),
   );
 }
