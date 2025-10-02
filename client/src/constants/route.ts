@@ -1,6 +1,8 @@
 export const configRoutes = {
   home: "/",
   about: "/about",
+  login: "/login",
+  register: "/register",
 };
 
 export const configError = {
@@ -8,4 +10,3 @@ export const configError = {
   UnAuthorize: "/unauthorize",
   Network: "/network",
 };
-

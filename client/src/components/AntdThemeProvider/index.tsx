@@ -10,7 +10,7 @@ const AntdThemeProvider = ({ children }: AntdThemeProviderProps) => {
     <ConfigProvider
       theme={{
         token: {
-          fontFamily: "Poppins",
+          fontFamily: "Poppins, sans-serif",
           fontWeightStrong: 500,
         },
       }}
