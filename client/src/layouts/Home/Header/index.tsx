@@ -83,7 +83,12 @@ const Header = () => {
               <div className="d-flex align-items-center flex-nowrap pt-xl-0">
                 {
                   <>
-                    <button className="btn btn-primary cus-btn-primary rounded-pill py-2 px-3">
+                    <button
+                      className="btn btn-primary cus-btn-primary rounded-pill py-2 px-3"
+                      onClick={() =>
+                        (window.location.href = configRoutes.login)
+                      }
+                    >
                       Đăng nhập
                     </button>
                     {/* <button className="btn btn-primary btn-primary-outline-0 rounded-pill py-2 px-3 ms-4">

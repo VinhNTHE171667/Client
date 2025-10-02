@@ -34,9 +34,11 @@
     "react-icons": "^5.5.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.6.1",
+    "react-select": "^5.10.2",
     "react-slick": "^0.31.0",
     "react-toastify": "^11.0.5",
     "redux-persist": "^6.0.0",
+    "sass": "^1.62.1",
     "slick-carousel": "^1.8.1",
     "sub-vn": "^0.0.2"
   },

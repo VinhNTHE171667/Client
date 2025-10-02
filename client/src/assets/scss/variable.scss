@@ -109,3 +109,60 @@
 }
 
 ////////////////////////////////////////////////////////
+
+:where(.ant-select) {
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+:where(.ant-select) .ant-select-selector {
+    border-radius: 50rem;
+    padding: 0.375rem 0.75rem;
+    height: auto;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    border: 1px solid #ced4da;
+    box-shadow: none !important;
+    transition: border-color 0.2s ease-in-out;
+}
+
+:where(.ant-select) .ant-select-selector:hover,
+:where(.ant-select) .ant-select-selector:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+:where(.ant-select) .ant-select-selection-placeholder {
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+}
+
+:where(.ant-select) .ant-select-arrow {
+    color: #6c757d;
+}
+
+.custom-select__control {
+    border-radius: 50px;
+    padding: 6px 12px;
+    border: 1px solid #ced4da;
+    box-shadow: none;
+}
+
+:where(.ant-select) .ant-select-item-option {
+    font-family: "Poppins", sans-serif;
+    font-size: 14px;
+    color: #212529;
+    padding: 8px 12px;
+}
+
+:where(.ant-select) .ant-select-item-option-selected {
+    background-color: #e9ecef;
+    font-weight: 500;
+}
+
+:where(.ant-select) .ant-select-item-option-active {
+    background-color: #f8f9fa;
+}
