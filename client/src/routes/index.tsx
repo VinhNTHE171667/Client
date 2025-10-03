@@ -5,6 +5,10 @@ import { configRoutes } from "@/constants/route";
 import AboutPage from "@/pages/About/page";
 import LoginPage from "@/pages/Auth/Login";
 import RegisterPage from "@/pages/Auth/Register";
+import { RoleEnum } from "@/common/types/auth";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import SystemLayoutReposive from "@/layouts/System";
+import AdminDashboardPage from "@/pages/Admin/Dashboard";
 
 const router = createBrowserRouter([
   {
@@ -26,6 +30,22 @@ const router = createBrowserRouter([
     path: configRoutes.register,
     element: <HomeLayouts />,
     children: [{ index: true, element: <RegisterPage /> }],
+  },
+
+  {
+    path: configRoutes.adminDashboard,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Admin]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <AdminDashboardPage />,
+          },
+        ],
+      },
+    ],
   },
 ]);
 

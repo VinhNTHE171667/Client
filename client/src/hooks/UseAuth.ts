@@ -1,13 +1,13 @@
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "@/libs/state/store";
-import { useNavigate } from "react-router-dom";
-import { configRoutes } from "@/constants/route";
-import { RoleEnum } from "@/common/types/auth";
 import {
   logout,
   setCredentials,
   type AuthState,
 } from "@/libs/features/auth/authSlice";
+import { RoleEnum } from "@/common/types/auth";
+import { useNavigate } from "react-router-dom";
+import { configRoutes } from "@/constants/route";
 
 export const useAuthStore = () => {
   const auth = useSelector((state: RootState) => state.auth);
@@ -26,6 +26,8 @@ export const useAuthStore = () => {
     isCustomer: auth.roles !== null && auth.roles === RoleEnum.Customer,
     isSpaComp:
       auth.roles !== null &&
-      (auth.roles === RoleEnum.Spa || auth.roles === RoleEnum.Staff),
+      (auth.roles === RoleEnum.Spa ||
+        auth.roles === RoleEnum.SpaAdmin ||
+        auth.roles === RoleEnum.Staff),
   };
 };
