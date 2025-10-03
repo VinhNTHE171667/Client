@@ -135,11 +135,11 @@
 }
 
 .colorWeb {
-  color: $primary-color;
+  color: var(--primary-color);
 }
 
 .backgroundWeb {
-  background-color: $primary-color;
+  background-color: var(--primary-color);
 }
 
 .ant-table-thead .ant-table-cell {
@@ -216,4 +216,8 @@
   .ant-input-group-addon {
     border-color: transparent;
   }
+}
+
+a {
+  text-decoration: none !important;
 }

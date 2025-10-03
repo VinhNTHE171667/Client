@@ -1,0 +1,328 @@
+.navbar {
+  top: 0;
+  padding: 0;
+  width: 4.375rem;
+  height: 100dvh;
+  position: fixed;
+  background-color: var(--color-accent);
+  transition: width 0.35s cubic-bezier(0.175, 0.685, 0.32, 1);
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  z-index: 15;
+
+  &.toggle {
+    width: 17.5rem;
+
+    .navbar-item-inner {
+      width: 11.25rem !important;
+      transition: 1s;
+      margin: 1.25rem;
+      height: 3.25rem;
+    }
+
+    .link-text-wrapper {
+      opacity: 1 !important;
+      display: block !important;
+
+      .link-text {
+        width: calc(17.5rem - 3.75rem) !important;
+        display: block !important;
+        font-size: 0.875rem;
+      }
+    }
+
+    .icon-menu-wrapper {
+      opacity: 1 !important;
+      display: block !important;
+    }
+
+    .logo-text {
+      width: 7ch;
+    }
+
+  }
+
+  .logo-text {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    width: 2.3ch;
+    white-space: nowrap;
+    transition: width 0.3s ease;
+    color: var(--color-secondary);
+
+    &::before {
+      content: "GENSPA";
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: inherit;
+      transition: opacity 0.3s;
+    }
+
+  }
+
+
+  @media (min-width: 768px) {
+    &:hover {
+      width: 17.5rem;
+
+      .navbar-item-inner {
+        width: 11.25rem !important;
+        transition: 0.5s;
+        margin: 1.25rem;
+      }
+
+      .link-text-wrapper {
+        opacity: 1 !important;
+        display: block !important;
+
+        .link-text {
+          width: calc(17.5rem - 3.75rem) !important;
+          font-size: 0.875rem;
+          display: block !important;
+        }
+      }
+
+      .icon-menu-wrapper {
+        opacity: 1 !important;
+        display: block !important;
+      }
+
+      .logo-text {
+        width: 7ch;
+      }
+    }
+  }
+
+  .navbar-items {
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: column;
+    margin: 1.25rem 0;
+    padding: 0;
+    list-style-type: none;
+    overflow-y: auto;
+    width: 100%;
+
+    &::-webkit-scrollbar {
+      width: 3.75px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #00d2ff, #0072ff);
+      border-radius: 3.75px;
+      border: 0.625px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 2.5px rgba(0, 212, 255, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #00e0ff, #0080ff);
+      box-shadow: 0 0 3.75px rgba(0, 212, 255, 0.6);
+    }
+  }
+
+  .navbar-logo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: 5rem;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--color-dark);
+
+    .navbar-item-inner-logo {
+      display: flex;
+      flex: 1;
+      justify-content: center;
+      align-items: center;
+      width: 3.75rem;
+      transition: 0.2s;
+
+      .navbar-logo-img {
+        width: 100%;
+        height: auto;
+        cursor: pointer;
+      }
+    }
+
+    .icon-menu-wrapper {
+      position: relative;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: 0.2s;
+      width: 2rem;
+      height: 2rem;
+      cursor: pointer;
+      border-radius: 50%;
+
+      &:hover {
+        background-color: var(--color-accent);
+      }
+
+      .icon-menu {
+        position: absolute;
+        top: 0.1875rem;
+        left: 0.1875rem;
+        color: var(--white);
+      }
+    }
+  }
+
+  .navbar-item {
+    width: 100%;
+    cursor: pointer;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    height: 3.25rem;
+
+    &:hover {
+      a {
+        border-radius: 0.5rem;
+        margin: 0 1.25rem;
+        background-color: var(--primary-light);
+        height: 3.25rem;
+      }
+    }
+
+    a {
+      color: var(--white);
+      height: 100%;
+    }
+
+    .navbar-item-inner {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      width: 100% !important;
+      height: 3.25rem;
+    }
+
+    .navbar-item-inner-icon-wrapper {
+      width: 3.125rem;
+      display: flex;
+      justify-content: center;
+      margin-left: 0.625rem;
+
+      .navbar-item-inner-icon {
+        font-size: 1.25rem;
+      }
+    }
+
+    .link-text-wrapper {
+      flex: 1 1 auto;
+      opacity: 0;
+      width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 150px;
+
+      .link-text {
+        display: none;
+      }
+    }
+
+    &.active {
+      a {
+        border-radius: 0.4375rem;
+        color: var(--color-dark);
+        background-color: var(--white);
+      }
+
+      transition: all 0.25s;
+    }
+  }
+
+  .profile-wrapper {
+    border-top: 0.0125rem solid #ccc;
+    display: flex;
+    flex-direction: column;
+    margin-top: auto;
+    margin-bottom: 0.625rem;
+
+    .profile-item {
+      padding: 0 0.3125em;
+      width: 100%;
+      cursor: pointer;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      padding-top: 0.625rem;
+      padding-bottom: 0.625rem;
+      font-size: 1.25rem;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.04);
+      }
+
+      a {
+        color: var(--white);
+      }
+
+      .profile-item-inner {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        width: 100% !important;
+      }
+
+      .profile-item-inner-icon-wrapper {
+        width: 5.25rem;
+        display: flex;
+        justify-content: center;
+
+        .profile-item-inner-icon {
+          font-size: 1.25rem;
+        }
+      }
+
+      .link-text-wrapper {
+        flex: 1 1 auto;
+        opacity: 0;
+        width: 0;
+        transition: 1s;
+
+        .link-text {
+          display: none;
+        }
+      }
+    }
+
+    .avatar-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.75rem;
+      height: 2.75rem;
+      border-radius: 50%;
+      background-color: var(--white);
+      overflow: hidden;
+
+      .user-avatar {
+        width: 3.125rem;
+        height: 3.125rem;
+        object-fit: cover;
+      }
+    }
+
+    .log-out-wrapper {
+      color: var(--white);
+    }
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .navbar {
+    width: 0;
+  }
+}

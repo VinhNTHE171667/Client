@@ -1,0 +1,117 @@
+.header-wrapper {
+  position: relative;
+  width: 100%;
+  height: 0;
+
+  .header-content {
+    position: fixed;
+    z-index: 9;
+    top: 0;
+    left: 0;
+    display: flex;
+    width: 100%;
+    transition: 1s;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0rem 1.25rem;
+    height: 5rem;
+    background-color: var(--white);
+    border-bottom: 0.0375rem solid #ccc;
+    box-shadow:
+      0 0.0625rem 0.625rem rgba(0, 0, 0, 0.09),
+      0 0.0625rem 0.125rem rgba(0, 0, 0, 0.02);
+
+    .school-name {
+      display: flex;
+      align-items: center;
+      text-shadow: none;
+      text-transform: uppercase;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #6a6969;
+      user-select: none;
+      margin-left: 3.75rem;
+      transition: 0.3s;
+
+      &.isToggleSidebar {
+        margin-left: 17.5rem;
+        transition: 0.3s;
+      }
+
+      .school-icon {
+        font-size: 1.625rem;
+        margin-right: 0.5rem;
+      }
+    }
+
+    .notification-wrapper-first {
+      position: relative;
+      border-radius: 50%;
+      background-color: rgb(233, 239, 232);
+      width: 2.625rem;
+      height: 2.625rem;
+      cursor: pointer;
+
+      .notification-wrapper-second {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 1.75rem;
+        height: 1.75rem;
+        background-color: rgb(131, 185, 254);
+        border-radius: 50%;
+
+        .notification-icon {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          color: var(--primary);
+          font-size: 1.375rem;
+        }
+      }
+    }
+  }
+
+  .link-wrapper {
+    position: absolute;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    top: 6.25rem;
+    left: 0.625rem;
+    right: 0.625rem;
+    padding: 0.5625rem 0.875rem;
+    background-color: var(--white);
+    border-radius: 0.25rem;
+    z-index: 1;
+
+    .bg-hero-breadcrumb-item {
+      font-size: 1rem;
+
+      .dashboard-link-wrapper {
+        display: flex;
+        align-items: center;
+
+        .dashboard-link-icon {
+          margin-right: 0.1875rem;
+          margin-bottom: 0.1875rem;
+        }
+      }
+
+      a {
+        color: rgba(2, 2, 2, 0.5) !important;
+      }
+
+      &+.bg-hero-breadcrumb-item {
+        &::before {
+          font-weight: 900;
+          font-family: 'Font Awesome 5 Free';
+          content: '';
+          color: rgba(35, 32, 32, 0.5) !important;
+        }
+      }
+    }
+  }
+}

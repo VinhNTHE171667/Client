@@ -16,6 +16,27 @@ export type RegisterCustomerProps = {
   password: string;
 };
 
+export type StatictisAdminProps = {
+  year: number;
+  data: {
+    month: number;
+    totalInvoices: number;
+    totalAmount: number;
+    finalAmount: number;
+    totalCustomers: number;
+  }[];
+  categories: {
+    id: string;
+    name: string;
+    serviceCount: number;
+  }[];
+  memberShipData: {
+    month: number;
+    totalInvoices: number;
+    finalAmount: number;
+  }[];
+};
+
 export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: axiosBaseQuery({
@@ -41,7 +62,28 @@ export const authApi = createApi({
         data: userData,
       }),
     }),
+
+    getAdminStatistics: build.mutation<
+      StatictisAdminProps,
+      {
+        year: number;
+        spaId?: string;
+      }
+    >({
+      query: ({ year, spaId }) => ({
+        url: `/services/admin/statistics`,
+        method: "Get",
+        params: {
+          year: year,
+          spaId: spaId,
+        },
+      }),
+    }),
   }),
 });
 
-export const { useLoginMutation, useRegisterMutation } = authApi;
+export const {
+  useLoginMutation,
+  useRegisterMutation,
+  useGetAdminStatisticsMutation,
+} = authApi;

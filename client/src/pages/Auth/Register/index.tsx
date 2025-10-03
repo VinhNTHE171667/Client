@@ -1,17 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import styles from "../Auth.module.scss";
 import classNames from "classnames/bind";
-import { Form, DatePicker, Select } from "antd";
+import { Form, DatePicker, Select, notification } from "antd";
 import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
 import { useState } from "react";
 import dayjs from "dayjs";
+import { http } from "@/utils/config";
+import { configRoutes } from "@/constants/route";
 
 const cx = classNames.bind(styles);
 
 const RegisterPage = () => {
   const [form] = Form.useForm();
+  const [api, contextHolder] = notification.useNotification();
+
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -27,6 +32,37 @@ const RegisterPage = () => {
         setErrors({});
       }
 
+      const res = await http.post("/auth/register-customer", {
+        full_name: values.full_name,
+        gender: values.gender,
+        birth_date: values.birth_date,
+        phone: values.phone,
+        email: values.email,
+        password: values.password,
+        address: values.address,
+        referral_source: "",
+      });
+
+      if (res.status === 201 || res.status === 200) {
+        // setIsLoading(false);
+
+        api.success({
+          message: "Đăng ký thành công",
+          description: "Bạn đã đăng ký tài khoản khách hàng thành công.",
+        });
+
+        setTimeout(() => {
+          navigate(configRoutes.login);
+        }, 1000);
+      } else {
+        // setIsLoading(false);
+        // setError(res.data.message || "Đăng ký không thành công");
+        api.error({
+          message: "Đăng ký không thành công",
+          description: res.data.message || "Vui lòng thử lại sau.",
+        });
+      }
+
       // console.log(" Values:", values);
     } catch (err: any) {
       const errorObj: { [key: string]: string } = {};
@@ -39,12 +75,14 @@ const RegisterPage = () => {
 
   return (
     <div className={cx("auth-wrapper")}>
+      {contextHolder}
+
       <div className={cx("auth-card-register")}>
         <h2 className="text-center mb-4">Đăng ký</h2>
 
         <Form
           form={form}
-          initialValues={{ gender: "MALE" }}
+          initialValues={{ gender: "male" }}
           validateMessages={{
             required: "Không được để trống",
             types: { email: "Email không hợp lệ!" },
@@ -85,9 +123,9 @@ const RegisterPage = () => {
                 id="gender"
                 className="w-100 rounded-pill"
                 options={[
-                  { value: "MALE", label: "Nam" },
-                  { value: "FEMALE", label: "Nữ" },
-                  { value: "OTHER", label: "Khác" },
+                  { value: "male", label: "Nam" },
+                  { value: "female", label: "Nữ" },
+                  { value: "other", label: "Khác" },
                 ]}
               />
             </Form.Item>
