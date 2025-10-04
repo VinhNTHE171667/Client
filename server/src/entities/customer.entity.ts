@@ -5,7 +5,16 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   UpdateDateColumn,
+  OneToOne,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { Cart } from './cart.entity';
+import { Appointment } from './appointment.entity';
+import { Invoice } from './invoice.entity';
+import { CustomerVoucher } from './customerVoucher.entity';
+import { Membership } from './membership.entity';
 
 export enum Gender {
   Male = 'male',
@@ -23,6 +32,9 @@ export enum CustomerType {
 export class Customer {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ nullable: true })
+  avatar?: string;
 
   @Column()
   full_name: string;
@@ -75,4 +87,25 @@ export class Customer {
 
   @DeleteDateColumn({ nullable: true })
   deletedAt?: Date;
+
+  @OneToOne(() => Cart, (cart) => cart.customer, { cascade: true })
+  cart: Cart;
+
+  @OneToMany(() => Appointment, (appointment) => appointment.customer)
+  appointments: Appointment[];
+
+  @OneToMany(() => Invoice, (invoice) => invoice.customer)
+  invoices: Invoice[];
+
+  @OneToMany(() => CustomerVoucher, (cv) => cv.customer)
+  vouchers: CustomerVoucher[];
+
+  @ManyToOne(() => Membership, (membership) => membership.customers, {
+    nullable: true,
+  })
+  @JoinColumn({ name: 'membershipId' })
+  membership?: Membership;
+
+  @Column({ nullable: true })
+  membershipId?: string;
 }
