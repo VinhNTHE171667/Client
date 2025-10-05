@@ -25,7 +25,7 @@ const RegisterPage = () => {
     try {
       const values = await form.validateFields();
       if (values.birth_date) {
-        values.birth_date = dayjs(values.birth_date).format("DD/MM/YYYY");
+        values.birth_date = dayjs(values.birth_date).format("YYYY-MM-DD");
       }
 
       if (errors) {
