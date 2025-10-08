@@ -4,11 +4,13 @@ import { Customer } from '@/entities/customer.entity';
 import { DataSource, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
-import { Admin } from '@/entities/admin.entity';
 import { JwtService } from '@nestjs/jwt';
 import { hashPassword } from '@/common/utils/security';
 import { RoleEnum, RoleType } from '@/common/types/role.enum';
 import { ConfigService } from '@nestjs/config';
+import { Internal } from '@/entities/internal.entity';
+import { Role } from '@/entities/role.entity';
+import { Doctor } from '@/entities/doctor.entity';
 
 @Injectable()
 export class AuthService {
@@ -16,8 +18,14 @@ export class AuthService {
     @InjectRepository(Customer)
     private customerRepository: Repository<Customer>,
 
-    @InjectRepository(Admin)
-    private adminRepository: Repository<Admin>,
+    @InjectRepository(Internal)
+    private internalRepository: Repository<Internal>,
+
+    @InjectRepository(Doctor)
+    private doctorRepository: Repository<Doctor>,
+
+    @InjectRepository(Role)
+    private roleRepository: Repository<Role>,
 
     private dataSource: DataSource,
     private configService: ConfigService,
@@ -25,13 +33,30 @@ export class AuthService {
   ) {}
 
   async checkDuplicateEmailWithRole(email: string): Promise<RoleType | null> {
-    const [customer, admin] = await Promise.all([
+    const [customer, internal, doctor] = await Promise.all([
       this.customerRepository.findOne({ where: { email } }),
-      this.adminRepository.findOne({ where: { username: email } }),
+      this.internalRepository.findOne({
+        where: { email },
+        relations: ['role'],
+      }),
+      this.doctorRepository.findOne({ where: { email } }),
     ]);
 
     if (customer) return RoleEnum.Customer;
-    if (admin) return RoleEnum.Admin;
+    if (doctor) return RoleEnum.Doctor;
+
+    if (internal) {
+      switch (internal.role.name) {
+        case 'admin':
+          return RoleEnum.Admin;
+        case 'staff':
+          return RoleEnum.Staff;
+        case 'cashier':
+          return RoleEnum.Cashier;
+        default:
+          return null;
+      }
+    }
 
     return null;
   }
@@ -65,8 +90,18 @@ export class AuthService {
       const updateMap: Record<RoleType, () => Promise<void>> = {
         [RoleEnum.Customer]: () =>
           updateRefreshToken(this.customerRepository, { email: payload.email }),
+
         [RoleEnum.Admin]: () =>
-          updateRefreshToken(this.adminRepository, { username: payload.email }),
+          updateRefreshToken(this.internalRepository, { email: payload.email }),
+
+        [RoleEnum.Staff]: () =>
+          updateRefreshToken(this.internalRepository, { email: payload.email }),
+
+        [RoleEnum.Cashier]: () =>
+          updateRefreshToken(this.internalRepository, { email: payload.email }),
+
+        [RoleEnum.Doctor]: () =>
+          updateRefreshToken(this.doctorRepository, { email: payload.email }),
       };
 
       const updateFn = updateMap[payload.role];
@@ -88,24 +123,49 @@ export class AuthService {
         secret,
       });
 
-      const rolesCheck = await Promise.all([
+      const [customer, internal, doctor] = await Promise.all([
         this.customerRepository.findOne({ where: { email } }),
-        this.adminRepository.findOne({ where: { username: email } }),
+        this.internalRepository.findOne({
+          where: { email },
+          relations: ['role'],
+        }),
+        this.doctorRepository.findOne({ where: { email } }),
       ]);
 
-      const [customer, admin] = rolesCheck;
+      let role: RoleType | null = null;
+      let user: any = null;
 
-      const user = customer ?? admin;
+      if (customer) {
+        role = RoleEnum.Customer;
+        user = customer;
+      } else if (doctor) {
+        role = RoleEnum.Doctor;
+        user = doctor;
+      } else if (internal) {
+        const roleName = internal.role?.name?.toLowerCase();
+        user = internal;
 
-      const role: RoleType | null = customer
-        ? RoleEnum.Customer
-        : admin
-          ? RoleEnum.Admin
-          : null;
+        switch (roleName) {
+          case 'admin':
+            role = RoleEnum.Admin;
+            break;
+          case 'staff':
+            role = RoleEnum.Staff;
+            break;
+          case 'cashier':
+            role = RoleEnum.Cashier;
+            break;
+          default:
+            throw new HttpException(
+              `Internal role "${roleName}" is not recognized.`,
+              HttpStatus.FORBIDDEN,
+            );
+        }
+      }
 
       if (!user || !role) {
         throw new HttpException(
-          'Mã thông báo làm mới không hợp lệ hoặc đã hết hạn',
+          'Refresh token invalid or expired.',
           HttpStatus.UNAUTHORIZED,
         );
       }
@@ -117,7 +177,7 @@ export class AuthService {
       });
     } catch (error) {
       throw new HttpException(
-        `Mã thông báo làm mới không hợp lệ: ${error.message}`,
+        `Invalid refresh token: ${error.message}`,
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -151,20 +211,37 @@ export class AuthService {
 
     const loginSources: {
       entity: Promise<any>;
-      role: RoleType;
-      compareEmailField: 'email' | 'username';
+      roleResolver: (user: any) => RoleType | null;
       passwordField: string;
     }[] = [
       {
-        entity: this.adminRepository.findOne({ where: { username: email } }),
-        role: RoleEnum.Admin,
-        compareEmailField: 'username',
+        entity: this.internalRepository.findOne({
+          where: { email },
+          relations: ['role'],
+        }),
+        roleResolver: (user) => {
+          const roleName = user?.role?.name?.toLowerCase();
+          switch (roleName) {
+            case 'admin':
+              return RoleEnum.Admin;
+            case 'staff':
+              return RoleEnum.Staff;
+            case 'cashier':
+              return RoleEnum.Cashier;
+            default:
+              return null;
+          }
+        },
         passwordField: 'password',
       },
       {
         entity: this.customerRepository.findOne({ where: { email } }),
-        role: RoleEnum.Customer,
-        compareEmailField: 'email',
+        roleResolver: () => RoleEnum.Customer,
+        passwordField: 'password',
+      },
+      {
+        entity: this.doctorRepository.findOne({ where: { email } }),
+        roleResolver: () => RoleEnum.Doctor,
         passwordField: 'password',
       },
     ];
@@ -178,22 +255,30 @@ export class AuthService {
       ) {
         if (!user.isActive) {
           throw new HttpException(
-            'Tài khoản của bạn đã bị vô hiệu hóa',
+            'Your account has been disabled.',
             HttpStatus.UNAUTHORIZED,
+          );
+        }
+
+        const role = source.roleResolver(user);
+        if (!role) {
+          throw new HttpException(
+            'User role is not recognized.',
+            HttpStatus.FORBIDDEN,
           );
         }
 
         const { accessToken, refreshToken } = await this.generateToken({
           id: user.id,
-          email: user[source.compareEmailField],
-          role: source.role,
+          email: user.email,
+          role,
         });
 
         return {
           id: user.id,
-          email: user.email || user.username,
+          email: user.email,
           name: user.name || user.full_name,
-          role: source.role,
+          role,
           spaId: user.spaId || null,
           address: user.address || null,
           accessToken,
@@ -203,7 +288,7 @@ export class AuthService {
     }
 
     throw new HttpException(
-      'Mật khẩu hoặc email không đúng',
+      'Invalid email or password.',
       HttpStatus.UNAUTHORIZED,
     );
   }

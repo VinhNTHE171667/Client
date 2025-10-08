@@ -4,13 +4,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { Admin } from '@/entities/admin.entity';
 import { ConfigModule } from '@nestjs/config/dist/config.module';
-
+import { Internal } from '@/entities/internal.entity';
+import { Role } from '@/entities/role.entity';
+import { Doctor } from '@/entities/doctor.entity';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    TypeOrmModule.forFeature([Customer, Admin]),
+    TypeOrmModule.forFeature([Customer, Internal, Doctor, Role]),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
