@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { Appointment } from './appointment.entity';
 import { Customer } from './customer.entity';
-import { Staff } from './staff.entity';
+import { Internal } from './internal.entity';
 
 @Entity()
 export class AppointmentHistory {
@@ -36,9 +36,9 @@ export class AppointmentHistory {
   })
   newStatus: 'pending' | 'confirmed' | 'completed' | 'cancelled';
 
-  @ManyToOne(() => Staff, { nullable: true })
+  @ManyToOne(() => Internal, { nullable: true })
   @JoinColumn({ name: 'changedByStaffId' })
-  changedByStaff?: Staff;
+  changedByStaff?: Internal;
 
   @ManyToOne(() => Customer, { nullable: true })
   @JoinColumn({ name: 'changedByCustomerId' })

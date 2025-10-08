@@ -9,10 +9,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { CreateCustomerDto, UpdateCustomerDto } from './dto/customer.dto';
 import { Customer } from '@/entities/customer.entity';
-import { Admin } from '@/entities/admin.entity';
 import { hashPassword } from '@/common/utils/security';
 import { RoleEnum, RoleType } from '@/common/types/role.enum';
 import omit from 'lodash/omit';
+import { Internal } from '@/entities/internal.entity';
+import { Role } from '@/entities/role.entity';
+import { Doctor } from '@/entities/doctor.entity';
 
 @Injectable()
 export class AccountService {
@@ -20,21 +22,44 @@ export class AccountService {
     @InjectRepository(Customer)
     private customerRepository: Repository<Customer>,
 
-    @InjectRepository(Admin)
-    private adminRepository: Repository<Admin>,
+    @InjectRepository(Internal)
+    private internalRepository: Repository<Internal>,
+
+    @InjectRepository(Role)
+    private roleRepository: Repository<Role>,
+
+    @InjectRepository(Doctor)
+    private doctorRepository: Repository<Doctor>,
 
     private dataSource: DataSource,
     private jwtService: JwtService,
   ) {}
 
   async checkDuplicateEmailWithRole(email: string): Promise<RoleType | null> {
-    const [customer, admin] = await Promise.all([
+    const [customer, internal, doctor] = await Promise.all([
       this.customerRepository.findOne({ where: { email } }),
-      this.adminRepository.findOne({ where: { username: email } }),
+      this.internalRepository.findOne({
+        where: { email },
+        relations: ['role'],
+      }),
+      this.doctorRepository.findOne({ where: { email } }),
     ]);
 
     if (customer) return RoleEnum.Customer;
-    if (admin) return RoleEnum.Admin;
+    if (doctor) return RoleEnum.Doctor;
+
+    if (internal) {
+      switch (internal.role.name) {
+        case 'admin':
+          return RoleEnum.Admin;
+        case 'staff':
+          return RoleEnum.Staff;
+        case 'cashier':
+          return RoleEnum.Cashier;
+        default:
+          return null;
+      }
+    }
 
     return null;
   }

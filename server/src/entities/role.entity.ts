@@ -1,8 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { Staff } from './staff.entity';
+import { Internal } from './internal.entity';
 
 @Entity()
-export class RoleStaff {
+export class Role {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -12,6 +12,6 @@ export class RoleStaff {
   @Column({ nullable: true })
   description: string;
 
-  @OneToMany(() => Staff, (staff) => staff.role)
-  staffs: Staff[];
+  @OneToMany(() => Internal, (internal) => internal.role)
+  roles: Internal[];
 }
