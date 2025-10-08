@@ -127,7 +127,7 @@ export const serviceApi = createApi({
   endpoints: (build) => ({
     createCategory: build.mutation<CategoryData, CreateCategory>({
       query: (category: CreateCategory) => ({
-        url: "/services/categories",
+        url: "/category",
         method: "Post",
         data: category,
       }),
@@ -135,14 +135,14 @@ export const serviceApi = createApi({
 
     getCategories: build.mutation<CategoryData[], void>({
       query: () => ({
-        url: "/services/categories",
+        url: "/category",
         method: "Get",
       }),
     }),
 
     getCategoryById: build.query<CategoryData, string>({
       query: (id) => ({
-        url: `/services/categories/${id}`,
+        url: `/category/${id}`,
         method: "Get",
       }),
     }),
@@ -152,7 +152,7 @@ export const serviceApi = createApi({
       { id: string; data: CreateCategory }
     >({
       query: ({ id, data }) => ({
-        url: `/services/categories/${id}`,
+        url: `/category/${id}`,
         method: "Put",
         data,
       }),
@@ -160,7 +160,7 @@ export const serviceApi = createApi({
 
     deleteCategory: build.mutation<void, string>({
       query: (id) => ({
-        url: `/services/categories/${id}`,
+        url: `/category/${id}`,
         method: "Delete",
       }),
     }),

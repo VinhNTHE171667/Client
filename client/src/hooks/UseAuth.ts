@@ -24,10 +24,5 @@ export const useAuthStore = () => {
     },
     isAdmin: auth.roles !== null && auth.roles === RoleEnum.Admin,
     isCustomer: auth.roles !== null && auth.roles === RoleEnum.Customer,
-    isSpaComp:
-      auth.roles !== null &&
-      (auth.roles === RoleEnum.Spa ||
-        auth.roles === RoleEnum.SpaAdmin ||
-        auth.roles === RoleEnum.Staff),
   };
 };

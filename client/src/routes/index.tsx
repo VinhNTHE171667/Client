@@ -9,6 +9,8 @@ import { RoleEnum } from "@/common/types/auth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import SystemLayoutReposive from "@/layouts/System";
 import AdminDashboardPage from "@/pages/Admin/Dashboard";
+import AccountCustomer from "@/pages/Admin/AccountCustomer";
+import Categories from "@/pages/Admin/Categories";
 
 const router = createBrowserRouter([
   {
@@ -42,6 +44,38 @@ const router = createBrowserRouter([
           {
             index: true,
             element: <AdminDashboardPage />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.adminCustomers,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Admin]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <AccountCustomer />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.adminCategories,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Admin]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <Categories />,
           },
         ],
       },

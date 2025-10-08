@@ -54,7 +54,7 @@ const LoginPage = () => {
           spaId: res.data.spaId || null,
         });
 
-        console.log("Login successful:", res.data);
+        console.log("Login successful:", res);
 
         if (res.data.role === RoleEnum.Admin) {
           navigate(configRoutes.adminDashboard, { replace: true });
