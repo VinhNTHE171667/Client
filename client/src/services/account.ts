@@ -11,7 +11,7 @@ export type CreateCustomerProps = {
   phone: string;
   email: string;
   address: string;
-  customer_type: "regular" | "premium" | "vip" | "trial";
+  customer_type: "regular" | "member" | "vip";
 };
 
 export type customerDatas = {
@@ -23,7 +23,7 @@ export type customerDatas = {
   isDeleted: boolean;
   phone: string;
   email: string;
-  customer_type: "regular" | "premium" | "vip" | "trial";
+  customer_type: "regular" | "member" | "vip";
   total_spent: string;
   createdAt: string;
   updatedAt: string;
@@ -39,7 +39,7 @@ export type customerData = {
   isDeleted: boolean;
   phone: string;
   email: string;
-  customer_type: "regular" | "premium" | "vip" | "trial";
+  customer_type: "regular" | "member" | "vip";
   total_spent: string;
   createdAt: string;
   updatedAt: string;
@@ -54,7 +54,7 @@ export type UpdateCustomerProps = {
   phone: string;
   email: string;
   address: string;
-  customer_type: "regular" | "premium" | "vip" | "trial";
+  customer_type: "regular" | "member" | "vip";
   total_spent: number;
   isActive: boolean;
 };

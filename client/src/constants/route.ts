@@ -5,6 +5,8 @@ export const configRoutes = {
   register: "/register",
 
   adminDashboard: "/admin/dashboard",
+  adminCustomers: "/admin/customers",
+  adminCategories: "/admin/categories",
 };
 
 export const configError = {

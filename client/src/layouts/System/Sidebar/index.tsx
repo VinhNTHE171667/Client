@@ -33,7 +33,7 @@ const SidebarSystem = ({
   isToggleNavbar,
   setIsToggleNavbar,
 }: SidebarSystemProps) => {
-  const { auth, logout, isSpaComp } = useAuthStore();
+  const { auth, logout } = useAuthStore();
   // const userInfo = allInfo ? allInfo() : null;
   const sidebarItems = getSidebarItemsByRole(auth.roles ?? "") ?? [];
 

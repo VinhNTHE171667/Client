@@ -1,4 +1,5 @@
 import {
+  MdCategory,
   // MdCardMembership,
   // MdCategory,
   MdDashboard,
@@ -7,6 +8,7 @@ import {
 } from "react-icons/md";
 // import { RiAdminFill, RiTeamFill } from "react-icons/ri";
 import { RoleEnum } from "@/common/types/auth";
+import { FaUser } from "react-icons/fa";
 // import { FaChalkboardTeacher, FaUser } from "react-icons/fa";
 import { configRoutes } from "@/constants/route";
 // import { FaSprayCanSparkles } from "react-icons/fa6";
@@ -29,16 +31,16 @@ export const getSidebarItemsByRole = (role: string): SiderItem[] => {
     },
     {
       name: "Khách hàng",
-      link: configRoutes.adminDashboard,
-      icon: <MdDashboard />,
-      activeLink: ["abc"],
+      link: configRoutes.adminCustomers,
+      icon: <FaUser className="ml-3" />,
+      activeLink: [configRoutes.adminCustomers],
     },
-    // {
-    //   name: "Khách hàng",
-    //   link: configRoutes.customerAccount,
-    //   icon: <FaUser className="ml-3" />,
-    //   activeLink: [configRoutes.customerAccount],
-    // },
+    {
+      name: "Danh mục",
+      link: configRoutes.adminCategories,
+      icon: <MdCategory className="ml-3" />,
+      activeLink: [configRoutes.adminCategories],
+    },
   ];
 
   // const SpaAdminSidebar = (): SiderItem[] => [
