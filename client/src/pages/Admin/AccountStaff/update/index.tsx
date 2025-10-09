@@ -21,7 +21,7 @@ export default function UpdateStaff(props: StaffModalProps) {
   const [form] = useForm();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const { data: staffData, refetch } = useGetStaffByIdQuery(id, {
+  const { data: staffData } = useGetStaffByIdQuery(id, {
     skip: !isOpen || !id,
   });
 
