@@ -161,18 +161,25 @@ export type UpdateSpaAdminProps = {
 };
 
 export type CreateStaffProps = {
-  spaId: string;
-  name: string;
+  full_name: string;
+  phone?: string;
   password: string;
   email: string;
   isActive: boolean;
+  positionID: string;
 };
 
 export type StaffDatas = {
   id: string;
-  spaId: string;
-  name: string;
+  full_name: string;
   email: string;
+  avatar?: string;
+  phone?: string;
+  role: {
+    id: string;
+    name: string;
+    description: string;
+  };
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -180,20 +187,27 @@ export type StaffDatas = {
 
 export type StaffData = {
   id: string;
-  spaId: string;
-  name: string;
+  full_name: string;
   email: string;
+  avatar?: string;
+  phone?: string;
+  role: {
+    id: string;
+    name: string;
+    description: string;
+  };
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
 };
 
 export type UpdateStaffProps = {
-  spaId: string;
-  name: string;
+  full_name: string;
   password: string;
   email: string;
   isActive: boolean;
+  avatar?: string;
+  phone?: string;
 };
 
 export type CreateSpecialistProps = {
@@ -441,17 +455,16 @@ export const accountApi = createApi({
       }),
     }),
 
-    getStaffs: build.mutation<StaffDatas[], string>({
-      query: (id) => ({
-        url: `/account/staffs/`,
+    getStaffs: build.mutation<StaffDatas[], void>({
+      query: () => ({
+        url: `/account/internals`,
         method: "Get",
-        params: { spaId: id },
       }),
     }),
 
-    createStaff: build.mutation<StaffData, CreateSpaAdminProps>({
+    createStaff: build.mutation<StaffData, CreateStaffProps>({
       query: (staffData) => ({
-        url: "/account/create-staff",
+        url: "/account/create-internal",
         method: "Post",
         data: staffData,
       }),
@@ -459,7 +472,7 @@ export const accountApi = createApi({
 
     getStaffById: build.query<StaffData, string>({
       query: (id) => ({
-        url: `/account/staffs/${id}`,
+        url: `/account/internals/${id}`,
         method: "Get",
       }),
     }),
@@ -469,7 +482,7 @@ export const accountApi = createApi({
       { id: string; staffData: UpdateStaffProps }
     >({
       query: ({ id, staffData }) => ({
-        url: `/account/staffs/${id}`,
+        url: `/account/internals/${id}`,
         method: "Patch",
         data: staffData,
       }),
@@ -477,8 +490,18 @@ export const accountApi = createApi({
 
     deleteStaff: build.mutation<StaffData, string>({
       query: (id) => ({
-        url: `/account/staffs/${id}`,
+        url: `/account/internals/${id}`,
         method: "Delete",
+      }),
+    }),
+
+    getAllRoles: build.mutation<
+      { id: string; name: string; description: string }[],
+      void
+    >({
+      query: () => ({
+        url: "/account/internals/roles/all",
+        method: "Get",
       }),
     }),
 
@@ -556,6 +579,7 @@ export const {
   useGetStaffByIdQuery,
   useUpdateStaffMutation,
   useDeleteStaffMutation,
+  useGetAllRolesMutation,
   // useDisableStaffMutation,
 
   useGetSpecialistsMutation,

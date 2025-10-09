@@ -1,9 +1,23 @@
 import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
-import { Button, Form, Input, Modal, Row, Space, Spin, Switch } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  Modal,
+  Row,
+  Select,
+  Space,
+  Spin,
+  Switch,
+} from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useEffect, useState } from "react";
 import { showError, showSuccess } from "@/libs/toast";
-import { useCreateSpaMutation, type CreateSpaProps } from "@/services/account";
+import {
+  useCreateStaffMutation,
+  useGetAllRolesMutation,
+  type CreateStaffProps,
+} from "@/services/account";
 import { extractErrorMessage } from "@/utils/func";
 
 interface SpaModalProps {
@@ -12,7 +26,13 @@ interface SpaModalProps {
   onReload: () => void;
 }
 
-export default function AddSpa(props: SpaModalProps) {
+interface Roles {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export default function AddStaff(props: SpaModalProps) {
   const { isOpen, onClose, onReload } = props;
 
   const [form] = useForm();
@@ -24,21 +44,54 @@ export default function AddSpa(props: SpaModalProps) {
     }
   }, [isOpen]);
 
-  const [createSpa] = useCreateSpaMutation();
+  const [roles, setRoles] = useState<Roles[]>([]);
+  const [getAllRoles] = useGetAllRolesMutation();
 
-  const onFinish = async (values: CreateSpaProps) => {
+  const handleGetRoles = async () => {
+    setIsLoading(true);
+    try {
+      const res = await getAllRoles();
+
+      const tempRes = res.data;
+      console.log("tempRes", tempRes);
+
+      setRoles(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (tempRes ?? []).map((role: any) => ({
+          ...role,
+        }))
+      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        showError("Error", error.message);
+      } else {
+        showError("Error", "An unexpected error occurred.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    handleGetRoles();
+  }, []);
+
+  const [createStaff] = useCreateStaffMutation();
+
+  const onFinish = async (values: CreateStaffProps) => {
     setIsLoading(true);
 
     const payload = {
       ...values,
+      positionID: values.positionID.toString(),
     };
 
     try {
-      const res = await createSpa(payload);
+      const res = await createStaff(payload);
 
       if (!res.error) {
         onReload();
-        showSuccess("Tạo spa thành công");
+        showSuccess("Tạo nhân viên spa thành công");
         onClose();
       } else {
         const err = res.error as {
@@ -46,8 +99,8 @@ export default function AddSpa(props: SpaModalProps) {
         };
 
         showError(
-          "Tạo spa thất bại",
-          extractErrorMessage(err) || "Đã xảy ra lỗi khi tạo spa."
+          "Tạo nhân viên spa thất bại",
+          extractErrorMessage(err) || "Đã xảy ra lỗi khi tạo nhân viên spa."
         );
       }
     } catch {
@@ -70,7 +123,7 @@ export default function AddSpa(props: SpaModalProps) {
         closable={false}
       >
         <Spin spinning={isLoading}>
-          <h3 className="text-center">Tạo spa mới</h3>
+          <h3 className="text-center">Tạo nhân viên spa mới</h3>
           <Form
             form={form}
             layout="vertical"
@@ -79,11 +132,13 @@ export default function AddSpa(props: SpaModalProps) {
             initialValues={{ isActive: true }}
           >
             <Form.Item
-              label="Tên Spa"
-              name="name"
-              rules={[{ required: true, message: "Vui lòng nhập tên spa" }]}
+              label="Tên nhân viên spa"
+              name="full_name"
+              rules={[
+                { required: true, message: "Vui lòng nhập tên nhân viên spa" },
+              ]}
             >
-              <Input placeholder="Nhập tên spa" />
+              <Input placeholder="Nhập tên nhân viên spa" />
             </Form.Item>
 
             <Form.Item
@@ -100,11 +155,14 @@ export default function AddSpa(props: SpaModalProps) {
             </Form.Item>
 
             <Form.Item
-              label="Địa chỉ"
-              name="address"
-              rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}
+              label="Email"
+              name="email"
+              rules={[
+                { required: true, message: "Vui lòng nhập email" },
+                { type: "email", message: "Email không hợp lệ" },
+              ]}
             >
-              <Input placeholder="Nhập địa chỉ" />
+              <Input placeholder="Nhập email" />
             </Form.Item>
 
             <Form.Item
@@ -118,26 +176,17 @@ export default function AddSpa(props: SpaModalProps) {
             </Form.Item>
 
             <Form.Item
-              label="Email"
-              name="email"
-              rules={[
-                { required: true, message: "Vui lòng nhập email" },
-                { type: "email", message: "Email không hợp lệ" },
-              ]}
+              label="Chức vụ"
+              name="positionID"
+              rules={[{ required: true, message: "Vui lòng chọn chức vụ" }]}
             >
-              <Input placeholder="Nhập email" />
-            </Form.Item>
-
-            <Form.Item label="Website" name="website">
-              <Input placeholder="Nhập website (nếu có)" />
-            </Form.Item>
-
-            <Form.Item label="Logo" name="logo">
-              <Input placeholder="URL hình ảnh logo (nếu có)" />
-            </Form.Item>
-
-            <Form.Item label="Mô tả" name="description">
-              <Input.TextArea placeholder="Mô tả spa (nếu có)" rows={3} />
+              <Select placeholder="Chọn chức vụ">
+                {roles.map((role) => (
+                  <Select.Option key={role.id} value={role.id}>
+                    {role.name}
+                  </Select.Option>
+                ))}
+              </Select>
             </Form.Item>
 
             <Form.Item
@@ -152,7 +201,7 @@ export default function AddSpa(props: SpaModalProps) {
               <Space size="large">
                 <Button onClick={onClose}>Huỷ</Button>
                 <Button type="primary" htmlType="submit">
-                  Tạo spa
+                  Tạo nhân viên spa
                 </Button>
               </Space>
             </Row>
