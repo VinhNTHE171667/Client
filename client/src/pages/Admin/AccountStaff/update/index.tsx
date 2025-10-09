@@ -1,53 +1,87 @@
 import { showError, showSuccess } from "@/libs/toast";
 import {
-  useGetSpaByIdQuery,
-  useUpdateSpaMutation,
-  type UpdateSpaProps,
+  useGetStaffByIdQuery,
+  useUpdateStaffMutation,
+  type UpdateStaffProps,
 } from "@/services/account";
 import { extractErrorMessage } from "@/utils/func";
 import { Button, Form, Input, Modal, Row, Space, Spin, Switch } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useEffect, useState } from "react";
 
-interface SpaModalProps {
+interface StaffModalProps {
   id: string;
   isOpen: boolean;
   onClose: () => void;
   onReload: () => void;
 }
 
-export default function UpdateSpa(props: SpaModalProps) {
+export default function UpdateStaff(props: StaffModalProps) {
   const { id, isOpen, onClose, onReload } = props;
   const [form] = useForm();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const { data: spaData } = useGetSpaByIdQuery(id, {
+  const { data: staffData } = useGetStaffByIdQuery(id, {
     skip: !isOpen || !id,
   });
 
   useEffect(() => {
-    if (spaData) {
-      form.setFieldsValue(spaData);
+    if (staffData) {
+      form.setFieldsValue(staffData);
     }
-  }, [spaData]);
+  }, [staffData]);
 
   useEffect(() => {
     if (isOpen && id) {
       form.resetFields();
-      if (spaData) {
-        form.setFieldsValue(spaData);
+      if (staffData) {
+        form.setFieldsValue(staffData);
       }
     }
-  }, [isOpen, id, spaData]);
+  }, [isOpen, id, staffData]);
 
-  const [updateSpa] = useUpdateSpaMutation();
+  // const [roles, setRoles] = useState<Roles[]>([]);
+  // const [getAllRoles] = useGetAllRolesMutation();
 
-  const onFinish = async (values: UpdateSpaProps) => {
+  // const handleGetRoles = async () => {
+  //   setIsLoading(true);
+  //   try {
+  //     const res = await getAllRoles();
+
+  //     const tempRes = res.data;
+  //     console.log("tempRes", tempRes);
+
+  //     setRoles(
+  //       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  //       (tempRes ?? []).map((role: any) => ({
+  //         ...role,
+  //       }))
+  //     );
+  //   } catch (error: unknown) {
+  //     if (error instanceof Error) {
+  //       showError("Error", error.message);
+  //     } else {
+  //       showError("Error", "An unexpected error occurred.");
+  //     }
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   handleGetRoles();
+  // }, []);
+
+  const [updateStaff] = useUpdateStaffMutation();
+
+  const onFinish = async (values: UpdateStaffProps) => {
     setIsLoading(true);
     try {
-      const res = await updateSpa({
+      const res = await updateStaff({
         id,
-        spaData: values,
+        staffData: {
+          ...values,
+        },
       });
 
       if (!res.error) {
@@ -85,7 +119,7 @@ export default function UpdateSpa(props: SpaModalProps) {
         closable={false}
       >
         <Spin spinning={isLoading}>
-          <h3 className="text-center">Cập nhật thông tin Spa</h3>
+          <h3 className="text-center">Cập nhật thông tin nhân viên</h3>
           <Form
             form={form}
             layout="vertical"
@@ -93,19 +127,13 @@ export default function UpdateSpa(props: SpaModalProps) {
             style={{ margin: 16 }}
           >
             <Form.Item
-              label="Tên Spa"
-              name="name"
-              rules={[{ required: true, message: "Vui lòng nhập tên spa" }]}
+              label="Tên nhân viên spa"
+              name="full_name"
+              rules={[
+                { required: true, message: "Vui lòng nhập tên nhân viên spa" },
+              ]}
             >
-              <Input placeholder="Nhập tên spa" />
-            </Form.Item>
-
-            <Form.Item label="Địa chỉ" name="address">
-              <Input placeholder="Nhập địa chỉ" />
-            </Form.Item>
-
-            <Form.Item label="Số điện thoại" name="phone">
-              <Input placeholder="Nhập số điện thoại" />
+              <Input placeholder="Nhập tên nhân viên spa" />
             </Form.Item>
 
             <Form.Item
@@ -116,16 +144,14 @@ export default function UpdateSpa(props: SpaModalProps) {
               <Input placeholder="Nhập email" />
             </Form.Item>
 
-            <Form.Item label="Website" name="website">
-              <Input placeholder="https://..." />
-            </Form.Item>
-
-            <Form.Item label="Logo (URL)" name="logo">
-              <Input placeholder="URL logo" />
-            </Form.Item>
-
-            <Form.Item label="Mô tả" name="description">
-              <Input.TextArea placeholder="Nhập mô tả ngắn" rows={4} />
+            <Form.Item
+              label="Số điện thoại"
+              name="phone"
+              rules={[
+                { required: true, message: "Vui lòng nhập số điện thoại" },
+              ]}
+            >
+              <Input placeholder="Nhập số điện thoại" />
             </Form.Item>
 
             <Form.Item

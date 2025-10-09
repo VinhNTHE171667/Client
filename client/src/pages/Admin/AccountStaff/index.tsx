@@ -1,13 +1,16 @@
 import { Button, Card, Col, Divider, Row, Space, Table } from "antd";
 import { useEffect, useState } from "react";
-import type { SpaModelTable } from "./_components/type";
-import { spaColumn } from "./_components/columnTypes";
-import AddSpa from "./add";
-import UpdateSpa from "./update";
-import { useDeleteSpaMutation, useGetSpasMutation } from "@/services/account";
+import {
+  useDeleteStaffMutation,
+  useGetStaffsMutation,
+  type StaffData,
+} from "@/services/account";
 import { showError, showSuccess } from "@/libs/toast";
+import { staffColumn } from "./_components/columnTypes";
+import AddStaff from "./add";
+import UpdateStaff from "./update";
 
-export default function AccountSpa() {
+export default function AccountStaff() {
   //   const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -18,19 +21,19 @@ export default function AccountSpa() {
   const [updateState, setUpdateState] = useState<boolean>(false);
 
   const [updateId, setUpdateId] = useState<string>("");
-  const [spas, setSpas] = useState<SpaModelTable[]>([]);
+  const [staffs, setStaffs] = useState<StaffData[]>([]);
 
   const handleUpdate = (id: string) => {
     setUpdateId(id);
     setUpdateState(true);
   };
 
-  const [deleteSpa] = useDeleteSpaMutation();
+  const [deleteStaff] = useDeleteStaffMutation();
 
   const handleDelete = async (id: string) => {
     setIsLoading(true);
     try {
-      const res = await deleteSpa(id);
+      const res = await deleteStaff(id);
       if (res.data) {
         handleEvent();
         showSuccess("Xoá tài khoản thành công");
@@ -68,21 +71,20 @@ export default function AccountSpa() {
   //     setIsLoading(false);
   //   };
 
-  const [getSpas] = useGetSpasMutation();
+  const [getStaff] = useGetStaffsMutation();
 
-  const handleGetSpas = async () => {
+  const handleGetStaffs = async () => {
     setIsLoading(true);
     try {
-      const res = await getSpas();
+      const res = await getStaff();
 
       const tempRes = res.data;
 
-      setSpas(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (tempRes ?? []).map((spa: any) => ({
-          ...spa,
-          onUpdate: () => handleUpdate(spa.id),
-          onRemove: () => handleDelete(spa.id),
+      setStaffs(
+        (tempRes ?? []).map((staff: StaffData) => ({
+          ...staff,
+          onUpdate: () => handleUpdate(staff.id),
+          onRemove: () => handleDelete(staff.id),
         }))
       );
     } catch (error: unknown) {
@@ -97,12 +99,14 @@ export default function AccountSpa() {
   };
 
   useEffect(() => {
-    handleGetSpas();
+    handleEvent();
   }, []);
 
   const handleEvent = () => {
-    handleGetSpas();
+    handleGetStaffs();
   };
+
+  // const { auth } = useAuthStore();
 
   return (
     <>
@@ -111,9 +115,9 @@ export default function AccountSpa() {
           <Row justify={"space-between"} style={{ marginBottom: 16 }}>
             <Col>
               <h4>
-                <strong>{"Tài khoản SPA"}</strong> <br />
+                <strong>{"Tài khoản nhân viên SPA"}</strong> <br />
               </h4>
-              {/* <Breadcrumb
+              {/* <Breadcrumb 
               items={[
                 {
                   title: (
@@ -134,7 +138,7 @@ export default function AccountSpa() {
                 <Button type="primary" onClick={() => setCreateState(true)}>
                   {"Tạo tài khoản"}
                 </Button>
-                <AddSpa
+                <AddStaff
                   isOpen={createState}
                   onClose={() => setCreateState(false)}
                   onReload={handleEvent}
@@ -164,20 +168,20 @@ export default function AccountSpa() {
             //       }
             //     },
             //   })}
-            columns={spaColumn()}
+            columns={staffColumn()}
             dataSource={
-              Array.isArray(spas) && spas.length > 0
-                ? spas.map((spa) => ({
-                    ...spa,
-                    onUpdate: () => handleUpdate(spa.id),
-                    onRemove: () => handleDelete(spa.id),
+              Array.isArray(staffs) && staffs.length > 0
+                ? staffs.map((staff) => ({
+                    ...staff,
+                    onUpdate: () => handleUpdate(staff.id),
+                    onRemove: () => handleDelete(staff.id),
                   }))
                 : []
             }
             scroll={{ x: "max-content" }}
             tableLayout="fixed"
           />
-          <UpdateSpa
+          <UpdateStaff
             id={updateId}
             isOpen={updateState}
             onClose={() => setUpdateState(false)}

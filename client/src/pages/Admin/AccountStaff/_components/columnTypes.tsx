@@ -5,9 +5,11 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
-import type { SpaModelTable } from "./type";
+import type { StaffData } from "./type";
+import AvatarTable from "@/components/AvatarTable";
+import NoAvatarImage from "@/assets/img/defaultAvatar.jpg";
 
-export const spaColumn = (): ColumnsType<SpaModelTable> => [
+export const staffColumn = (): ColumnsType<StaffData> => [
   {
     title: "STT",
     dataIndex: "index",
@@ -18,12 +20,22 @@ export const spaColumn = (): ColumnsType<SpaModelTable> => [
     },
   },
   {
-    title: "Tên Spa",
-    dataIndex: "name",
+    title: "Avatar",
+    dataIndex: "avatar",
+    render: (_, record) => {
+      return (
+        <AvatarTable
+          src={record.avatar ?? NoAvatarImage}
+          alt={"avatar"}
+          // className={cx("user-avatar")}
+          fallback={NoAvatarImage}
+        />
+      );
+    },
   },
   {
-    title: "Địa chỉ",
-    dataIndex: "address",
+    title: "Tên nhân viên",
+    dataIndex: "full_name",
   },
   {
     title: "Số điện thoại",
@@ -32,17 +44,6 @@ export const spaColumn = (): ColumnsType<SpaModelTable> => [
   {
     title: "Email",
     dataIndex: "email",
-  },
-  {
-    title: "Gói thành viên",
-    dataIndex: "membership",
-    render: (_, record) => {
-      const level = record.membership?.level || "Chưa có";
-      const color =
-        level === "PREMIUM" ? "gold" : level === "BASIC" ? "blue" : "default";
-
-      return <Tag color={color}>{level}</Tag>;
-    },
   },
   {
     title: "Trạng thái",
@@ -57,7 +58,6 @@ export const spaColumn = (): ColumnsType<SpaModelTable> => [
       );
     },
   },
-
   {
     title: "",
     dataIndex: "operation",

@@ -7,6 +7,7 @@ export const configRoutes = {
   adminDashboard: "/admin/dashboard",
   adminCustomers: "/admin/customers",
   adminCategories: "/admin/categories",
+  adminInternals: "/admin/internals",
 };
 
 export const configError = {

@@ -41,6 +41,12 @@ export const getSidebarItemsByRole = (role: string): SiderItem[] => {
       icon: <MdCategory className="ml-3" />,
       activeLink: [configRoutes.adminCategories],
     },
+    {
+      name: "Nhân viên",
+      link: configRoutes.adminInternals,
+      icon: <FaUser className="ml-3" />,
+      activeLink: [configRoutes.adminInternals],
+    },
   ];
 
   // const SpaAdminSidebar = (): SiderItem[] => [

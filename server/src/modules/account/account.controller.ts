@@ -17,6 +17,8 @@ import {
   UpdatePasswordDto,
 } from './dto/customer.dto';
 import { AccountService } from './account.service';
+import { CreateInternalDto, UpdateInternalDto } from './dto/internal.dto';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('account')
 export class AccountController {
@@ -57,5 +59,45 @@ export class AccountController {
   @Post('update-customer-password')
   updateCustomerPassword(@Body() dto: UpdatePasswordDto) {
     return this.accountService.updateCustomerPassword(dto);
+  }
+
+  @Post('create-internal')
+  createInternal(@Body() dto: CreateInternalDto) {
+    return this.accountService.createInternal(dto);
+  }
+
+  @Get('internals')
+  findAllInternals() {
+    return this.accountService.findAllInternals();
+  }
+
+  @Get('internals/:id')
+  findOneInternal(@Param('id') id: string) {
+    return this.accountService.findOneInternal(id);
+  }
+
+  @Patch('internals/:id')
+  updateInternal(@Param('id') id: string, @Body() dto: UpdateInternalDto) {
+    return this.accountService.updateInternal(id, dto);
+  }
+
+  @Delete('internals/:id')
+  removeInternal(@Param('id') id: string) {
+    return this.accountService.removeInternal(id);
+  }
+
+  @Get('internals/roles/all')
+  findAllInternalRoles() {
+    return this.accountService.findAllInternalRoles();
+  }
+
+  @Patch('internals/:id/active')
+  toggleInternalActive(@Param('id') id: string) {
+    return this.accountService.toggleInternalActive(id);
+  }
+
+  @Post('update-internal-password')
+  updateInternalPassword(@Body() dto: UpdatePasswordDto) {
+    return this.accountService.updateInternalPassword(dto);
   }
 }

@@ -11,6 +11,7 @@ import SystemLayoutReposive from "@/layouts/System";
 import AdminDashboardPage from "@/pages/Admin/Dashboard";
 import AccountCustomer from "@/pages/Admin/AccountCustomer";
 import Categories from "@/pages/Admin/Categories";
+import AccountStaff from "@/pages/Admin/AccountStaff";
 
 const router = createBrowserRouter([
   {
@@ -76,6 +77,22 @@ const router = createBrowserRouter([
           {
             index: true,
             element: <Categories />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.adminInternals,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Admin]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <AccountStaff />,
           },
         ],
       },
