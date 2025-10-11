@@ -8,6 +8,8 @@ export const configRoutes = {
   adminCustomers: "/admin/customers",
   adminCategories: "/admin/categories",
   adminInternals: "/admin/internals",
+  adminDoctors: "/admin/doctors",
+  adminServices: "/admin/services",
 };
 
 export const configError = {

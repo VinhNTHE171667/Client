@@ -100,4 +100,39 @@ export class AccountController {
   updateInternalPassword(@Body() dto: UpdatePasswordDto) {
     return this.accountService.updateInternalPassword(dto);
   }
+
+  @Post('create-doctor')
+  createDoctor(@Body() dto: CreateInternalDto) {
+    return this.accountService.createInternal(dto);
+  }
+
+  @Get('doctors')
+  findAllDoctors() {
+    return this.accountService.findAllDoctors();
+  }
+
+  @Get('doctors/:id')
+  findOneDoctor(@Param('id') id: string) {
+    return this.accountService.findOneDoctor(id);
+  }
+
+  @Patch('doctors/:id')
+  updateDoctor(@Param('id') id: string, @Body() dto: UpdateInternalDto) {
+    return this.accountService.updateDoctor(id, dto);
+  }
+
+  @Delete('doctors/:id')
+  removeDoctor(@Param('id') id: string) {
+    return this.accountService.removeDoctor(id);
+  }
+
+  @Patch('doctors/:id/active')
+  toggleDoctorActive(@Param('id') id: string) {
+    return this.accountService.toggleDoctorActive(id);
+  }
+
+  @Post('update-doctor-password')
+  updateDoctorPassword(@Body() dto: UpdatePasswordDto) {
+    return this.accountService.updateDoctorPassword(dto);
+  }
 }

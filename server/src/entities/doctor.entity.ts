@@ -24,6 +24,9 @@ export class Doctor {
   @Column({ unique: true })
   email: string;
 
+  @Column({ nullable: true })
+  phone: string;
+
   @Column()
   password: string;
 
@@ -36,6 +39,9 @@ export class Doctor {
   @ManyToMany(() => Service, (service) => service.doctors)
   @JoinTable()
   services: Service[];
+
+  @Column({ nullable: true })
+  refreshToken?: string;
 
   @Column({ nullable: true })
   experience_years?: number;

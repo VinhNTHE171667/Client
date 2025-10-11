@@ -22,6 +22,9 @@ export class Internal {
   full_name: string;
 
   @Column({ nullable: true })
+  gender?: string;
+
+  @Column({ nullable: true })
   phone: string;
 
   @Column()

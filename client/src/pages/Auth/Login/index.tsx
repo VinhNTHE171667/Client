@@ -6,6 +6,7 @@ import { Form, Input, Button } from "antd";
 import { useAuthStore } from "@/hooks/UseAuth";
 import { RoleEnum, type RoleEnumType } from "@/common/types/auth";
 import { configRoutes } from "@/constants/route";
+import { showError } from "@/libs/toast";
 
 const cx = classNames.bind(styles);
 
@@ -40,6 +41,7 @@ const LoginPage = () => {
         };
         error?: { data?: { message?: string[] } };
       };
+      console.log("Login successful:", res);
 
       if (res.data) {
         setCredentials({
@@ -54,8 +56,6 @@ const LoginPage = () => {
           spaId: res.data.spaId || null,
         });
 
-        console.log("Login successful:", res);
-
         if (res.data.role === RoleEnum.Admin) {
           navigate(configRoutes.adminDashboard, { replace: true });
         } else if (res.data.role === RoleEnum.Customer) {
@@ -64,8 +64,11 @@ const LoginPage = () => {
           navigate("/");
         }
       } else if (res.error) {
-        const msg = res.error.data?.message?.join(", ") || "Đăng nhập thất bại";
-        console.error(msg);
+        const message = res.error.data?.message;
+        const msg = Array.isArray(message)
+          ? message.join(", ")
+          : message || "Đăng nhập thất bại";
+        showError("Lỗi khi đăng nhập", msg);
       }
     } catch (err) {
       console.error("Login error:", err);
