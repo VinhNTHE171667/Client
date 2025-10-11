@@ -7,6 +7,7 @@ import { dataSourceOptions } from './db/data-source';
 import { AuthModule } from './modules/auth/auth.module';
 import { AccountModule } from './modules/account/account.module';
 import { CategoryModule } from './modules/category/category.module';
+import { ServiceModule } from './modules/service/service.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { CategoryModule } from './modules/category/category.module';
     AuthModule,
     AccountModule,
     CategoryModule,
+    ServiceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -255,7 +255,7 @@ export class AuthService {
       ) {
         if (!user.isActive) {
           throw new HttpException(
-            'Your account has been disabled.',
+            'Tài khoản của bạn đã bị vô hiệu hóa.',
             HttpStatus.UNAUTHORIZED,
           );
         }
@@ -263,7 +263,7 @@ export class AuthService {
         const role = source.roleResolver(user);
         if (!role) {
           throw new HttpException(
-            'User role is not recognized.',
+            'Vai trò người dùng không đúng.',
             HttpStatus.FORBIDDEN,
           );
         }
@@ -288,7 +288,7 @@ export class AuthService {
     }
 
     throw new HttpException(
-      'Invalid email or password.',
+      'Email hoặc mật khẩu không đúng',
       HttpStatus.UNAUTHORIZED,
     );
   }

@@ -3,15 +3,17 @@ import {
   // MdCardMembership,
   // MdCategory,
   MdDashboard,
+  MdPeopleAlt,
   // MdScheduleSend,
   // MdSpa,
 } from "react-icons/md";
 // import { RiAdminFill, RiTeamFill } from "react-icons/ri";
 import { RoleEnum } from "@/common/types/auth";
-import { FaUser } from "react-icons/fa";
 // import { FaChalkboardTeacher, FaUser } from "react-icons/fa";
 import { configRoutes } from "@/constants/route";
-// import { FaSprayCanSparkles } from "react-icons/fa6";
+import { RiUser3Fill } from "react-icons/ri";
+import { FaUserDoctor } from "react-icons/fa6";
+import { GiFlowerEmblem } from "react-icons/gi";
 // import { IoChatboxEllipses } from "react-icons/io5";
 
 export type SiderItem = {
@@ -32,7 +34,7 @@ export const getSidebarItemsByRole = (role: string): SiderItem[] => {
     {
       name: "Khách hàng",
       link: configRoutes.adminCustomers,
-      icon: <FaUser className="ml-3" />,
+      icon: <RiUser3Fill className="ml-3" />,
       activeLink: [configRoutes.adminCustomers],
     },
     {
@@ -44,8 +46,20 @@ export const getSidebarItemsByRole = (role: string): SiderItem[] => {
     {
       name: "Nhân viên",
       link: configRoutes.adminInternals,
-      icon: <FaUser className="ml-3" />,
+      icon: <MdPeopleAlt className="ml-3" />,
       activeLink: [configRoutes.adminInternals],
+    },
+    {
+      name: "Chuyên viên",
+      link: configRoutes.adminDoctors,
+      icon: <FaUserDoctor className="ml-3" />,
+      activeLink: [configRoutes.adminDoctors],
+    },
+    {
+      name: "Dịch vụ",
+      link: configRoutes.adminServices,
+      icon: <GiFlowerEmblem className="ml-3" />,
+      activeLink: [configRoutes.adminServices],
     },
   ];
 

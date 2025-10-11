@@ -253,4 +253,57 @@ export class AccountService {
   async findAllInternalRoles(): Promise<Role[]> {
     return this.roleRepository.find();
   }
+
+  //////////////////////////////////////////////
+
+  async createDoctor(data: CreateInternalDto): Promise<Doctor> {
+    const existingRole = await this.checkDuplicateEmailWithRole(data.email);
+    if (existingRole) {
+      throw new HttpException(`Email đã được sử dụng`, HttpStatus.CONFLICT);
+    }
+
+    const doctor = this.doctorRepository.create({
+      ...data,
+      password: await hashPassword(data.password),
+      refreshToken: '',
+    });
+
+    return this.doctorRepository.save(doctor);
+  }
+
+  async findAllDoctors(): Promise<Doctor[]> {
+    return this.doctorRepository.find();
+  }
+
+  async findOneDoctor(id: string): Promise<Doctor> {
+    const doctor = await this.doctorRepository.findOne({ where: { id } });
+    if (!doctor) throw new NotFoundException('Doctor not found');
+    return doctor;
+  }
+
+  async updateDoctor(id: string, data: UpdateInternalDto): Promise<Doctor> {
+    const doctor = await this.findOneDoctor(id);
+    Object.assign(doctor, data);
+    return this.doctorRepository.save(doctor);
+  }
+
+  async removeDoctor(id: string): Promise<void> {
+    const doctor = await this.findOneDoctor(id);
+    await this.doctorRepository.remove(doctor);
+  }
+
+  async updateDoctorPassword(data: {
+    id: string;
+    newPassword: string;
+  }): Promise<Doctor> {
+    const doctor = await this.findOneDoctor(data.id);
+    doctor.password = await hashPassword(data.newPassword);
+    return this.doctorRepository.save(doctor);
+  }
+
+  async toggleDoctorActive(id: string): Promise<Doctor> {
+    const doctor = await this.findOneDoctor(id);
+    doctor.isActive = !doctor.isActive;
+    return this.doctorRepository.save(doctor);
+  }
 }

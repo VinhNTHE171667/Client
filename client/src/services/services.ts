@@ -29,10 +29,9 @@ export type ServiceData = {
   description: string;
   categoryId: string;
   categoryName: string;
-  spaId: string;
   spaName: string;
   isActive: boolean;
-  spaAddress: string | null;
+  category: CategoryData;
 };
 
 export type CreateService = {
@@ -40,13 +39,11 @@ export type CreateService = {
   price: number;
   description?: string;
   categoryId: string;
-  spaId: string;
   isActive?: boolean;
 };
 
 export type CreateAppointment = {
   customerId: string;
-  spaId: string;
   serviceId: string;
   appointmentTime: string;
   status: string;
@@ -60,7 +57,6 @@ export type AppointmentData = {
   note: string;
   customerId: string;
   staffId: string | null;
-  spaId: string;
   createdAt: string;
   updatedAt: string;
   serviceId: string;
@@ -167,7 +163,7 @@ export const serviceApi = createApi({
 
     createService: build.mutation<ServiceData, FormData>({
       query: (formData) => ({
-        url: "/services",
+        url: "/service",
         method: "Post",
         body: formData,
         // headers: {
@@ -178,7 +174,7 @@ export const serviceApi = createApi({
 
     getServices: build.mutation<ServiceData[], { spaId?: string }>({
       query: (data) => ({
-        url: "/services",
+        url: "/service",
         method: "Get",
         params: {
           spaId: data.spaId,
@@ -188,7 +184,7 @@ export const serviceApi = createApi({
 
     getServiceById: build.query<ServiceData, string>({
       query: (id) => ({
-        url: `/services/${id}`,
+        url: `/service/${id}`,
         method: "Get",
       }),
     }),
@@ -196,7 +192,7 @@ export const serviceApi = createApi({
     updateService: build.mutation<CategoryData, { id: string; data: FormData }>(
       {
         query: ({ id, data }) => ({
-          url: `/services/${id}`,
+          url: `/service/${id}`,
           method: "Put",
           body: data,
         }),
@@ -205,14 +201,14 @@ export const serviceApi = createApi({
 
     deleteService: build.mutation<void, string>({
       query: (id) => ({
-        url: `/services/${id}`,
+        url: `/service/${id}`,
         method: "Delete",
       }),
     }),
 
     createAppointment: build.mutation<CreateAppointment, CreateAppointment>({
       query: (data) => ({
-        url: `/services/appointments`,
+        url: `/service/appointments`,
         method: "Post",
         data,
       }),

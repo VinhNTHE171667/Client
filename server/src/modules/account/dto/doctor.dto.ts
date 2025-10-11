@@ -2,15 +2,16 @@ import { Gender } from '@/entities/customer.entity';
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 import {
   IsString,
-  IsEmail,
   MinLength,
-  IsUUID,
-  IsBoolean,
+  IsEmail,
   IsOptional,
+  IsBoolean,
+  IsUUID,
   IsEnum,
+  IsArray,
 } from 'class-validator';
 
-export class CreateInternalDto {
+export class CreateDoctorDto {
   @ApiProperty({ example: 'Trần Thị B' })
   @IsString({ message: 'Tên không được để trống và phải là chuỗi' })
   full_name: string;
@@ -18,11 +19,6 @@ export class CreateInternalDto {
   @ApiProperty({ enum: Gender })
   @IsEnum(Gender)
   gender: Gender;
-
-  @ApiProperty({ example: '0123456789', required: false })
-  @IsOptional()
-  @IsString({ message: 'Số điện thoại phải là chuỗi' })
-  phone?: string;
 
   @ApiProperty({ example: 'Matkhau456' })
   @IsString({ message: 'Mật khẩu phải là chuỗi' })
@@ -33,20 +29,43 @@ export class CreateInternalDto {
   @IsEmail({}, { message: 'Email không đúng định dạng' })
   email: string;
 
+  @ApiProperty({ example: '0123456789', required: false })
+  @IsOptional()
+  @IsString({ message: 'Số điện thoại phải là chuỗi' })
+  phone?: string;
+
+  @ApiProperty({ example: 'Chuyên viên chăm sóc sức khỏe', required: false })
+  @IsOptional()
+  @IsString({ message: 'Tiểu sử phải là chuỗi' })
+  biography: string;
+
+  @ApiProperty({ example: 'Nha khoa' })
+  @IsString({ message: 'Chuyên môn không được để trống và phải là chuỗi' })
+  specialization: string;
+
+  @ApiProperty({ example: 'Chuyên khoa Răng Hàm Mặt', required: false })
+  @IsOptional()
+  @IsString({ message: 'Chuyên khoa phải là chuỗi' })
+  department?: string;
+
+  @ApiProperty({ example: 5, required: false })
+  @IsOptional()
+  @IsString({ message: 'Số năm kinh nghiệm phải là chuỗi' })
+  experience_years: string;
+
   @ApiProperty({ example: true, required: false })
   @IsOptional()
   @IsBoolean({ message: 'Trạng thái hoạt động phải là true hoặc false' })
   isActive?: boolean;
 
-  @ApiProperty({ example: 'Nhân viên spa' })
-  @IsOptional()
-  @IsString({ message: 'Chức vụ phải là chuỗi' })
-  positionID: string;
+  @ApiProperty({ example: '' })
+  @IsArray()
+  @IsUUID('4', { each: true, message: 'ID dịch vụ không hợp lệ' })
+  serviceIds: string[];
 }
 
-export class UpdateInternalDto extends OmitType(CreateInternalDto, [
+export class UpdateDoctorDto extends OmitType(CreateDoctorDto, [
   'password',
-  'positionID',
 ] as const) {}
 
 export class UpdatePasswordDto {
