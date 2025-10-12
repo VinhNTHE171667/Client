@@ -1,5 +1,5 @@
-import { Button, Card, Col, Divider, Row, Space, Table } from "antd";
-import { useEffect, useState } from "react";
+import { Button, Card, Col, Divider, Input, Row, Space, Table } from "antd";
+import { useEffect, useMemo, useState } from "react";
 import AddSpa from "./add";
 import UpdateSpa from "./update";
 import { showError, showSuccess } from "@/libs/toast";
@@ -9,6 +9,7 @@ import {
 } from "@/services/services";
 import type { categoriesModelTable } from "./_components/type";
 import { categoriesColumn } from "./_components/columnTypes";
+import useDebounce from "@/hooks/UseDebounce";
 
 export default function Categories() {
   //   const navigate = useNavigate();
@@ -19,7 +20,7 @@ export default function Categories() {
   const [updateState, setUpdateState] = useState<boolean>(false);
 
   const [updateId, setUpdateId] = useState<string>("");
-  const [categories, setCategpries] = useState<categoriesModelTable[]>([]);
+  const [categories, setCategories] = useState<categoriesModelTable[]>([]);
 
   const handleUpdate = (id: string) => {
     setUpdateId(id);
@@ -49,6 +50,19 @@ export default function Categories() {
       setIsLoading(false);
     }
   };
+
+  const [search, setSearch] = useState<string>("");
+
+  const debouncedSearch = useDebounce(search, 500);
+
+  const filteredCategories = useMemo(() => {
+    if (!debouncedSearch) return categories;
+    return categories.filter((category) =>
+      category.name
+        ?.toLowerCase()
+        .includes(debouncedSearch.trim().toLowerCase())
+    );
+  }, [categories, debouncedSearch]);
 
   //   const handleDisable = async (username: string, status: string) => {
   //     setIsLoading(true);
@@ -83,7 +97,7 @@ export default function Categories() {
 
       const tempRes = res.data;
 
-      setCategpries(
+      setCategories(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (tempRes ?? []).map((category: any) => ({
           ...category,
@@ -132,6 +146,13 @@ export default function Categories() {
             </Col>
             <Col>
               <Space>
+                <Input.Search
+                  placeholder="Tìm theo tên danh mục..."
+                  allowClear
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  style={{ width: 250 }}
+                />
                 <Divider type="vertical" />
                 <Button type="primary" onClick={() => setCreateState(true)}>
                   {"Tạo danh mục"}
@@ -168,11 +189,11 @@ export default function Categories() {
             //   })}
             columns={categoriesColumn()}
             dataSource={
-              Array.isArray(categories) && categories.length > 0
-                ? categories.map((categoryy) => ({
-                    ...categoryy,
-                    onUpdate: () => handleUpdate(categoryy.id),
-                    onRemove: () => handleDelete(categoryy.id),
+              Array.isArray(filteredCategories) && filteredCategories.length > 0
+                ? filteredCategories.map((category) => ({
+                    ...category,
+                    onUpdate: () => handleUpdate(category.id),
+                    onRemove: () => handleDelete(category.id),
                   }))
                 : []
             }

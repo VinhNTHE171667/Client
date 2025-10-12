@@ -1,5 +1,5 @@
-import { Button, Card, Col, Divider, Row, Space, Table } from "antd";
-import { useEffect, useState } from "react";
+import { Button, Card, Col, Divider, Input, Row, Space, Table } from "antd";
+import { useEffect, useMemo, useState } from "react";
 import type { CustomerModelTable } from "./_components/type";
 import { customerColumn } from "./_components/columnTypes";
 import AddCustomer from "./add";
@@ -9,6 +9,7 @@ import {
   useGetCustomersMutation,
 } from "@/services/account";
 import { showError, showSuccess } from "@/libs/toast";
+import useDebounce from "@/hooks/UseDebounce";
 
 export default function AccountCustomer() {
   //   const navigate = useNavigate();
@@ -29,6 +30,19 @@ export default function AccountCustomer() {
   };
 
   const [deleteCustomer] = useDeleteCustomerMutation();
+
+  const [search, setSearch] = useState<string>("");
+
+  const debouncedSearch = useDebounce(search, 500);
+
+  const filteredCustomers = useMemo(() => {
+    if (!debouncedSearch) return customers;
+    return customers.filter((customer) =>
+      customer.full_name
+        ?.toLowerCase()
+        .includes(debouncedSearch.trim().toLowerCase())
+    );
+  }, [customers, debouncedSearch]);
 
   const handleDelete = async (id: string) => {
     setIsLoading(true);
@@ -137,6 +151,13 @@ export default function AccountCustomer() {
             </Col>
             <Col>
               <Space>
+                <Input.Search
+                  placeholder="Tìm theo tên khách hàng..."
+                  allowClear
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  style={{ width: 250 }}
+                />
                 <Divider type="vertical" />
                 <Button type="primary" onClick={() => setCreateState(true)}>
                   {"Tạo tài khoản"}
@@ -173,8 +194,8 @@ export default function AccountCustomer() {
             //   })}
             columns={customerColumn()}
             dataSource={
-              Array.isArray(customers) && customers.length > 0
-                ? customers.map((customer) => ({
+              Array.isArray(filteredCustomers) && filteredCustomers.length > 0
+                ? filteredCustomers.map((customer) => ({
                     ...customer,
                     onUpdate: () => handleUpdate(customer.id),
                     onRemove: () => handleDelete(customer.id),

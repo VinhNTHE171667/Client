@@ -1,14 +1,17 @@
-import { Button, Card, Col, Divider, Row, Space, Table } from "antd";
-import { useEffect, useState } from "react";
+import { Button, Card, Col, Divider, Input, Row, Space, Table } from "antd";
+import { useEffect, useMemo, useState } from "react";
 import { showError, showSuccess } from "@/libs/toast";
 import {
   useDeleteServiceMutation,
+  useGetCategoriesMutation,
   useGetServicesMutation,
 } from "@/services/services";
 import { servicesColumn } from "./_components/columnTypes";
 import type { servicesModelTable } from "./_components/type";
 import UpdateService from "./update";
 import AddService from "./add";
+import useDebounce from "@/hooks/UseDebounce";
+import type { categoriesModelTable } from "../Categories/_components/type";
 export default function Services() {
   //   const navigate = useNavigate();
 
@@ -18,7 +21,37 @@ export default function Services() {
   const [updateState, setUpdateState] = useState<boolean>(false);
 
   const [updateId, setUpdateId] = useState<string>("");
-  const [categories, setCategpries] = useState<servicesModelTable[]>([]);
+  const [services, setServices] = useState<servicesModelTable[]>([]);
+
+  const [categories, setCategories] = useState<categoriesModelTable[]>([]);
+
+  const [getCategories] = useGetCategoriesMutation();
+
+  const handleGetCategories = async () => {
+    setIsLoading(true);
+    try {
+      const res = await getCategories();
+
+      const tempRes = res.data;
+
+      setCategories(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (tempRes ?? []).map((category: any) => ({
+          ...category,
+          onUpdate: () => handleUpdate(category.id),
+          onRemove: () => handleDelete(category.id),
+        }))
+      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        showError("Error", error.message);
+      } else {
+        showError("Error", "An unexpected error occurred.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleUpdate = (id: string) => {
     setUpdateId(id);
@@ -27,6 +60,7 @@ export default function Services() {
 
   useEffect(() => {
     handleGetServices();
+    handleGetCategories();
   }, []);
 
   const [deleteService] = useDeleteServiceMutation();
@@ -48,6 +82,17 @@ export default function Services() {
       setIsLoading(false);
     }
   };
+
+  const [search, setSearch] = useState<string>("");
+
+  const debouncedSearch = useDebounce(search, 500);
+
+  const filteredServices = useMemo(() => {
+    if (!debouncedSearch) return services;
+    return services.filter((service) =>
+      service.name?.toLowerCase().includes(debouncedSearch.trim().toLowerCase())
+    );
+  }, [services, debouncedSearch]);
 
   //   const handleDisable = async (username: string, status: string) => {
   //     setIsLoading(true);
@@ -82,7 +127,7 @@ export default function Services() {
 
       const tempRes = res.data;
 
-      setCategpries(
+      setServices(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (tempRes ?? []).map((service: any) => ({
           ...service,
@@ -131,6 +176,13 @@ export default function Services() {
             </Col>
             <Col>
               <Space>
+                <Input.Search
+                  placeholder="Tìm theo tên dịch vụ..."
+                  allowClear
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  style={{ width: 250 }}
+                />
                 <Divider type="vertical" />
                 <Button
                   type="primary"
@@ -169,13 +221,13 @@ export default function Services() {
             //       }
             //     },
             //   })}
-            columns={servicesColumn()}
+            columns={servicesColumn(categories)}
             dataSource={
-              Array.isArray(categories) && categories.length > 0
-                ? categories.map((categoryy) => ({
-                    ...categoryy,
-                    onUpdate: () => handleUpdate(categoryy.id),
-                    onRemove: () => handleDelete(categoryy.id),
+              Array.isArray(filteredServices) && filteredServices.length > 0
+                ? filteredServices.map((service) => ({
+                    ...service,
+                    onUpdate: () => handleUpdate(service.id),
+                    onRemove: () => handleDelete(service.id),
                   }))
                 : []
             }

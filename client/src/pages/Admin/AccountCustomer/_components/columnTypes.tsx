@@ -49,6 +49,12 @@ export const customerColumn = (): ColumnsType<CustomerModelTable> => [
         </Tag>
       );
     },
+    filters: [
+      { text: "Nam", value: "male" },
+      { text: "Nữ", value: "female" },
+      { text: "Khác", value: "other" },
+    ],
+    onFilter: (value, record) => record.gender === value,
   },
   {
     title: "Email",
@@ -78,6 +84,12 @@ export const customerColumn = (): ColumnsType<CustomerModelTable> => [
         </Tag>
       );
     },
+    filters: [
+      { text: "Thường", value: "regular" },
+      { text: "VIP", value: "vip" },
+      { text: "Thành viên", value: "member" },
+    ],
+    onFilter: (value, record) => record.customer_type === value,
   },
   {
     title: "Tổng chi tiêu",
@@ -85,6 +97,7 @@ export const customerColumn = (): ColumnsType<CustomerModelTable> => [
     render: (text) => {
       return <span>{text} VNĐ</span>;
     },
+    sorter: (a, b) => Number(a.total_spent) - Number(b.total_spent),
   },
   {
     title: "Trạng thái",
@@ -98,6 +111,11 @@ export const customerColumn = (): ColumnsType<CustomerModelTable> => [
         </>
       );
     },
+    filters: [
+      { text: "Kích hoạt", value: true },
+      { text: "Ngừng kích hoạt", value: false },
+    ],
+    onFilter: (value, record) => record.isActive === value,
   },
   {
     title: "",
