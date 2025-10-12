@@ -155,6 +155,21 @@ export default function AddStaff(props: SpaModalProps) {
             </Form.Item>
 
             <Form.Item
+              label="Giới tính"
+              name="gender"
+              rules={[{ required: true, message: "Vui lòng chọn giới tính" }]}
+            >
+              <Select
+                placeholder="Chọn giới tính"
+                options={[
+                  { label: "Nam", value: "male" },
+                  { label: "Nữ", value: "female" },
+                  { label: "Khác", value: "other" },
+                ]}
+              />
+            </Form.Item>
+
+            <Form.Item
               label="Email"
               name="email"
               rules={[
