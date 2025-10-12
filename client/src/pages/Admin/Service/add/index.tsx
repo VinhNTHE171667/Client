@@ -80,6 +80,7 @@ export default function AddService(props: SpaModalProps) {
       formData.append("name", values.name);
       formData.append("price", values.price);
       formData.append("categoryId", values.categoryId);
+      formData.append("description", values.description ?? "");
       formData.append("isActive", values.isActive ? "true" : "false");
 
       fileList.forEach((file) => {

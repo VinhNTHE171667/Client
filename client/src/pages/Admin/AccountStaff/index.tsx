@@ -1,5 +1,5 @@
-import { Button, Card, Col, Divider, Row, Space, Table } from "antd";
-import { useEffect, useState } from "react";
+import { Button, Card, Col, Divider, Input, Row, Space, Table } from "antd";
+import { useEffect, useMemo, useState } from "react";
 import {
   useDeleteStaffMutation,
   useGetStaffsMutation,
@@ -9,6 +9,7 @@ import { showError, showSuccess } from "@/libs/toast";
 import { staffColumn } from "./_components/columnTypes";
 import AddStaff from "./add";
 import UpdateStaff from "./update";
+import useDebounce from "@/hooks/UseDebounce";
 
 export default function AccountStaff() {
   //   const navigate = useNavigate();
@@ -46,6 +47,19 @@ export default function AccountStaff() {
       setIsLoading(false);
     }
   };
+
+  const [search, setSearch] = useState<string>("");
+
+  const debouncedSearch = useDebounce(search, 500);
+
+  const filteredStaffs = useMemo(() => {
+    if (!debouncedSearch) return staffs;
+    return staffs.filter((staff) =>
+      staff.full_name
+        ?.toLowerCase()
+        .includes(debouncedSearch.trim().toLowerCase())
+    );
+  }, [staffs, debouncedSearch]);
 
   //   const handleDisable = async (username: string, status: string) => {
   //     setIsLoading(true);
@@ -134,6 +148,13 @@ export default function AccountStaff() {
             </Col>
             <Col>
               <Space>
+                <Input.Search
+                  placeholder="Tìm theo tên nhân viên..."
+                  allowClear
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  style={{ width: 250 }}
+                />
                 <Divider type="vertical" />
                 <Button type="primary" onClick={() => setCreateState(true)}>
                   {"Tạo tài khoản"}
@@ -170,8 +191,8 @@ export default function AccountStaff() {
             //   })}
             columns={staffColumn()}
             dataSource={
-              Array.isArray(staffs) && staffs.length > 0
-                ? staffs.map((staff) => ({
+              Array.isArray(filteredStaffs) && filteredStaffs.length > 0
+                ? filteredStaffs.map((staff) => ({
                     ...staff,
                     onUpdate: () => handleUpdate(staff.id),
                     onRemove: () => handleDelete(staff.id),

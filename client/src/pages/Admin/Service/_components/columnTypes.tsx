@@ -6,8 +6,11 @@ import {
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import type { servicesModelTable } from "./type";
+import type { categoriesModelTable } from "../../Categories/_components/type";
 
-export const servicesColumn = (): ColumnsType<servicesModelTable> => [
+export const servicesColumn = (
+  categories: categoriesModelTable[]
+): ColumnsType<servicesModelTable> => [
   {
     title: "STT",
     dataIndex: "index",
@@ -44,6 +47,8 @@ export const servicesColumn = (): ColumnsType<servicesModelTable> => [
     render: (price) => {
       return <span>{new Intl.NumberFormat("vi-VN").format(price)} đ</span>;
     },
+    sorter: (a, b) => a.price - b.price,
+    // defaultSortOrder: "ascend",
   },
   {
     title: "Mô tả",
@@ -62,6 +67,11 @@ export const servicesColumn = (): ColumnsType<servicesModelTable> => [
     render: (_, record) => {
       return <span>{record.category?.name || "Chưa có danh mục"}</span>;
     },
+    filters: categories.map((category) => ({
+      text: category.name,
+      value: category.id,
+    })),
+    onFilter: (value, record) => record.categoryId === value,
   },
   {
     title: "Trạng thái",
@@ -75,6 +85,11 @@ export const servicesColumn = (): ColumnsType<servicesModelTable> => [
         </>
       );
     },
+    filters: [
+      { text: "Kích hoạt", value: true },
+      { text: "Ngừng kích hoạt", value: false },
+    ],
+    onFilter: (value, record) => record.isActive === value,
   },
   {
     title: "",

@@ -33,6 +33,11 @@ export const categoriesColumn = (): ColumnsType<categoriesModelTable> => [
         </>
       );
     },
+    filters: [
+      { text: "Kích hoạt", value: true },
+      { text: "Ngừng kích hoạt", value: false },
+    ],
+    onFilter: (value, record) => record.isActive === value,
   },
   {
     title: "",
