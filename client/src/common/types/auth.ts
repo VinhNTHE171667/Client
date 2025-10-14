@@ -12,4 +12,11 @@ export const RoleEnum = {
   Doctor: "Doctor",
 } as const;
 
+export const CustomerTypeEnum = {
+  regular: "regular",
+  vip: "vip",
+  member: "member",
+  trial: "trial",
+} as const;
+
 export type RoleEnumType = (typeof RoleEnum)[keyof typeof RoleEnum];

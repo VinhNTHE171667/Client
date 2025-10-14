@@ -163,6 +163,7 @@ export type UpdateSpaAdminProps = {
 export type CreateStaffProps = {
   full_name: string;
   phone?: string;
+  gender: string;
   password: string;
   email: string;
   isActive: boolean;
@@ -173,6 +174,7 @@ export type StaffDatas = {
   id: string;
   full_name: string;
   email: string;
+  gender: string;
   avatar?: string;
   phone?: string;
   role: {
@@ -189,6 +191,7 @@ export type StaffData = {
   id: string;
   full_name: string;
   email: string;
+  gender: string;
   avatar?: string;
   phone?: string;
   role: {

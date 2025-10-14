@@ -19,6 +19,7 @@ import {
   type CreateStaffProps,
 } from "@/services/account";
 import { extractErrorMessage } from "@/utils/func";
+import FancyFormItem from "@/components/FancyFormItem";
 
 interface SpaModalProps {
   isOpen: boolean;
@@ -140,6 +141,19 @@ export default function AddStaff(props: SpaModalProps) {
             >
               <Input placeholder="Nhập tên nhân viên spa" />
             </Form.Item>
+
+            <FancyFormItem
+              label="Giới tính"
+              name="gender"
+              type="select"
+              options={[
+                { label: "Nam", value: "male" },
+                { label: "Nữ", value: "female" },
+                { label: "Khác", value: "other" },
+              ]}
+              rules={[{ required: true, message: "Vui lòng chọn giới tính" }]}
+              placeholder="Chọn giới tính"
+            />
 
             <Form.Item
               label="Mật khẩu"

@@ -1,4 +1,13 @@
-import { Button, Card, Col, Divider, Input, Row, Space, Table } from "antd";
+import {
+  Breadcrumb,
+  Card,
+  Col,
+  Input,
+  Row,
+  Space,
+  Table,
+  Typography,
+} from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { showError, showSuccess } from "@/libs/toast";
 import {
@@ -12,6 +21,10 @@ import UpdateService from "./update";
 import AddService from "./add";
 import useDebounce from "@/hooks/UseDebounce";
 import type { categoriesModelTable } from "../Categories/_components/type";
+import { configRoutes } from "@/constants/route";
+import { Link } from "react-router-dom";
+import FancyButton from "@/components/FancyButton";
+import { PiExportFill } from "react-icons/pi";
 export default function Services() {
   //   const navigate = useNavigate();
 
@@ -152,6 +165,71 @@ export default function Services() {
 
   return (
     <>
+      <Row className="mx-2 my-2">
+        <Col>
+          <h4>
+            <strong>{"Dịch vụ"}</strong> <br />
+          </h4>
+        </Col>
+        <Col style={{ marginLeft: "auto" }}>
+          <Breadcrumb
+            items={[
+              {
+                title: (
+                  <Link to={configRoutes.adminDashboard}>{"Dashboard"}</Link>
+                ),
+              },
+              {
+                title: <span>{"Dịch vụ"}</span>,
+              },
+            ]}
+          />
+        </Col>
+      </Row>
+      <Card className="mb-3 p-4" size="small">
+        <Row className="mb-3">
+          <Col className="d-flex align-items-center">
+            <Typography.Title level={4} className="m-0">
+              <strong>{"Tổng quan"}</strong>
+            </Typography.Title>
+          </Col>
+          <Col style={{ marginLeft: "auto" }}>
+            <Space>
+              <FancyButton
+                label="Thêm dịch vụ"
+                size="middle"
+                onClick={() => setCreateState(true)}
+                variant="primary"
+              />
+              <AddService
+                isOpen={createState}
+                onClose={() => setCreateState(false)}
+                onReload={handleEvent}
+              />
+            </Space>
+          </Col>
+        </Row>
+
+        <Row className="stats-card">
+          <Col className="metric">
+            <p className="metric-label">{"Tổng số dịch vụ"}</p>
+            <p className="metric-value">{services.length}</p>
+          </Col>
+          <Col className="metric">
+            <p className="metric-label">{"Tổng tiền"}</p>
+            <p className="metric-value">
+              {services.reduce((acc, c) => acc + Number(c.price || 0), 0)}đ
+            </p>
+          </Col>
+          <Col className="metric">
+            <p className="metric-label">{"Đang hoạt động"}</p>
+            <p className="metric-value">
+              {services.filter((c) => c.isActive).length}
+            </p>
+          </Col>
+        </Row>
+      </Card>
+
       <Card>
         <div>
           <Row justify={"space-between"} style={{ marginBottom: 16 }}>
@@ -181,20 +259,14 @@ export default function Services() {
                   allowClear
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  style={{ width: 250 }}
+                  style={{ width: 300 }}
+                  size="large"
                 />
-                <Divider type="vertical" />
-                <Button
-                  type="primary"
-                  onClick={() => setCreateState(true)}
-                  // disabled={isAdmin}
-                >
-                  {"Tạo dịch vụ"}
-                </Button>
-                <AddService
-                  isOpen={createState}
-                  onClose={() => setCreateState(false)}
-                  onReload={handleEvent}
+                <FancyButton
+                  size="small"
+                  variant="outline"
+                  icon={<PiExportFill />}
+                  label="Xuất file"
                 />
               </Space>
             </Col>
@@ -233,6 +305,14 @@ export default function Services() {
             }
             scroll={{ x: "max-content" }}
             tableLayout="fixed"
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: true,
+              pageSizeOptions: ["10", "20", "50", "100"],
+              position: ["bottomRight"],
+              showTotal: (total, range) =>
+                `Hiển thị ${range[0]}-${range[1]} trong tổng số ${total} dịch vụ`,
+            }}
           />
           <UpdateService
             id={updateId}

@@ -38,6 +38,25 @@ export const staffColumn = (): ColumnsType<StaffData> => [
     dataIndex: "full_name",
   },
   {
+    title: "Giới tính",
+    dataIndex: "gender",
+    render: (text) => {
+      return (
+        <Tag
+          color={text === "male" ? "blue" : text === "female" ? "pink" : "gray"}
+        >
+          {text === "male" ? "Nam" : text === "female" ? "Nữ" : "Khác"}
+        </Tag>
+      );
+    },
+    filters: [
+      { text: "Nam", value: "male" },
+      { text: "Nữ", value: "female" },
+      { text: "Khác", value: "other" },
+    ],
+    onFilter: (value, record) => record.gender === value,
+  },
+  {
     title: "Số điện thoại",
     dataIndex: "phone",
   },

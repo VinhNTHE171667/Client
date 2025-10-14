@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Navigate, Outlet } from "react-router-dom";
 import { configError } from "@/constants/route";
-import { useAuthStore } from "@/hooks/useAuth";
+import { useAuthStore } from "@/hooks/UseAuth";
 type RoleType = string;
 interface ProtectedRouteProps {
   allowedRoles: RoleType[];
