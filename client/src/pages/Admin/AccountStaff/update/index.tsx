@@ -1,3 +1,4 @@
+import FancyFormItem from "@/components/FancyFormItem";
 import { showError, showSuccess } from "@/libs/toast";
 import {
   useGetStaffByIdQuery,
@@ -135,6 +136,19 @@ export default function UpdateStaff(props: StaffModalProps) {
             >
               <Input placeholder="Nhập tên nhân viên spa" />
             </Form.Item>
+
+            <FancyFormItem
+              label="Giới tính"
+              name="gender"
+              type="select"
+              options={[
+                { label: "Nam", value: "male" },
+                { label: "Nữ", value: "female" },
+                { label: "Khác", value: "other" },
+              ]}
+              rules={[{ required: true, message: "Vui lòng chọn giới tính" }]}
+              placeholder="Chọn giới tính"
+            />
 
             <Form.Item
               label="Email"

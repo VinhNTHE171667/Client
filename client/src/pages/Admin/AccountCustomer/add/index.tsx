@@ -1,15 +1,5 @@
 import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
-import {
-  Button,
-  DatePicker,
-  Form,
-  Input,
-  Modal,
-  Row,
-  Select,
-  Space,
-  Spin,
-} from "antd";
+import { Button, DatePicker, Form, Input, Modal, Row, Space, Spin } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
@@ -19,6 +9,7 @@ import {
 } from "@/services/account";
 import { showError, showSuccess } from "@/libs/toast";
 import { extractErrorMessage } from "@/utils/func";
+import FancyFormItem from "@/components/FancyFormItem";
 
 interface CustomerModalProps {
   isOpen: boolean;
@@ -103,28 +94,26 @@ export default function AddCustomer(props: CustomerModalProps) {
             onFinish={onFinish}
             style={{ margin: "16px" }}
           >
-            <Form.Item
+            <FancyFormItem
               label="Họ và tên"
               name="full_name"
+              type="text"
               rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
-            >
-              <Input placeholder="Nhập họ tên" />
-            </Form.Item>
+              placeholder="Nhập họ tên"
+            />
 
-            <Form.Item
+            <FancyFormItem
               label="Giới tính"
               name="gender"
+              type="select"
+              options={[
+                { label: "Nam", value: "male" },
+                { label: "Nữ", value: "female" },
+                { label: "Khác", value: "other" },
+              ]}
               rules={[{ required: true, message: "Vui lòng chọn giới tính" }]}
-            >
-              <Select
-                placeholder="Chọn giới tính"
-                options={[
-                  { label: "Nam", value: "male" },
-                  { label: "Nữ", value: "female" },
-                  { label: "Khác", value: "other" },
-                ]}
-              />
-            </Form.Item>
+              placeholder="Chọn giới tính"
+            />
 
             <Form.Item
               label="Ngày sinh"

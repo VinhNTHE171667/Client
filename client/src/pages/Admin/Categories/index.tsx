@@ -1,4 +1,4 @@
-import { Button, Card, Col, Divider, Input, Row, Space, Table } from "antd";
+import { Breadcrumb, Card, Col, Divider, Input, Row, Space, Table } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import AddSpa from "./add";
 import UpdateSpa from "./update";
@@ -10,6 +10,9 @@ import {
 import type { categoriesModelTable } from "./_components/type";
 import { categoriesColumn } from "./_components/columnTypes";
 import useDebounce from "@/hooks/UseDebounce";
+import FancyButton from "@/components/FancyButton";
+import { configRoutes } from "@/constants/route";
+import { Link } from "react-router-dom";
 
 export default function Categories() {
   //   const navigate = useNavigate();
@@ -122,12 +125,34 @@ export default function Categories() {
 
   return (
     <>
-      <Card>
+      <Row className="mx-2 my-2">
+        <Col>
+          <h4>
+            <strong>{"Danh mục"}</strong> <br />
+          </h4>
+        </Col>
+        <Col style={{ marginLeft: "auto" }}>
+          <Breadcrumb
+            items={[
+              {
+                title: (
+                  <Link to={configRoutes.adminDashboard}>{"Dashboard"}</Link>
+                ),
+              },
+              {
+                title: <span>{"Danh mục"}</span>,
+              },
+            ]}
+          />
+        </Col>
+      </Row>
+
+      <Card className="mt-2">
         <div>
           <Row justify={"space-between"} style={{ marginBottom: 16 }}>
             <Col>
               <h4>
-                <strong>{"Danh muc"}</strong> <br />
+                <strong>{"Danh mục"}</strong> <br />
               </h4>
               {/* <Breadcrumb
               items={[
@@ -151,12 +176,16 @@ export default function Categories() {
                   allowClear
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  style={{ width: 250 }}
+                  style={{ width: 300 }}
+                  size="large"
                 />
                 <Divider type="vertical" />
-                <Button type="primary" onClick={() => setCreateState(true)}>
-                  {"Tạo danh mục"}
-                </Button>
+                <FancyButton
+                  variant="primary"
+                  label="Thêm danh mục"
+                  size="middle"
+                  onClick={() => setCreateState(true)}
+                />
                 <AddSpa
                   isOpen={createState}
                   onClose={() => setCreateState(false)}
@@ -199,6 +228,14 @@ export default function Categories() {
             }
             scroll={{ x: "max-content" }}
             tableLayout="fixed"
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: true,
+              pageSizeOptions: ["10", "20", "50", "100"],
+              position: ["bottomRight"],
+              showTotal: (total, range) =>
+                `Hiển thị ${range[0]}-${range[1]} trong tổng số ${total} danh mục`,
+            }}
           />
           <UpdateSpa
             id={updateId}

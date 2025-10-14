@@ -1,6 +1,7 @@
 export type StaffData = {
   id: string;
   full_name: string;
+  gender: string;
   avatar?: string;
   phone?: string;
   email: string;
