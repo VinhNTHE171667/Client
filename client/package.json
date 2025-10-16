@@ -21,6 +21,7 @@
     "axios": "^1.9.0",
     "bootstrap": "^5.3.8",
     "date-fns": "^4.1.0",
+    "framer-motion": "^12.23.24",
     "highcharts": "^12.2.0",
     "highcharts-react-official": "^3.2.2",
     "js-cookie": "^3.0.5",

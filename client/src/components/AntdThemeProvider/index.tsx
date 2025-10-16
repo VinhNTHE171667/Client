@@ -10,8 +10,16 @@ const AntdThemeProvider = ({ children }: AntdThemeProviderProps) => {
     <ConfigProvider
       theme={{
         token: {
-          fontFamily: "Poppins, sans-serif",
+          fontFamily: "BeVietNamPro,Poppins, sans-serif",
           fontWeightStrong: 500,
+          colorText: "#1d2939",
+        },
+        components: {
+          Card: {
+            boxShadow:
+              "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+            borderRadius: 16,
+          },
         },
       }}
     >

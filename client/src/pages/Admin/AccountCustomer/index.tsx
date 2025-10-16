@@ -1,4 +1,4 @@
-import { Breadcrumb, Card, Col, Input, Row, Space, Table } from "antd";
+import { Card, Col, Input, Row, Space, Table } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { CustomerModelTable } from "./_components/type";
 import { customerColumn } from "./_components/columnTypes";
@@ -17,6 +17,8 @@ import FancyButton from "@/components/FancyButton";
 import { PiExportFill } from "react-icons/pi";
 import FancySegment from "@/components/FancySegment";
 import { CustomerTypeEnum } from "@/common/types/auth";
+import FancyCounting from "@/components/FancyCounting";
+import FancyBreadcrumb from "@/components/FancyBreadcrumb";
 
 // import styles from "./AccountCustomer.module.scss";
 // import classNames from "classnames/bind";
@@ -167,8 +169,6 @@ export default function AccountCustomer() {
         allCustomers.filter((c) => c.customer_type === CustomerTypeEnum.regular)
       );
     }
-
-    console.log("filter", filter);
   }, [filter]);
 
   return (
@@ -180,7 +180,7 @@ export default function AccountCustomer() {
           </h4>
         </Col>
         <Col style={{ marginLeft: "auto" }}>
-          <Breadcrumb
+          <FancyBreadcrumb
             items={[
               {
                 title: (
@@ -191,10 +191,11 @@ export default function AccountCustomer() {
                 title: <span>{"Tài khoản khách hàng"}</span>,
               },
             ]}
+            separator=">"
           />
         </Col>
       </Row>
-      <Card className="mb-3 p-4" size="small">
+      <Card className="mb-4 p-4" size="small">
         <Row className="mb-3">
           <Col className="d-flex align-items-center">
             <Typography.Title level={4} className="m-0">
@@ -221,22 +222,41 @@ export default function AccountCustomer() {
         <Row className="stats-card">
           <Col className="metric">
             <p className="metric-label">{"Tổng số khách hàng"}</p>
-            <p className="metric-value">{customers.length}</p>
+            <FancyCounting
+              className="metric-value"
+              from={0}
+              to={customers.length}
+              duration={4}
+            />
           </Col>
           <Col className="metric">
             <p className="metric-label">{"Tổng tiền đã chi tiêu"}</p>
             <p className="metric-value">
-              $
-              {customers.reduce(
-                (acc, c) => acc + Number(c.total_spent || 0),
-                0
-              )}
+              <FancyCounting
+                from={0}
+                to={customers.reduce(
+                  (acc, c) => acc + Number(c.total_spent || 0),
+                  0
+                )}
+                duration={4}
+                format={(value) =>
+                  value.toLocaleString("vi-VN", {
+                    style: "currency",
+                    currency: "VND",
+                  })
+                }
+              />
             </p>
           </Col>
           <Col className="metric">
             <p className="metric-label">{"Khách hàng xác thực"}</p>
             <p className="metric-value">
-              {customers.filter((c) => c.isVerified).length}
+              <FancyCounting
+                from={0}
+                to={customers.filter((c) => c.isVerified).length}
+                duration={4}
+              />
+              /{customers.filter((c) => c.isVerified).length}
             </p>
           </Col>
         </Row>

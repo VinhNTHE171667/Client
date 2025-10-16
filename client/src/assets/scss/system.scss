@@ -166,9 +166,12 @@
   }
 }
 
-.ant-breadcrumb-link {
-  color: grey;
-  font-size: 12px;
+
+.ant-card {
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+  border-radius: 1rem !important;
+  transition: box-shadow 0.3s ease !important;
 }
 
 .sidebar-toggle {

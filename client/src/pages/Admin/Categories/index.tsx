@@ -1,4 +1,4 @@
-import { Breadcrumb, Card, Col, Divider, Input, Row, Space, Table } from "antd";
+import { Card, Col, Divider, Input, Row, Space, Table } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import AddSpa from "./add";
 import UpdateSpa from "./update";
@@ -13,6 +13,7 @@ import useDebounce from "@/hooks/UseDebounce";
 import FancyButton from "@/components/FancyButton";
 import { configRoutes } from "@/constants/route";
 import { Link } from "react-router-dom";
+import FancyBreadcrumb from "@/components/FancyBreadcrumb";
 
 export default function Categories() {
   //   const navigate = useNavigate();
@@ -132,7 +133,7 @@ export default function Categories() {
           </h4>
         </Col>
         <Col style={{ marginLeft: "auto" }}>
-          <Breadcrumb
+          <FancyBreadcrumb
             items={[
               {
                 title: (
@@ -143,6 +144,7 @@ export default function Categories() {
                 title: <span>{"Danh mục"}</span>,
               },
             ]}
+            separator=">"
           />
         </Col>
       </Row>
