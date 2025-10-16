@@ -5,9 +5,6 @@ import HighchartsReact from "highcharts-react-official";
 import { useEffect, useState } from "react";
 import { useGetAdminStatisticsMutation } from "@/services/auth";
 import CountUp from "react-countup";
-import { useGetSpasMutation } from "@/services/account";
-import type { SpaModelTable } from "../AccountSpa/_components/type";
-import { showError } from "@/libs/toast";
 
 type StatictisAdminProps = {
   month: number;
@@ -65,10 +62,6 @@ const AdminDashboardPage = () => {
     totalAmount: 0,
     totalCustomers: 0,
   });
-
-  useEffect(() => {
-    handleGetSpas();
-  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -235,34 +228,6 @@ const AdminDashboardPage = () => {
     ],
   };
 
-  const [spas, setSpas] = useState<SpaModelTable[]>([]);
-  const [getSpas] = useGetSpasMutation();
-
-  const handleGetSpas = async () => {
-    // setIsLoading(true);
-    try {
-      const res = await getSpas();
-
-      const tempRes = res.data;
-      console.log("tempRes", tempRes);
-
-      setSpas(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (tempRes ?? []).map((spa: any) => ({
-          ...spa,
-        }))
-      );
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        showError("Error", error.message);
-      } else {
-        showError("Error", "An unexpected error occurred.");
-      }
-    } finally {
-      // setIsLoading(false);
-    }
-  };
-
   return (
     <Container fluid className="mt-4">
       <h2 className="mb-4 text-center">Tổng quan hệ thống</h2>
@@ -295,22 +260,6 @@ const AdminDashboardPage = () => {
               {[currentYear - 1, currentYear, currentYear + 1].map((y) => (
                 <option key={y} value={y}>
                   {y}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-        </Col>
-        <Col md={4}>
-          <Form.Group controlId="selectSpa">
-            <Form.Label>SPA</Form.Label>
-            <Form.Select
-              value={selectedSpaId ?? ""}
-              onChange={(e) => setSelectedSpaId(e.target.value)}
-            >
-              <option value="">Tất cả</option>
-              {spas.map((spa) => (
-                <option key={spa.id} value={spa.id}>
-                  {spa.name}
                 </option>
               ))}
             </Form.Select>

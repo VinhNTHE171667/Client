@@ -1,13 +1,4 @@
-import {
-  Breadcrumb,
-  Card,
-  Col,
-  Input,
-  Row,
-  Space,
-  Table,
-  Typography,
-} from "antd";
+import { Card, Col, Input, Row, Space, Table, Typography } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { showError, showSuccess } from "@/libs/toast";
 import {
@@ -25,6 +16,8 @@ import { configRoutes } from "@/constants/route";
 import { Link } from "react-router-dom";
 import FancyButton from "@/components/FancyButton";
 import { PiExportFill } from "react-icons/pi";
+import FancyCounting from "@/components/FancyCounting";
+import FancyBreadcrumb from "@/components/FancyBreadcrumb";
 export default function Services() {
   //   const navigate = useNavigate();
 
@@ -172,7 +165,7 @@ export default function Services() {
           </h4>
         </Col>
         <Col style={{ marginLeft: "auto" }}>
-          <Breadcrumb
+          <FancyBreadcrumb
             items={[
               {
                 title: (
@@ -183,10 +176,11 @@ export default function Services() {
                 title: <span>{"Dịch vụ"}</span>,
               },
             ]}
+            separator=">"
           />
         </Col>
       </Row>
-      <Card className="mb-3 p-4" size="small">
+      <Card className="mb-4 p-4" size="small">
         <Row className="mb-3">
           <Col className="d-flex align-items-center">
             <Typography.Title level={4} className="m-0">
@@ -213,19 +207,36 @@ export default function Services() {
         <Row className="stats-card">
           <Col className="metric">
             <p className="metric-label">{"Tổng số dịch vụ"}</p>
-            <p className="metric-value">{services.length}</p>
+            <FancyCounting
+              from={0}
+              to={services.length}
+              className="metric-value"
+              duration={4}
+            />
           </Col>
           <Col className="metric">
             <p className="metric-label">{"Tổng tiền"}</p>
-            <p className="metric-value">
-              {services.reduce((acc, c) => acc + Number(c.price || 0), 0)}đ
-            </p>
+            <FancyCounting
+              from={0}
+              to={services.reduce((acc, c) => acc + Number(c.price || 0), 0)}
+              className="metric-value"
+              duration={4}
+              format={(value) =>
+                value.toLocaleString("vi-VN", {
+                  style: "currency",
+                  currency: "VND",
+                })
+              }
+            />
           </Col>
           <Col className="metric">
             <p className="metric-label">{"Đang hoạt động"}</p>
-            <p className="metric-value">
-              {services.filter((c) => c.isActive).length}
-            </p>
+            <FancyCounting
+              from={0}
+              to={services.filter((c) => c.isActive).length}
+              className="metric-value"
+              duration={4}
+            />
           </Col>
         </Row>
       </Card>

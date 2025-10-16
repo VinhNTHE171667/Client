@@ -16,6 +16,7 @@ import { checkActiveLink } from "@/utils/validate";
 import { configRoutes } from "@/constants/route";
 import ConfirmModal from "@/components/ConfirmModal";
 import { useAuthStore } from "@/hooks/UseAuth";
+import { motion } from "framer-motion";
 // import { SiderItem } from "@/constants/SiderController/type";
 // import getListSlider from "@/constants/SiderController";
 // import { configRoutes } from "@/constants/routes";
@@ -76,7 +77,6 @@ const SidebarSystem = ({
               <div
                 className={cx("icon-menu-wrapper")}
                 onClick={() => {
-                  console.log(false);
                   setIsToggleNavbar(false);
                 }}
               >
@@ -119,7 +119,7 @@ const SidebarSystem = ({
             //   return true;
             // })
             .map((sidebarItem: SiderItem, index: number) => (
-              <li
+              <motion.li
                 key={index}
                 className={cx(
                   "navbar-item",
@@ -127,6 +127,15 @@ const SidebarSystem = ({
                     ? "active"
                     : ""
                 )}
+                initial={{ opacity: 0, x: -15 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{
+                  delay: index * 0.04,
+                  type: "spring",
+                  stiffness: 180,
+                  damping: 12,
+                }}
+                whileTap={{ scale: 0.98 }}
               >
                 <Link
                   className={cx("navbar-item-inner")}
@@ -145,7 +154,7 @@ const SidebarSystem = ({
                     <span className={cx("link-text")}>{sidebarItem?.name}</span>
                   </div>
                 </Link>
-              </li>
+              </motion.li>
             ))}
         </ul>
 

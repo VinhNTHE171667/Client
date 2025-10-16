@@ -4,10 +4,10 @@ import { GiHamburgerMenu } from "react-icons/gi";
 import { useEffect, useState } from "react";
 
 import styles from "./Header.module.scss";
-import { Space } from "antd";
+import { Button, Space, Tooltip } from "antd";
 import { RiMenuFoldFill } from "react-icons/ri";
 import { useAuthStore } from "@/hooks/UseAuth";
-// import { IoSettingsSharp } from "react-icons/io5";
+import { IoSettingsSharp } from "react-icons/io5";
 
 const cx = classNames.bind(styles);
 
@@ -21,9 +21,8 @@ type HeaderSystemProps = {
 const HeaderSystem = ({
   isToggleNavbar,
   setToogleNavbar,
-}: // drawerRightState,
-// setDrawerRightState,
-HeaderSystemProps) => {
+  setDrawerRightState,
+}: HeaderSystemProps) => {
   // useState -------------------------------------------------------------------------------------------------
   // Route
 
@@ -135,7 +134,7 @@ HeaderSystemProps) => {
               // </Space>
             )}
 
-            {/* {isMobile && (
+            {isMobile && (
               <Tooltip title="Cài đặt">
                 <Button
                   shape="circle"
@@ -154,7 +153,7 @@ HeaderSystemProps) => {
                   type="text"
                 />
               </Tooltip>
-            )} */}
+            )}
           </Space>
         </h2>
       </div>

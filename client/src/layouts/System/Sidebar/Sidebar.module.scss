@@ -4,12 +4,14 @@
   width: 4.375rem;
   height: 100dvh;
   position: fixed;
-  background-color: var(--color-accent);
+  background-color: var(--light);
   transition: width 0.35s cubic-bezier(0.175, 0.685, 0.32, 1);
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
   z-index: 15;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
 
   &.toggle {
     width: 17.5rem;
@@ -28,7 +30,7 @@
       .link-text {
         width: calc(17.5rem - 3.75rem) !important;
         display: block !important;
-        font-size: 0.875rem;
+        // font-size: 0.875rem;
       }
     }
 
@@ -50,7 +52,12 @@
     width: 2.3ch;
     white-space: nowrap;
     transition: width 0.3s ease;
-    color: var(--color-secondary);
+    // color: linear-gradient(135deg, #5ca16a, #4fa88f, #79c1b0);
+    background: -webkit-linear-gradient(135deg, #5ca16a, #4fa88f, #79c1b0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: bold;
+
 
     &::before {
       content: "GENSPA";
@@ -80,7 +87,7 @@
 
         .link-text {
           width: calc(17.5rem - 3.75rem) !important;
-          font-size: 0.875rem;
+          // font-size: 0.875rem;
           display: block !important;
         }
       }
@@ -115,17 +122,18 @@
     }
 
     &::-webkit-scrollbar-thumb {
-      background: linear-gradient(180deg, #00d2ff, #0072ff);
+      background: linear-gradient(180deg, #3ddab4, #0faf90);
       border-radius: 3.75px;
       border: 0.625px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 0 2.5px rgba(0, 212, 255, 0.4);
+      box-shadow: 0 0 2.5px rgba(61, 218, 180, 0.4);
       transition: all 0.3s ease;
     }
 
     &::-webkit-scrollbar-thumb:hover {
-      background: linear-gradient(180deg, #00e0ff, #0080ff);
-      box-shadow: 0 0 3.75px rgba(0, 212, 255, 0.6);
+      background: linear-gradient(180deg, #49f5ca, #14c8a4);
+      box-shadow: 0 0 3.75px rgba(61, 218, 180, 0.6);
     }
+
   }
 
   .navbar-logo {
@@ -135,7 +143,8 @@
     width: 100%;
     height: 5rem;
     padding: 0.5rem 0.75rem;
-    background-color: var(--color-dark);
+    // background-color: var(--color-accent);
+    background-color: var(--light);
 
     .navbar-item-inner-logo {
       display: flex;
@@ -165,14 +174,14 @@
       border-radius: 50%;
 
       &:hover {
-        background-color: var(--color-accent);
+        background-color: linear-gradient(135deg, #5ca16a, #4fa88f, #79c1b0);
       }
 
       .icon-menu {
         position: absolute;
         top: 0.1875rem;
         left: 0.1875rem;
-        color: var(--white);
+        color: linear-gradient(135deg, #5ca16a, #4fa88f, #79c1b0);
       }
     }
   }
@@ -184,19 +193,28 @@
     justify-content: flex-start;
     align-items: center;
     height: 3.25rem;
-
-    &:hover {
-      a {
-        border-radius: 0.5rem;
-        margin: 0 1.25rem;
-        background-color: var(--primary-light);
-        height: 3.25rem;
-      }
-    }
+    // overflow-x: hidden;
 
     a {
-      color: var(--white);
+      color: var(--color-darker-gray);
       height: 100%;
+      // transition: all 0.35s ease;
+      animation: fadeGradient 2s ease infinite alternate;
+      overflow-x: hidden;
+    }
+
+    &:hover a {
+      transition: none;
+      border-radius: 0.5rem;
+      margin: 0 1.25rem;
+      background: linear-gradient(135deg, #6fb385, #5ca16a, #8fd3b6);
+      height: 3.25rem;
+      color: var(--light);
+      // transform: translateX(4px);
+    }
+
+    &.active:hover a {
+      filter: brightness(1.05);
     }
 
     .navbar-item-inner {
@@ -235,8 +253,8 @@
     &.active {
       a {
         border-radius: 0.4375rem;
-        color: var(--color-dark);
-        background-color: var(--white);
+        color: var(--light);
+        background: linear-gradient(135deg, #5ca16a, #4fa88f, #79c1b0);
       }
 
       transition: all 0.25s;
@@ -259,14 +277,15 @@
       align-items: center;
       padding-top: 0.625rem;
       padding-bottom: 0.625rem;
-      font-size: 1.25rem;
+      font-size: 1rem;
 
       &:hover {
         background-color: rgba(0, 0, 0, 0.04);
       }
 
       a {
-        color: var(--white);
+        color: var(--color-darker-gray);
+        font-size: medium;
       }
 
       .profile-item-inner {
@@ -280,9 +299,10 @@
         width: 5.25rem;
         display: flex;
         justify-content: center;
+        color: var(--color-darker-gray);
 
         .profile-item-inner-icon {
-          font-size: 1.25rem;
+          font-size: 1rem;
         }
       }
 
@@ -294,6 +314,7 @@
 
         .link-text {
           display: none;
+          color: var(--color-darker-gray);
         }
       }
     }
@@ -305,7 +326,8 @@
       width: 2.75rem;
       height: 2.75rem;
       border-radius: 50%;
-      background-color: var(--white);
+      background-color: var(--color-dark-gray);
+      border: var(--color-accent) 0.125rem solid;
       overflow: hidden;
 
       .user-avatar {
@@ -320,6 +342,18 @@
     }
   }
 }
+
+@keyframes fadeGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+
 
 @media only screen and (max-width: 768px) {
   .navbar {

@@ -1,13 +1,4 @@
-import {
-  Breadcrumb,
-  Card,
-  Col,
-  Input,
-  Row,
-  Space,
-  Table,
-  Typography,
-} from "antd";
+import { Card, Col, Input, Row, Space, Table, Typography } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import {
   useDeleteStaffMutation,
@@ -25,6 +16,8 @@ import FancyButton from "@/components/FancyButton";
 import { RoleEnum } from "@/common/types/auth";
 import FancySegment from "@/components/FancySegment";
 import { PiExportFill } from "react-icons/pi";
+import FancyCounting from "@/components/FancyCounting";
+import FancyBreadcrumb from "@/components/FancyBreadcrumb";
 
 export default function AccountStaff() {
   //   const navigate = useNavigate();
@@ -192,7 +185,7 @@ export default function AccountStaff() {
           </h4>
         </Col>
         <Col style={{ marginLeft: "auto" }}>
-          <Breadcrumb
+          <FancyBreadcrumb
             items={[
               {
                 title: (
@@ -203,11 +196,12 @@ export default function AccountStaff() {
                 title: <span>{"Tài khoản nhân viên"}</span>,
               },
             ]}
+            separator=">"
           />
         </Col>
       </Row>
 
-      <Card className="mb-3 p-4" size="small">
+      <Card className="mb-4 p-4" size="small">
         <Row className="mb-3">
           <Col className="d-flex align-items-center">
             <Typography.Title level={4} className="m-0">
@@ -236,51 +230,65 @@ export default function AccountStaff() {
             <p className="metric-label">
               <strong>{"Tổng số nhân viên"}</strong>
             </p>
-            <p className="metric-value">{staffs.length}</p>
+            <FancyCounting
+              className="metric-value"
+              from={0}
+              to={staffs.length}
+              duration={4}
+            />
           </Col>
           <Col className="metric">
             <p className="metric-label">
               <strong>{"Tổng số admin"}</strong>
             </p>
-            <p className="metric-value">
-              {
+            <FancyCounting
+              className="metric-value"
+              from={0}
+              to={
                 staffs.filter(
                   (c) =>
                     c.role?.name.toLocaleLowerCase() ===
                     RoleEnum.Admin.toLocaleLowerCase()
                 ).length
               }
-            </p>
+              duration={4}
+            />
           </Col>
 
           <Col className="metric">
             <p className="metric-label">
               <strong>{"Tổng số nhân viên"}</strong>
             </p>
-            <p className="metric-value">
-              {
+            <FancyCounting
+              className="metric-value"
+              from={0}
+              to={
                 staffs.filter(
                   (c) =>
                     c.role?.name.toLocaleLowerCase() ===
                     RoleEnum.Staff.toLocaleLowerCase()
                 ).length
               }
-            </p>
+              duration={4}
+            />
           </Col>
 
           <Col className="metric">
             <p className="metric-label">
               <strong>{"Tổng số thu ngân"}</strong>
             </p>
-            <p className="metric-value">
-              {
+            <FancyCounting
+              className="metric-value"
+              from={0}
+              to={
                 staffs.filter(
                   (c) =>
                     c.role?.name.toLocaleLowerCase() ===
                     RoleEnum.Casher.toLocaleLowerCase()
                 ).length
               }
-            </p>
+              duration={4}
+            />
           </Col>
         </Row>
       </Card>

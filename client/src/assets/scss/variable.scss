@@ -9,6 +9,10 @@
     --color-light: #ffffff;
     --color-dark-light: #f2f4f7;
     --color-dark-gray: #e4e7ec;
+    --color-darker-gray: #344054;
+    --color-black: #1d2939;
+    --color-text: #1d2939;
+
 
     --blue: #007bff;
     --indigo: #6610f2;
@@ -42,6 +46,12 @@
     // --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
     //     'Courier New', monospace;
 }
+
+[data-theme="dark"] {
+    --color-text: #e4e7ec;
+    --color-bg: #101828;
+}
+
 
 .cus-btn-primary {
     background-color: var(--color-accent) !important;
