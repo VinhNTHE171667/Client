@@ -7,6 +7,7 @@ import { useAuthStore } from "@/hooks/UseAuth";
 import { RoleEnum, type RoleEnumType } from "@/common/types/auth";
 import { configRoutes } from "@/constants/route";
 import { showError } from "@/libs/toast";
+import { useBreakpoint } from "@/hooks/UseBreakPoint";
 
 const cx = classNames.bind(styles);
 
@@ -75,56 +76,81 @@ const LoginPage = () => {
     }
   };
 
+  const { up, down } = useBreakpoint();
+
+  console.log("Breakpoint info:", up("md"));
+
   return (
-    <div className={cx("auth-wrapper")}>
-      <div className={cx("auth-card-login")}>
-        <h2 className="text-center mb-4">Đăng nhập</h2>
+    <>
+      {/* <div>
+        <Row>
+          <Col xl={12}>
+            <div className={cx("auth-left")}>
+              <h1>Welcome Back</h1>
+              <p>Please login to your account</p>
+            </div>
+          </Col>
+          {up("md") && (
+            <Col xl={12}>
+              <div
+                className={cx("auth-banner")}
+                style={{ backgroundColor: "#f0f2f5" }}
+              >h1</div>
+            </Col>
+          )}
+        </Row>
+      </div> */}
 
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-          validateMessages={{
-            required: "Không được để trống",
-            types: { email: "Email không hợp lệ!" },
-          }}
-        >
-          <Form.Item
-            label="Email"
-            name="email"
-            // rules={[{ required: true, type: "email" }]}
+      <div className={cx("auth-wrapper")}>
+        <div className={cx("auth-card-login")}>
+          <h2 className="text-center mb-4">Đăng nhập</h2>
+
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleSubmit}
+            validateMessages={{
+              required: "Không được để trống",
+              types: { email: "Email không hợp lệ!" },
+            }}
           >
-            <Input placeholder="Nhập email của bạn" size="large" />
-          </Form.Item>
+            <Form.Item
+              label="Email"
+              name="email"
+              // rules={[{ required: true, type: "email" }]}
+            >
+              <Input placeholder="Nhập email của bạn" size="large" />
+            </Form.Item>
 
-          <Form.Item
-            label="Mật khẩu"
-            name="password"
-            rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
-          >
-            <Input.Password placeholder="Nhập mật khẩu" size="large" />
-          </Form.Item>
+            <Form.Item
+              label="Mật khẩu"
+              name="password"
+              rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
+            >
+              <Input.Password placeholder="Nhập mật khẩu" size="large" />
+            </Form.Item>
 
-          <Button
-            type="primary"
-            htmlType="submit"
-            block
-            size="large"
-            loading={isLoading}
-            className="rounded-pill"
-          >
-            Đăng nhập
-          </Button>
-        </Form>
+            <Button
+              type="primary"
+              htmlType="submit"
+              block
+              size="large"
+              loading={isLoading}
+              className="rounded-pill"
+            >
+              Đăng nhập
+            </Button>
+          </Form>
 
-        <div className="text-center mt-4">
-          <span>Bạn chưa có tài khoản? </span>
-          <Link to="/register" className="fw-bold text-primary">
-            Đăng ký ngay
-          </Link>
+          <div className="text-center mt-4">
+            <span>Bạn chưa có tài khoản? </span>
+            <Link to="/register" className="fw-bold text-primary">
+              Đăng ký ngay
+            </Link>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -172,13 +172,10 @@ export const serviceApi = createApi({
       }),
     }),
 
-    getServices: build.mutation<ServiceData[], { spaId?: string }>({
-      query: (data) => ({
+    getServices: build.mutation<ServiceData[], void>({
+      query: () => ({
         url: "/service",
         method: "Get",
-        params: {
-          spaId: data.spaId,
-        },
       }),
     }),
 

@@ -8,11 +8,12 @@ import { ConfigModule } from '@nestjs/config';
 import { Internal } from '@/entities/internal.entity';
 import { Role } from '@/entities/role.entity';
 import { Doctor } from '@/entities/doctor.entity';
+import { Service } from '@/entities/service.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    TypeOrmModule.forFeature([Customer, Internal, Role, Doctor]),
+    TypeOrmModule.forFeature([Customer, Internal, Role, Doctor, Service]),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,

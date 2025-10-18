@@ -10,6 +10,7 @@ export const configRoutes = {
   adminInternals: "/admin/internals",
   adminDoctors: "/admin/doctors",
   adminServices: "/admin/services",
+  adminVouchers: "/admin/vouchers",
 };
 
 export const configError = {

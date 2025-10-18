@@ -1,104 +1,77 @@
-import { Card, Col, Input, Row, Space, Table, Typography } from "antd";
+import { Card, Col, Input, Row, Space, Table } from "antd";
 import { useEffect, useMemo, useState } from "react";
-import { showError, showSuccess } from "@/libs/toast";
+import type { DoctorModelTable } from "./_components/type";
 import {
-  useDeleteServiceMutation,
-  useGetCategoriesMutation,
-  useGetServicesMutation,
-} from "@/services/services";
-import { servicesColumn } from "./_components/columnTypes";
-import type { servicesModelTable } from "./_components/type";
-import UpdateService from "./update";
-import AddService from "./add";
+  useDeleteCustomerMutation,
+  useGetDoctorsMutation,
+} from "@/services/account";
+import { showError, showSuccess } from "@/libs/toast";
 import useDebounce from "@/hooks/UseDebounce";
-import type { categoriesModelTable } from "../Categories/_components/type";
-import { configRoutes } from "@/constants/route";
 import { Link } from "react-router-dom";
+import { configRoutes } from "@/constants/route";
+import { Typography } from "antd";
 import FancyButton from "@/components/FancyButton";
 import { PiExportFill } from "react-icons/pi";
-import FancyCounting from "@/components/FancyCounting";
+// import FancyCounting from "@/components/FancyCounting";
 import FancyBreadcrumb from "@/components/FancyBreadcrumb";
-export default function Services() {
+import { doctorColumn } from "./_components/columnTypes";
+import AddDoctor from "./add";
+import UpdateDoctor from "./update";
+
+// import styles from "./AccountCustomer.module.scss";
+// import classNames from "classnames/bind";
+
+// const cx = classNames.bind(styles);
+
+export default function AccountDoctor() {
   //   const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  //   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   const [createState, setCreateState] = useState<boolean>(false);
   const [updateState, setUpdateState] = useState<boolean>(false);
 
   const [updateId, setUpdateId] = useState<string>("");
-  const [services, setServices] = useState<servicesModelTable[]>([]);
-
-  const [categories, setCategories] = useState<categoriesModelTable[]>([]);
-
-  const [getCategories] = useGetCategoriesMutation();
-
-  const handleGetCategories = async () => {
-    setIsLoading(true);
-    try {
-      const res = await getCategories();
-
-      const tempRes = res.data;
-
-      setCategories(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (tempRes ?? []).map((category: any) => ({
-          ...category,
-          onUpdate: () => handleUpdate(category.id),
-          onRemove: () => handleDelete(category.id),
-        }))
-      );
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        showError("Error", error.message);
-      } else {
-        showError("Error", "An unexpected error occurred.");
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [doctors, setDoctors] = useState<DoctorModelTable[]>([]);
 
   const handleUpdate = (id: string) => {
     setUpdateId(id);
     setUpdateState(true);
   };
 
-  useEffect(() => {
-    handleGetServices();
-    handleGetCategories();
-  }, []);
-
-  const [deleteService] = useDeleteServiceMutation();
-
-  const handleDelete = async (id: string) => {
-    setIsLoading(true);
-    try {
-      const res = await deleteService(id);
-      console.log("res", res);
-      if (res && res.data !== undefined) {
-        handleEvent();
-        showSuccess("Xoá dịch vụ thành công");
-      } else {
-        showError("Xoá dịch vụ thất bại", "Đã xảy ra lỗi khi xoá dịch vụ.");
-      }
-    } catch {
-      showError("Xoá dịch vụ thất bại", "Đã xảy ra lỗi khi xoá dịch vụ.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [deleteCustomer] = useDeleteCustomerMutation();
 
   const [search, setSearch] = useState<string>("");
 
   const debouncedSearch = useDebounce(search, 500);
 
-  const filteredServices = useMemo(() => {
-    if (!debouncedSearch) return services;
-    return services.filter((service) =>
-      service.name?.toLowerCase().includes(debouncedSearch.trim().toLowerCase())
+  const filteredDoctors = useMemo(() => {
+    if (!debouncedSearch) return doctors;
+    return doctors.filter((doctor) =>
+      doctor.full_name
+        ?.toLowerCase()
+        .includes(debouncedSearch.trim().toLowerCase())
     );
-  }, [services, debouncedSearch]);
+  }, [doctors, debouncedSearch]);
+
+  const handleDelete = async (id: string) => {
+    setIsLoading(true);
+    try {
+      const res = await deleteCustomer(id);
+      if (res.data) {
+        handleEvent();
+        showSuccess("Xoá tài khoản thành công");
+      } else {
+        showError("Xoá tài khoản thất bại", "Đã xảy ra lỗi khi xoá tài khoản.");
+      }
+    } catch {
+      showError("Xoá tài khoản thất bại", "Đã xảy ra lỗi khi xoá tài khoản.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   //   const handleDisable = async (username: string, status: string) => {
   //     setIsLoading(true);
@@ -124,36 +97,44 @@ export default function Services() {
   //     setIsLoading(false);
   //   };
 
-  const [getServices] = useGetServicesMutation();
+  const [getDoctors] = useGetDoctorsMutation();
 
-  const handleGetServices = async () => {
+  const handleGetDoctors = async () => {
     setIsLoading(true);
     try {
-      const res = await getServices();
+      const res = await getDoctors();
 
       const tempRes = res.data;
 
-      setServices(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (tempRes ?? []).map((service: any) => ({
-          ...service,
-          onUpdate: () => handleUpdate(service.id),
-          onRemove: () => handleDelete(service.id),
-        }))
-      );
+      if (Array.isArray(tempRes)) {
+        setDoctors(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          tempRes.map((doctor: any) => ({
+            ...doctor,
+            experience_years: Number(doctor.experience_years),
+          }))
+        );
+      }
     } catch (error: unknown) {
       if (error instanceof Error) {
-        showError("Error", error.message);
+        showError("Lỗi khi lấy danh sách khách hàng", error.message);
       } else {
-        showError("Error", "An unexpected error occurred.");
+        showError(
+          "Lỗi khi lấy danh sách khách hàng",
+          "Đã xảy ra lỗi không xác định."
+        );
       }
     } finally {
       setIsLoading(false);
     }
   };
 
+  useEffect(() => {
+    handleGetDoctors();
+  }, []);
+
   const handleEvent = () => {
-    handleGetServices();
+    handleGetDoctors();
   };
 
   return (
@@ -161,7 +142,7 @@ export default function Services() {
       <Row className="mx-2 my-2">
         <Col>
           <h4>
-            <strong>{"Dịch vụ"}</strong> <br />
+            <strong>{"Tài khoản bác sĩ"}</strong> <br />
           </h4>
         </Col>
         <Col style={{ marginLeft: "auto" }}>
@@ -173,7 +154,7 @@ export default function Services() {
                 ),
               },
               {
-                title: <span>{"Dịch vụ"}</span>,
+                title: <span>{"Tài khoản bác sĩ"}</span>,
               },
             ]}
             separator=">"
@@ -190,12 +171,12 @@ export default function Services() {
           <Col style={{ marginLeft: "auto" }}>
             <Space>
               <FancyButton
-                label="Thêm dịch vụ"
+                label="Thêm bác sĩ"
                 size="middle"
                 onClick={() => setCreateState(true)}
                 variant="primary"
               />
-              <AddService
+              <AddDoctor
                 isOpen={createState}
                 onClose={() => setCreateState(false)}
                 onReload={handleEvent}
@@ -204,75 +185,68 @@ export default function Services() {
           </Col>
         </Row>
 
-        <Row className="stats-card">
+        {/* <Row className="stats-card">
           <Col className="metric">
-            <p className="metric-label">{"Tổng số dịch vụ"}</p>
+            <p className="metric-label">{"Tổng số bác sĩ"}</p>
             <FancyCounting
-              from={0}
-              to={services.length}
               className="metric-value"
+              from={0}
+              to={doctors.length}
               duration={4}
             />
           </Col>
           <Col className="metric">
-            <p className="metric-label">{"Tổng tiền"}</p>
-            <FancyCounting
-              from={0}
-              to={services.reduce((acc, c) => acc + Number(c.price || 0), 0)}
-              className="metric-value"
-              duration={4}
-              format={(value) =>
-                value.toLocaleString("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                })
-              }
-            />
+            <p className="metric-label">{"Tổng tiền đã chi tiêu"}</p>
+            <p className="metric-value">
+              <FancyCounting
+                from={0}
+                to={doctors.reduce(
+                  (acc, d) => acc + Number(d.total_spent || 0),
+                  0
+                )}
+                duration={4}
+                format={(value) =>
+                  value.toLocaleString("vi-VN", {
+                    style: "currency",
+                    currency: "VND",
+                  })
+                }
+              />
+            </p>
           </Col>
           <Col className="metric">
-            <p className="metric-label">{"Đang hoạt động"}</p>
-            <FancyCounting
-              from={0}
-              to={services.filter((c) => c.isActive).length}
-              className="metric-value"
-              duration={4}
-            />
+            <p className="metric-label">{"Khách hàng xác thực"}</p>
+            <p className="metric-value">
+              <FancyCounting
+                from={0}
+                to={doctors.filter((d) => d.isVerified).length}
+                duration={4}
+              />
+              /{doctors.filter((d) => d.isVerified).length}
+            </p>
           </Col>
-        </Row>
+        </Row> */}
       </Card>
 
       <Card>
         <div>
           <Row justify={"space-between"} style={{ marginBottom: 16 }}>
             <Col>
-              <h4>
-                <strong>{"Dịch vụ"}</strong> <br />
-              </h4>
-              {/* <Breadcrumb
-              items={[
-                {
-                  title: (
-                    <Link href={"/admin"}>
-                      {"Quản lý tài khoản"}
-                    </Link>
-                  ),
-                },
-                {
-                  title: t("admin.account.breadCrumb.admin"),
-                },
-              ]}
-            /> */}
+              <Typography.Title level={4} className="m-0">
+                <strong>{"Danh sách khách hàng"}</strong>
+              </Typography.Title>
             </Col>
             <Col>
               <Space>
                 <Input.Search
-                  placeholder="Tìm theo tên dịch vụ..."
+                  placeholder="Tìm theo tên bác sĩ..."
                   allowClear
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   style={{ width: 300 }}
                   size="large"
                 />
+                {/* <Divider type="vertical" /> */}
                 <FancyButton
                   size="small"
                   variant="outline"
@@ -304,13 +278,13 @@ export default function Services() {
             //       }
             //     },
             //   })}
-            columns={servicesColumn(categories)}
+            columns={doctorColumn()}
             dataSource={
-              Array.isArray(filteredServices) && filteredServices.length > 0
-                ? filteredServices.map((service) => ({
-                    ...service,
-                    onUpdate: () => handleUpdate(service.id),
-                    onRemove: () => handleDelete(service.id),
+              Array.isArray(filteredDoctors) && filteredDoctors.length > 0
+                ? filteredDoctors.map((doctor) => ({
+                    ...doctor,
+                    onUpdate: () => handleUpdate(doctor.id),
+                    onRemove: () => handleDelete(doctor.id),
                   }))
                 : []
             }
@@ -322,10 +296,10 @@ export default function Services() {
               pageSizeOptions: ["10", "20", "50", "100"],
               position: ["bottomRight"],
               showTotal: (total, range) =>
-                `Hiển thị ${range[0]}-${range[1]} trong tổng số ${total} dịch vụ`,
+                `Hiển thị ${range[0]}-${range[1]} trong tổng số ${total} khách hàng`,
             }}
           />
-          <UpdateService
+          <UpdateDoctor
             id={updateId}
             isOpen={updateState}
             onClose={() => setUpdateState(false)}

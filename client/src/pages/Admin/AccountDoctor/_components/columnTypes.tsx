@@ -5,21 +5,11 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
-import type { CustomerModelTable } from "./type";
+import type { DoctorModelTable } from "./type";
 import AvatarTable from "@/components/AvatarTable";
 import NoAvatarImage from "@/assets/img/defaultAvatar.jpg";
 
-const formatCurrency = (value: number) =>
-  value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
-
-const customerTypeColor = {
-  regular: "green",
-  vip: "gold",
-  member: "blue",
-  trial: "default",
-};
-
-export const customerColumn = (): ColumnsType<CustomerModelTable> => [
+export const doctorColumn = (): ColumnsType<DoctorModelTable> => [
   {
     title: "STT",
     dataIndex: "index",
@@ -28,7 +18,7 @@ export const customerColumn = (): ColumnsType<CustomerModelTable> => [
     render: (_, __, index) => <span>{index + 1}</span>,
   },
   {
-    title: "Khách hàng",
+    title: "Bác sĩ",
     dataIndex: "full_name",
     render: (_, record) => (
       <Space size={12}>
@@ -72,39 +62,26 @@ export const customerColumn = (): ColumnsType<CustomerModelTable> => [
     width: 140,
   },
   {
-    title: "Loại khách hàng",
-    dataIndex: "customer_type",
-    align: "center",
-    render: (text: string) => {
-      const key = text as keyof typeof customerTypeColor;
-      const color = customerTypeColor[key] ?? "default";
+    title: "Tiểu sử",
+    dataIndex: "biography",
+    render: (biography) => {
       return (
-        <Tag color={color} style={{ fontWeight: 500 }}>
-          {text === "regular"
-            ? "Thường"
-            : text === "vip"
-            ? "VIP"
-            : text === "member"
-            ? "Thành viên"
-            : "Dùng thử"}
-        </Tag>
+        <span className="text-muted fst-italic">
+          {biography || "Không có tiểu sử"}
+        </span>
       );
     },
-    filters: [
-      { text: "Thường", value: "regular" },
-      { text: "VIP", value: "vip" },
-      { text: "Thành viên", value: "member" },
-    ],
-    onFilter: (value, record) => record.customer_type === value,
   },
   {
-    title: "Tổng chi tiêu",
-    dataIndex: "total_spent",
-    align: "right",
-    sorter: (a, b) => Number(a.total_spent) - Number(b.total_spent),
-    render: (value) => (
-      <span style={{ fontWeight: 500 }}>{formatCurrency(Number(value))}</span>
-    ),
+    title: "Chuyên môn",
+    dataIndex: "specialization",
+  },
+  {
+    title: "Năm kinh nghiệm",
+    dataIndex: "experience_years",
+    align: "center",
+    sorter: (a, b) => a.experience_years - b.experience_years,
+    onFilter: (value, record) => record.experience_years === value,
   },
   {
     title: "Trạng thái",
