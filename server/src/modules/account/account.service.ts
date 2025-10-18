@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { CreateCustomerDto, UpdateCustomerDto } from './dto/customer.dto';
 import { Customer } from '@/entities/customer.entity';
 import { hashPassword } from '@/common/utils/security';
@@ -16,6 +16,8 @@ import { Internal } from '@/entities/internal.entity';
 import { Role } from '@/entities/role.entity';
 import { Doctor } from '@/entities/doctor.entity';
 import { CreateInternalDto, UpdateInternalDto } from './dto/internal.dto';
+import { CreateDoctorDto, UpdateDoctorDto } from './dto/doctor.dto';
+import { Service } from '@/entities/service.entity';
 
 @Injectable()
 export class AccountService {
@@ -31,6 +33,9 @@ export class AccountService {
 
     @InjectRepository(Doctor)
     private doctorRepository: Repository<Doctor>,
+
+    @InjectRepository(Service)
+    private readonly serviceRepository: Repository<Service>,
 
     private dataSource: DataSource,
     private jwtService: JwtService,
@@ -256,34 +261,81 @@ export class AccountService {
 
   //////////////////////////////////////////////
 
-  async createDoctor(data: CreateInternalDto): Promise<Doctor> {
+  async createDoctor(data: CreateDoctorDto): Promise<Doctor> {
     const existingRole = await this.checkDuplicateEmailWithRole(data.email);
     if (existingRole) {
       throw new HttpException(`Email đã được sử dụng`, HttpStatus.CONFLICT);
     }
 
+    const services = await this.serviceRepository.findByIds(
+      data.serviceIds || [],
+    );
+
     const doctor = this.doctorRepository.create({
       ...data,
+      experience_years: Number(data.experience_years),
       password: await hashPassword(data.password),
       refreshToken: '',
+      services,
     });
 
     return this.doctorRepository.save(doctor);
   }
 
   async findAllDoctors(): Promise<Doctor[]> {
-    return this.doctorRepository.find();
+    const doctors = await this.doctorRepository.find({
+      relations: ['services'],
+    });
+
+    const doctorsEdited = doctors.map((doctor) => ({
+      ...omit(doctor, ['password', 'refreshToken']),
+      services: doctor.services.map((s) => ({
+        id: s.id,
+        name: s.name,
+      })),
+    }));
+
+    return doctorsEdited;
   }
 
   async findOneDoctor(id: string): Promise<Doctor> {
-    const doctor = await this.doctorRepository.findOne({ where: { id } });
+    const doctor = await this.doctorRepository.findOne({
+      where: { id },
+      relations: ['services'],
+    });
+
     if (!doctor) throw new NotFoundException('Doctor not found');
-    return doctor;
+
+    const doctorEdited = {
+      ...omit(doctor, ['password', 'refreshToken']),
+      services: doctor.services.map((s) => ({
+        id: s.id,
+        name: s.name,
+      })),
+    };
+
+    return doctorEdited;
   }
 
-  async updateDoctor(id: string, data: UpdateInternalDto): Promise<Doctor> {
-    const doctor = await this.findOneDoctor(id);
-    Object.assign(doctor, data);
+  async updateDoctor(id: string, data: UpdateDoctorDto): Promise<Doctor> {
+    const doctor = await this.doctorRepository.findOne({
+      where: { id },
+      relations: ['services'],
+    });
+    if (!doctor) throw new NotFoundException('Không tìm thấy bác sĩ');
+
+    if (data.serviceIds) {
+      const services = await this.serviceRepository.find({
+        where: { id: In(data.serviceIds) },
+      });
+      doctor.services = services;
+    }
+
+    Object.assign(doctor, {
+      ...data,
+      experience_years: Number(data.experience_years),
+    });
+
     return this.doctorRepository.save(doctor);
   }
 

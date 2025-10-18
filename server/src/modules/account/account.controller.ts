@@ -19,6 +19,7 @@ import {
 import { AccountService } from './account.service';
 import { CreateInternalDto, UpdateInternalDto } from './dto/internal.dto';
 import { ApiQuery } from '@nestjs/swagger';
+import { CreateDoctorDto, UpdateDoctorDto } from './dto/doctor.dto';
 
 @Controller('account')
 export class AccountController {
@@ -102,8 +103,8 @@ export class AccountController {
   }
 
   @Post('create-doctor')
-  createDoctor(@Body() dto: CreateInternalDto) {
-    return this.accountService.createInternal(dto);
+  createDoctor(@Body() dto: CreateDoctorDto) {
+    return this.accountService.createDoctor(dto);
   }
 
   @Get('doctors')
@@ -117,7 +118,7 @@ export class AccountController {
   }
 
   @Patch('doctors/:id')
-  updateDoctor(@Param('id') id: string, @Body() dto: UpdateInternalDto) {
+  updateDoctor(@Param('id') id: string, @Body() dto: UpdateDoctorDto) {
     return this.accountService.updateDoctor(id, dto);
   }
 

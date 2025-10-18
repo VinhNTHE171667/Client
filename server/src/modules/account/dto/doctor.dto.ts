@@ -43,11 +43,6 @@ export class CreateDoctorDto {
   @IsString({ message: 'Chuyên môn không được để trống và phải là chuỗi' })
   specialization: string;
 
-  @ApiProperty({ example: 'Chuyên khoa Răng Hàm Mặt', required: false })
-  @IsOptional()
-  @IsString({ message: 'Chuyên khoa phải là chuỗi' })
-  department?: string;
-
   @ApiProperty({ example: 5, required: false })
   @IsOptional()
   @IsString({ message: 'Số năm kinh nghiệm phải là chuỗi' })
@@ -58,9 +53,12 @@ export class CreateDoctorDto {
   @IsBoolean({ message: 'Trạng thái hoạt động phải là true hoặc false' })
   isActive?: boolean;
 
-  @ApiProperty({ example: '' })
+  @ApiProperty({
+    example: ['a1b2c3d4-e5f6-7g8h-9i0j-k1l2m3n4o5p6'],
+  })
   @IsArray()
   @IsUUID('4', { each: true, message: 'ID dịch vụ không hợp lệ' })
+  @IsOptional()
   serviceIds: string[];
 }
 
