@@ -59,107 +59,6 @@ export type UpdateCustomerProps = {
   isActive: boolean;
 };
 
-export type CreateSpaProps = {
-  name: string;
-  password: string;
-  address: string;
-  phone: string;
-  email: string;
-  website: string;
-  logo: string;
-  description: string;
-  isActive: true;
-};
-
-export type SpaDatas = {
-  id: string;
-  name: string;
-  image: string | null;
-  address: string;
-  phone: string;
-  email: string;
-  website: string | null;
-  logo: string;
-  description: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  membership: {
-    id: string;
-    level: string;
-    price: number;
-    levelNumber: number;
-  };
-};
-
-export type SpaData = {
-  id: string;
-  name: string;
-  image: string | null;
-  address: string;
-  phone: string;
-  email: string;
-  website: string | null;
-  logo: string;
-  description: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type SpaMembership = {
-  id: string;
-  level: string;
-  price: number;
-  levelNumber: number;
-};
-
-export type UpdateSpaProps = {
-  name: string;
-  address: string;
-  phone: string;
-  email: string;
-  website: string;
-  logo: string;
-  description: string;
-  isActive: true;
-};
-
-export type CreateSpaAdminProps = {
-  spaId: string;
-  name: string;
-  password: string;
-  email: string;
-  isActive: boolean;
-};
-
-export type SpaAdminDatas = {
-  id: string;
-  spaId: string;
-  name: string;
-  email: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type SpaAdminData = {
-  id: string;
-  spaId: string;
-  name: string;
-  email: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type UpdateSpaAdminProps = {
-  spaId: string;
-  name: string;
-  email: string;
-  isActive: boolean;
-};
-
 export type CreateStaffProps = {
   full_name: string;
   phone?: string;
@@ -213,58 +112,68 @@ export type UpdateStaffProps = {
   phone?: string;
 };
 
-export type CreateSpecialistProps = {
-  spaId: string;
-  fullName: string;
+export type CreateDoctorProps = {
+  full_name: string;
   email: string;
-  phoneNumber: string;
-  expertise: string;
-  bio: string;
+  phone: string;
+  gender: string;
+  password: string;
   isActive: boolean;
-  yearsOfExperience: number;
+  biography: string;
+  specialization: string;
+  experience_years: number;
+  serviceIds: string[] | null;
 };
 
-export type SpecialistDatas = {
+export type DoctorDatas = {
   id: string;
-  spaId: string;
-  fullName: string;
+  full_name: string;
   email: string;
-  phoneNumber: string;
-  expertise: string;
-  bio: string;
+  phone: string;
+  specialization: string;
+  biography: string;
   isActive: boolean;
-  yearsOfExperience: number;
+  experience_years: number;
   createdAt: string;
   updatedAt: string;
+  services:
+    | {
+        id: string;
+        name: string;
+      }[]
+    | null;
 };
 
-export type SpecialistData = {
+export type DoctorData = {
   id: string;
-  spaId: string;
-  fullName: string;
+  full_name: string;
+  gender: string;
   email: string;
-  phoneNumber: string;
-  expertise: string;
-  bio: string;
-  isActive: boolean;
-  yearsOfExperience: number;
+  phone: string;
+  biography: string;
+  specialization: string;
+  refreshToken: string;
+  experience_years: number;
   createdAt: string;
   updatedAt: string;
+  deletedAt: null;
+  isActive: true;
+  services:
+    | {
+        id: string;
+        name: string;
+      }[]
+    | null;
 };
 
-export type UpdateSpecialistProps = {
-  spaId: string;
+export type UpdateDoctorProps = {
   fullName: string;
   email: string;
-  phoneNumber: string;
-  expertise: string;
-  bio: string;
+  phone: string;
+  specialization: string;
+  biography: string;
   isActive: boolean;
-  yearsOfExperience: number;
-};
-
-export type UpdateMembershipProps = {
-  price: number;
+  experience_years: number;
 };
 
 export const accountApi = createApi({
@@ -327,137 +236,6 @@ export const accountApi = createApi({
       }),
     }),
 
-    getSpas: build.mutation<SpaDatas[], void>({
-      query: () => ({
-        url: "/account/spas",
-        method: "Get",
-      }),
-    }),
-
-    getSpaById: build.query<SpaData, string>({
-      query: (id) => ({
-        url: `/account/spa/${id}`,
-        method: "Get",
-      }),
-    }),
-
-    createSpa: build.mutation<SpaData, CreateSpaProps>({
-      query: (spaData) => ({
-        url: "/account/create-spa",
-        method: "Post",
-        data: spaData,
-      }),
-    }),
-
-    updateSpa: build.mutation<SpaData, { id: string; spaData: UpdateSpaProps }>(
-      {
-        query: ({ id, spaData }) => ({
-          url: `/account/spa/${id}`,
-          method: "Patch",
-          data: spaData,
-        }),
-      }
-    ),
-
-    deleteSpa: build.mutation<SpaData, string>({
-      query: (id) => ({
-        url: `/account/spa/${id}`,
-        method: "Delete",
-      }),
-    }),
-
-    disableSpa: build.mutation<SpaData, { id: string }>({
-      query: ({ id }) => ({
-        url: `/account/spa/${id}/active`,
-        method: "Patch",
-      }),
-    }),
-
-    getSpaAdmin: build.mutation<SpaAdminDatas[], string>({
-      query: (id) => ({
-        url: `/account/spa-admins/`,
-        method: "Get",
-        params: { spaId: id },
-      }),
-    }),
-
-    getAllMemberships: build.query<SpaMembership[], void>({
-      query: () => ({
-        url: "/account/get-all-spa-memberships",
-        method: "Get",
-      }),
-    }),
-
-    updateMembership: build.mutation<
-      SpaMembership,
-      { id: string; data: UpdateMembershipProps }
-    >({
-      query: ({ id, data }) => ({
-        url: `/account/${id}/upgrade-membership`,
-        method: "Patch",
-        data,
-      }),
-    }),
-
-    createLinkMembership: build.mutation<void, unknown>({
-      query: (data) => ({
-        url: `/payment/create-link`,
-        method: "Post",
-        data: data,
-      }),
-    }),
-
-    updatePaymentStatus: build.mutation<
-      void,
-      { orderCode: string; status: "PAID" | "CANCELLED" }
-    >({
-      query: (data) => ({
-        url: `/payment/update-status`,
-        method: "Post",
-        data,
-      }),
-    }),
-
-    createSpaAdmin: build.mutation<SpaAdminData, CreateSpaAdminProps>({
-      query: (spaAdminData) => ({
-        url: "/account/create-spa-admin",
-        method: "Post",
-        data: spaAdminData,
-      }),
-    }),
-
-    getSpaAdminById: build.query<SpaAdminData, string>({
-      query: (id) => ({
-        url: `/account/spa-admin/${id}`,
-        method: "Get",
-      }),
-    }),
-
-    updateSpaAdmin: build.mutation<
-      SpaAdminData,
-      { id: string; spaAdminData: UpdateSpaAdminProps }
-    >({
-      query: ({ id, spaAdminData }) => ({
-        url: `/account/spa-admins/${id}`,
-        method: "Patch",
-        data: spaAdminData,
-      }),
-    }),
-
-    deleteSpaAdmin: build.mutation<SpaAdminData, string>({
-      query: (id) => ({
-        url: `/account/spa-admins/${id}`,
-        method: "Delete",
-      }),
-    }),
-
-    disableSpaAdmin: build.mutation<SpaAdminData, { id: string }>({
-      query: ({ id }) => ({
-        url: `/account/spa-admins/${id}/active`,
-        method: "Patch",
-      }),
-    }),
-
     getStaffs: build.mutation<StaffDatas[], void>({
       query: () => ({
         url: `/account/internals`,
@@ -508,43 +286,42 @@ export const accountApi = createApi({
       }),
     }),
 
-    getSpecialists: build.mutation<SpecialistData[], string>({
-      query: (id) => ({
-        url: "/account/specialists",
+    getDoctors: build.mutation<DoctorData[], void>({
+      query: () => ({
+        url: "/account/doctors",
         method: "Get",
-        params: { spaId: id },
       }),
     }),
 
-    createSpecialists: build.mutation<SpecialistData, CreateSpecialistProps>({
-      query: (specialData) => ({
-        url: "/account/create-specialist",
+    createDoctor: build.mutation({
+      query: (doctorData: CreateDoctorProps) => ({
+        url: "/account/create-doctor",
         method: "Post",
-        data: specialData,
+        data: doctorData,
       }),
     }),
 
-    getSpecialistById: build.query<SpecialistData, string>({
+    getDoctorById: build.query<DoctorData, string>({
       query: (id) => ({
-        url: `/account/specialists/${id}`,
+        url: `/account/doctors/${id}`,
         method: "Get",
       }),
     }),
 
-    updateSpecialist: build.mutation<
-      SpecialistData,
-      { id: string; specialData: UpdateSpecialistProps }
+    updateDoctor: build.mutation<
+      DoctorData,
+      { id: string; specialData: UpdateDoctorProps }
     >({
       query: ({ id, specialData }) => ({
-        url: `/account/specialists/${id}`,
+        url: `/account/doctors/${id}`,
         method: "Patch",
         data: specialData,
       }),
     }),
 
-    deleteSpecialist: build.mutation<SpecialistData, string>({
+    deleteDoctor: build.mutation<DoctorData, string>({
       query: (id) => ({
-        url: `/account/specialists/${id}`,
+        url: `/account/doctors/${id}`,
         method: "Delete",
       }),
     }),
@@ -559,24 +336,6 @@ export const {
   useDeleteCustomerMutation,
   useDisableCustomerMutation,
 
-  useGetSpasMutation,
-  useGetSpaByIdQuery,
-  useCreateSpaMutation,
-  useUpdateSpaMutation,
-  useDeleteSpaMutation,
-  useDisableSpaMutation,
-  useGetAllMembershipsQuery,
-  useUpdateMembershipMutation,
-  useCreateLinkMembershipMutation,
-  useUpdatePaymentStatusMutation,
-
-  useGetSpaAdminMutation,
-  useCreateSpaAdminMutation,
-  useGetSpaAdminByIdQuery,
-  useUpdateSpaAdminMutation,
-  useDeleteSpaAdminMutation,
-  useDisableSpaAdminMutation,
-
   useGetStaffsMutation,
   useCreateStaffMutation,
   useGetStaffByIdQuery,
@@ -585,9 +344,9 @@ export const {
   useGetAllRolesMutation,
   // useDisableStaffMutation,
 
-  useGetSpecialistsMutation,
-  useCreateSpecialistsMutation,
-  useGetSpecialistByIdQuery,
-  useUpdateSpecialistMutation,
-  useDeleteSpecialistMutation,
+  useGetDoctorsMutation,
+  useCreateDoctorMutation,
+  useGetDoctorByIdQuery,
+  useUpdateDoctorMutation,
+  useDeleteDoctorMutation,
 } = accountApi;

@@ -12,7 +12,7 @@ import { RoleEnum } from "@/common/types/auth";
 // import { FaChalkboardTeacher, FaUser } from "react-icons/fa";
 import { configRoutes } from "@/constants/route";
 import { RiUser3Fill } from "react-icons/ri";
-import { FaUserDoctor } from "react-icons/fa6";
+import { FaTags, FaUserDoctor } from "react-icons/fa6";
 import { GiFlowerEmblem } from "react-icons/gi";
 // import { IoChatboxEllipses } from "react-icons/io5";
 
@@ -38,28 +38,34 @@ export const getSidebarItemsByRole = (role: string): SiderItem[] => {
       activeLink: [configRoutes.adminCustomers],
     },
     {
-      name: "Danh mục",
-      link: configRoutes.adminCategories,
-      icon: <MdCategory className="ml-3" />,
-      activeLink: [configRoutes.adminCategories],
-    },
-    {
       name: "Nhân viên",
       link: configRoutes.adminInternals,
       icon: <MdPeopleAlt className="ml-3" />,
       activeLink: [configRoutes.adminInternals],
     },
     {
-      name: "Chuyên viên",
+      name: "Bác sĩ",
       link: configRoutes.adminDoctors,
       icon: <FaUserDoctor className="ml-3" />,
       activeLink: [configRoutes.adminDoctors],
+    },
+    {
+      name: "Danh mục",
+      link: configRoutes.adminCategories,
+      icon: <MdCategory className="ml-3" />,
+      activeLink: [configRoutes.adminCategories],
     },
     {
       name: "Dịch vụ",
       link: configRoutes.adminServices,
       icon: <GiFlowerEmblem className="ml-3" />,
       activeLink: [configRoutes.adminServices],
+    },
+    {
+      name: "Khuyến mãi",
+      link: configRoutes.adminVouchers,
+      icon: <FaTags className="ml-3" />,
+      activeLink: [configRoutes.adminVouchers],
     },
   ];
 

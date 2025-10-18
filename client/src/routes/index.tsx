@@ -13,6 +13,7 @@ import AccountCustomer from "@/pages/Admin/AccountCustomer";
 import Categories from "@/pages/Admin/Categories";
 import AccountStaff from "@/pages/Admin/AccountStaff";
 import Services from "@/pages/Admin/Service";
+import AccountDoctor from "@/pages/Admin/AccountDoctor";
 
 const router = createBrowserRouter([
   {
@@ -94,6 +95,22 @@ const router = createBrowserRouter([
           {
             index: true,
             element: <AccountStaff />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.adminDoctors,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Admin]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <AccountDoctor />,
           },
         ],
       },

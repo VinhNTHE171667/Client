@@ -178,3 +178,48 @@
 :where(.ant-select) .ant-select-item-option-active {
     background-color: #f8f9fa;
 }
+
+.gray-400 {
+    color: #667085 !important;
+}
+
+.bg-gradient-danger {
+    background: linear-gradient(135deg, #ff6a88, #ff99ac);
+}
+
+.bg-gradient-info {
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+}
+
+.bg-gradient-success {
+    background: linear-gradient(135deg, #43e97b, #38f9d7);
+}
+
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #f7971e, #ffd200);
+}
+
+.card-box-dashboard {
+    border-radius: 16px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    // overflow: hidden;
+    // color: #fff;
+}
+
+.overview-title {
+    position: relative;
+    font-weight: 700;
+    font-size: 22px;
+    margin-bottom: 12px;
+}
+
+.overview-title::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 3px;
+}
