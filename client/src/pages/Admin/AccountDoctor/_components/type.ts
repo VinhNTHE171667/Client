@@ -15,6 +15,10 @@ export type DoctorModelTable = {
   total_spent: string;
   createdAt: string;
   updatedAt: string;
+  services: {
+    id: string;
+    name: string;
+  }[];
   onUpdate: () => void;
   onRemove: () => void;
   // onDisable: () => void;

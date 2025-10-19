@@ -8,6 +8,7 @@ import {
   useUpdateCategoryMutation,
   type CreateCategory,
 } from "@/services/services";
+import FancyButton from "@/components/FancyButton";
 
 interface SpaModalProps {
   id: string;
@@ -129,9 +130,15 @@ export default function UpdateSpa(props: SpaModalProps) {
             <Row justify="center">
               <Space size="large">
                 <Button onClick={onClose}>Huỷ</Button>
-                <Button type="primary" htmlType="submit">
-                  Cập nhật danh mục
-                </Button>
+                <FancyButton
+                  onClick={() => form.submit()}
+                  icon={<></>}
+                  label="Cập nhật danh mục"
+                  variant="primary"
+                  size="small"
+                  loading={isLoading}
+                  className="w-100"
+                />
               </Space>
             </Row>
           </Form>

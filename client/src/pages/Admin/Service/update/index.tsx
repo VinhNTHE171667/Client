@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Button,
+  Col,
   Form,
   Input,
   Modal,
@@ -15,7 +16,7 @@ import {
 } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useEffect, useState } from "react";
-import { PlusOutlined } from "@ant-design/icons";
+import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
 import { showError, showSuccess } from "@/libs/toast";
 import { extractErrorMessage } from "@/utils/func";
 import {
@@ -23,8 +24,9 @@ import {
   useGetServiceByIdQuery,
   useGetCategoriesMutation,
 } from "@/services/services";
-import { useAuthStore } from "@/hooks/useAuth";
 import type { categoriesModelTable } from "@/pages/Admin/Categories/_components/type";
+import { useAuthStore } from "@/hooks/UseAuth";
+import FancyButton from "@/components/FancyButton";
 
 interface UpdateServiceProps {
   id: string;
@@ -33,12 +35,16 @@ interface UpdateServiceProps {
   onReload: () => void;
 }
 
-export default function UpdateService(props: UpdateServiceProps) {
-  const { id, isOpen, onClose, onReload } = props;
-
+export default function UpdateService({
+  id,
+  isOpen,
+  onClose,
+  onReload,
+}: UpdateServiceProps) {
   const [form] = useForm();
   const [isLoading, setIsLoading] = useState(false);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [categories, setCategories] = useState<categoriesModelTable[]>([]);
 
   const { auth } = useAuthStore();
 
@@ -46,24 +52,25 @@ export default function UpdateService(props: UpdateServiceProps) {
   const { data: serviceData, refetch } = useGetServiceByIdQuery(id, {
     skip: !isOpen || !id,
   });
-
   const [getCategories] = useGetCategoriesMutation();
-  const [categories, setCategories] = useState<categoriesModelTable[]>([]);
 
   const handleGetCategories = async () => {
     try {
       const res = await getCategories();
-      const tempRes = res.data;
-      setCategories((tempRes ?? []).map((category: any) => ({ ...category })));
-    } catch (error) {
-      showError("Error", "Không thể tải danh mục.");
+      setCategories(
+        (res.data ?? []).map((category: any) => ({
+          ...category,
+          onUpdate: () => {},
+          onRemove: () => {},
+        }))
+      );
+    } catch {
+      showError("Không thể tải danh mục");
     }
   };
 
   useEffect(() => {
     if (isOpen) {
-      // form.resetFields();
-      // setFileList([]);
       refetch();
       handleGetCategories();
     }
@@ -85,6 +92,15 @@ export default function UpdateService(props: UpdateServiceProps) {
     }
   }, [serviceData]);
 
+  const beforeUpload = (file: File) => {
+    const isImage = file.type.startsWith("image/");
+    if (!isImage) {
+      showError("Chỉ được upload hình ảnh!");
+      return Upload.LIST_IGNORE;
+    }
+    return false;
+  };
+
   const onFinish = async (values: any) => {
     setIsLoading(true);
     try {
@@ -92,28 +108,17 @@ export default function UpdateService(props: UpdateServiceProps) {
       formData.append("name", values.name);
       formData.append("price", values.price);
       formData.append("categoryId", values.categoryId);
-      formData.append("spaId", auth?.spaId || serviceData?.spaId || "");
-      formData.append("isActive", values.isActive ? "true" : "false");
       formData.append("description", values.description ?? "");
+      formData.append("isActive", values.isActive ? "true" : "false");
 
-      // fileList.forEach((file) => {
-      //   if (file.originFileObj) {
-      //     formData.append("images", file.originFileObj);
-      //   }
-      // });
-
-      const oldImageUrls =
+      const oldUrls =
         serviceData?.images?.map((img: { url: string }) => img.url) ?? [];
-
-      const currentImageUrls = fileList
+      const currentUrls = fileList
         .filter((f) => !f.originFileObj && f.url)
         .map((f) => f.url!);
+      const deleted = oldUrls.filter((url) => !currentUrls.includes(url));
 
-      const deletedImages = oldImageUrls.filter(
-        (url) => !currentImageUrls.includes(url)
-      );
-
-      deletedImages.forEach((url) => formData.append("deletedImages", url));
+      deleted.forEach((url) => formData.append("deletedImages", url));
 
       fileList.forEach((file) => {
         if (file.originFileObj) {
@@ -124,8 +129,8 @@ export default function UpdateService(props: UpdateServiceProps) {
       const res = await updateService({ id, data: formData });
 
       if (!res.error) {
-        onReload();
         showSuccess("Cập nhật dịch vụ thành công");
+        onReload();
         onClose();
       } else {
         showError("Cập nhật thất bại", extractErrorMessage(res.error));
@@ -140,79 +145,100 @@ export default function UpdateService(props: UpdateServiceProps) {
   return (
     <Modal
       open={isOpen}
-      width={800}
+      width={900}
       onCancel={onClose}
       footer={null}
       closable={false}
     >
-      <Spin spinning={isLoading}>
-        <h3 className="text-center">Cập nhật dịch vụ</h3>
+      <Spin spinning={isLoading} indicator={<LoadingOutlined spin />}>
+        <h3 className="text-center mb-6">Cập nhật dịch vụ</h3>
         <Form
           form={form}
           layout="vertical"
           onFinish={onFinish}
-          style={{ margin: "16px" }}
+          style={{ padding: "0 20px" }}
         >
-          <Form.Item
-            label="Tên dịch vụ"
-            name="name"
-            rules={[{ required: true, message: "Vui lòng nhập tên dịch vụ" }]}
-          >
-            <Input placeholder="Tên dịch vụ" />
-          </Form.Item>
+          <Row gutter={[24, 8]}>
+            <Col xs={24} md={12}>
+              <Form.Item
+                label="Tên dịch vụ"
+                name="name"
+                rules={[
+                  { required: true, message: "Vui lòng nhập tên dịch vụ" },
+                ]}
+              >
+                <Input placeholder="Nhập tên dịch vụ" />
+              </Form.Item>
 
-          <Form.Item
-            label="Giá"
-            name="price"
-            rules={[{ required: true, message: "Vui lòng nhập giá" }]}
-          >
-            <Input type="number" placeholder="Nhập giá dịch vụ" />
-          </Form.Item>
+              <Form.Item
+                label="Giá (VNĐ)"
+                name="price"
+                rules={[{ required: true, message: "Vui lòng nhập giá" }]}
+              >
+                <Input type="number" placeholder="Nhập giá dịch vụ" min={0} />
+              </Form.Item>
 
-          <Form.Item label="Mô tả" name="description">
-            <Input.TextArea rows={4} placeholder="Nhập mô tả dịch vụ" />
-          </Form.Item>
+              <Form.Item
+                label="Danh mục"
+                name="categoryId"
+                rules={[{ required: true, message: "Vui lòng chọn danh mục" }]}
+              >
+                <Select
+                  placeholder="Chọn danh mục"
+                  options={categories.map((category) => ({
+                    label: category.name,
+                    value: category.id,
+                  }))}
+                />
+              </Form.Item>
 
-          <Form.Item
-            label="Danh mục"
-            name="categoryId"
-            rules={[{ required: true, message: "Chọn danh mục" }]}
-          >
-            <Select
-              placeholder="Chọn danh mục"
-              options={categories.map((category) => ({
-                label: category.name,
-                value: category.id,
-              }))}
-            />
-          </Form.Item>
+              <Form.Item
+                label="Kích hoạt"
+                name="isActive"
+                valuePropName="checked"
+              >
+                <Switch />
+              </Form.Item>
+            </Col>
 
-          <Form.Item label="Ảnh dịch vụ">
-            <Upload
-              listType="picture-card"
-              fileList={fileList}
-              onChange={({ fileList }) => setFileList(fileList)}
-              beforeUpload={() => false}
-            >
-              {fileList.length >= 5 ? null : (
-                <div>
-                  <PlusOutlined />
-                  <div style={{ marginTop: 8 }}>Upload</div>
-                </div>
-              )}
-            </Upload>
-          </Form.Item>
+            <Col xs={24} md={12}>
+              <Form.Item label="Mô tả" name="description">
+                <Input.TextArea
+                  placeholder="Nhập mô tả dịch vụ"
+                  autoSize={{ minRows: 5, maxRows: 8 }}
+                />
+              </Form.Item>
 
-          <Form.Item label="Kích hoạt" name="isActive" valuePropName="checked">
-            <Switch />
-          </Form.Item>
+              <Form.Item label="Ảnh dịch vụ">
+                <Upload
+                  listType="picture-card"
+                  fileList={fileList}
+                  onChange={({ fileList }) => setFileList(fileList)}
+                  beforeUpload={beforeUpload}
+                >
+                  {fileList.length >= 5 ? null : (
+                    <div>
+                      <PlusOutlined />
+                      <div style={{ marginTop: 8 }}>Tải ảnh lên</div>
+                    </div>
+                  )}
+                </Upload>
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Row justify="center">
+          <Row justify="center" className="mt-6">
             <Space size="large">
               <Button onClick={onClose}>Huỷ</Button>
-              <Button type="primary" htmlType="submit">
-                Cập nhật dịch vụ
-              </Button>
+              <FancyButton
+                onClick={() => form.submit()}
+                icon={<></>}
+                label="Cập nhật dịch vụ"
+                variant="primary"
+                size="small"
+                loading={isLoading}
+                className="w-100"
+              />
             </Space>
           </Row>
         </Form>

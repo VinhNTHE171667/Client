@@ -9,6 +9,7 @@ import {
   Space,
   Spin,
   Switch,
+  Col,
 } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useEffect, useState } from "react";
@@ -20,6 +21,7 @@ import {
 } from "@/services/account";
 import { extractErrorMessage } from "@/utils/func";
 import FancyFormItem from "@/components/FancyFormItem";
+import FancyButton from "@/components/FancyButton";
 
 interface SpaModalProps {
   isOpen: boolean;
@@ -35,38 +37,24 @@ interface Roles {
 
 export default function AddStaff(props: SpaModalProps) {
   const { isOpen, onClose, onReload } = props;
-
   const [form] = useForm();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      form.resetFields();
-    }
-  }, [isOpen]);
-
+  const [isLoading, setIsLoading] = useState(false);
   const [roles, setRoles] = useState<Roles[]>([]);
+
   const [getAllRoles] = useGetAllRolesMutation();
+  const [createStaff] = useCreateStaffMutation();
 
   const handleGetRoles = async () => {
     setIsLoading(true);
     try {
       const res = await getAllRoles();
-
       const tempRes = res.data;
-      console.log("tempRes", tempRes);
-
-      setRoles(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (tempRes ?? []).map((role: any) => ({
-          ...role,
-        }))
-      );
+      setRoles(tempRes ?? []);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        showError("Error", error.message);
+        showError("Lỗi", error.message);
       } else {
-        showError("Error", "An unexpected error occurred.");
+        showError("Lỗi", "Đã xảy ra lỗi không xác định.");
       }
     } finally {
       setIsLoading(false);
@@ -74,14 +62,14 @@ export default function AddStaff(props: SpaModalProps) {
   };
 
   useEffect(() => {
-    handleGetRoles();
-  }, []);
-
-  const [createStaff] = useCreateStaffMutation();
+    if (isOpen) {
+      form.resetFields();
+      handleGetRoles();
+    }
+  }, [isOpen]);
 
   const onFinish = async (values: CreateStaffProps) => {
     setIsLoading(true);
-
     const payload = {
       ...values,
       positionID: values.positionID.toString(),
@@ -95,13 +83,10 @@ export default function AddStaff(props: SpaModalProps) {
         showSuccess("Tạo nhân viên spa thành công");
         onClose();
       } else {
-        const err = res.error as {
-          data?: { message?: string | string[] };
-        };
-
         showError(
           "Tạo nhân viên spa thất bại",
-          extractErrorMessage(err) || "Đã xảy ra lỗi khi tạo nhân viên spa."
+          extractErrorMessage(res.error) ||
+            "Đã xảy ra lỗi khi tạo nhân viên spa."
         );
       }
     } catch {
@@ -115,128 +100,132 @@ export default function AddStaff(props: SpaModalProps) {
   };
 
   return (
-    <>
-      <Modal
-        open={isOpen}
-        width={800}
-        onCancel={onClose}
-        footer={null}
-        closable={false}
-      >
-        <Spin spinning={isLoading}>
-          <h3 className="text-center">Tạo nhân viên spa mới</h3>
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={onFinish}
-            style={{ margin: "16px" }}
-            initialValues={{ isActive: true }}
-          >
-            <Form.Item
-              label="Tên nhân viên spa"
-              name="full_name"
-              rules={[
-                { required: true, message: "Vui lòng nhập tên nhân viên spa" },
-              ]}
-            >
-              <Input placeholder="Nhập tên nhân viên spa" />
-            </Form.Item>
+    <Modal open={isOpen} width={800} onCancel={onClose} footer={null}>
+      <Spin spinning={isLoading}>
+        <h3 className="text-center mb-4">Tạo nhân viên mới</h3>
 
-            <FancyFormItem
-              label="Giới tính"
-              name="gender"
-              type="select"
-              options={[
-                { label: "Nam", value: "male" },
-                { label: "Nữ", value: "female" },
-                { label: "Khác", value: "other" },
-              ]}
-              rules={[{ required: true, message: "Vui lòng chọn giới tính" }]}
-              placeholder="Chọn giới tính"
-            />
-
-            <Form.Item
-              label="Mật khẩu"
-              name="password"
-              rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
-            >
-              <Input.Password
-                placeholder="Nhập mật khẩu"
-                iconRender={(visible) =>
-                  visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
-                }
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={onFinish}
+          style={{ padding: "0 24px 16px" }}
+          initialValues={{ isActive: true }}
+        >
+          <Row gutter={[24, 12]}>
+            <Col span={12}>
+              <FancyFormItem
+                label="Họ và tên"
+                name="full_name"
+                type="text"
+                placeholder="Nhập họ và tên nhân viên spa"
+                rules={[
+                  {
+                    required: true,
+                    message: "Vui lòng nhập họ và tên nhân viên",
+                  },
+                ]}
               />
-            </Form.Item>
+            </Col>
 
-            <Form.Item
-              label="Giới tính"
-              name="gender"
-              rules={[{ required: true, message: "Vui lòng chọn giới tính" }]}
-            >
-              <Select
-                placeholder="Chọn giới tính"
+            <Col span={12}>
+              <FancyFormItem
+                label="Giới tính"
+                name="gender"
+                type="select"
                 options={[
                   { label: "Nam", value: "male" },
                   { label: "Nữ", value: "female" },
                   { label: "Khác", value: "other" },
                 ]}
+                rules={[{ required: true, message: "Vui lòng chọn giới tính" }]}
+                placeholder="Chọn giới tính"
               />
-            </Form.Item>
+            </Col>
 
-            <Form.Item
-              label="Email"
-              name="email"
-              rules={[
-                { required: true, message: "Vui lòng nhập email" },
-                { type: "email", message: "Email không hợp lệ" },
-              ]}
-            >
-              <Input placeholder="Nhập email" />
-            </Form.Item>
+            <Col span={12}>
+              <Form.Item
+                label="Mật khẩu"
+                name="password"
+                rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
+              >
+                <Input.Password
+                  placeholder="Nhập mật khẩu"
+                  iconRender={(visible) =>
+                    visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                  }
+                />
+              </Form.Item>
+            </Col>
 
-            <Form.Item
-              label="Số điện thoại"
-              name="phone"
-              rules={[
-                { required: true, message: "Vui lòng nhập số điện thoại" },
-              ]}
-            >
-              <Input placeholder="Nhập số điện thoại" />
-            </Form.Item>
+            <Col span={12}>
+              <FancyFormItem
+                label="Email"
+                name="email"
+                type="email"
+                placeholder="Nhập email"
+                rules={[
+                  { required: true, message: "Vui lòng nhập email" },
+                  { type: "email", message: "Email không hợp lệ" },
+                ]}
+              />
+            </Col>
 
-            <Form.Item
-              label="Chức vụ"
-              name="positionID"
-              rules={[{ required: true, message: "Vui lòng chọn chức vụ" }]}
-            >
-              <Select placeholder="Chọn chức vụ">
-                {roles.map((role) => (
-                  <Select.Option key={role.id} value={role.id}>
-                    {role.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
+            <Col span={12}>
+              <FancyFormItem
+                label="Số điện thoại"
+                name="phone"
+                type="text"
+                placeholder="Nhập số điện thoại"
+                rules={[
+                  { required: true, message: "Vui lòng nhập số điện thoại" },
+                ]}
+              />
+            </Col>
 
-            <Form.Item
-              label="Hoạt động"
-              name="isActive"
-              valuePropName="checked"
-            >
-              <Switch />
-            </Form.Item>
+            <Col span={12}>
+              <Form.Item
+                label="Chức vụ"
+                name="positionID"
+                rules={[{ required: true, message: "Vui lòng chọn chức vụ" }]}
+              >
+                <Select placeholder="Chọn chức vụ" style={{ borderRadius: 8 }}>
+                  {roles.map((role) => (
+                    <Select.Option key={role.id} value={role.id}>
+                      {role.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
 
-            <Row justify="center">
-              <Space size="large">
-                <Button onClick={onClose}>Huỷ</Button>
-                <Button type="primary" htmlType="submit">
-                  Tạo nhân viên spa
-                </Button>
-              </Space>
-            </Row>
-          </Form>
-        </Spin>
-      </Modal>
-    </>
+            <Col span={12}>
+              <Form.Item
+                label="Trạng thái hoạt động"
+                name="isActive"
+                valuePropName="checked"
+                style={{ marginTop: 4 }}
+              >
+                <Switch />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row justify="center" className="mt-4">
+            <Space size="large">
+              <Button onClick={onClose}>Huỷ</Button>
+              <FancyButton
+                onClick={() => form.submit()}
+                icon={<></>}
+                label="Tạo nhân viên spa"
+                variant="primary"
+                size="small"
+                loading={isLoading}
+                className="w-100"
+              />
+            </Space>
+          </Row>
+        </Form>
+      </Spin>
+    </Modal>
   );
 }

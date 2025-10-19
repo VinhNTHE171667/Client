@@ -1,4 +1,3 @@
-import { LoadingOutlined } from "@ant-design/icons";
 import {
   Button,
   DatePicker,
@@ -6,9 +5,9 @@ import {
   Input,
   Modal,
   Row,
-  Select,
   Space,
   Spin,
+  Col,
 } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useEffect, useState } from "react";
@@ -21,6 +20,8 @@ import {
 } from "@/services/account";
 import { showError, showSuccess } from "@/libs/toast";
 import { extractErrorMessage } from "@/utils/func";
+import FancyFormItem from "@/components/FancyFormItem";
+import FancyButton from "@/components/FancyButton";
 
 interface CustomerModalProps {
   id: string;
@@ -29,13 +30,14 @@ interface CustomerModalProps {
   onReload: () => void;
 }
 
-export default function UpdateAdmin(props: CustomerModalProps) {
+export default function UpdateCustomer(props: CustomerModalProps) {
   const { id, isOpen, onClose, onReload } = props;
   const [form] = useForm();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [customer, setCustomer] = useState<customerData | null>(null);
 
   const { refetch } = useGetCustomerByIdQuery(id);
+  const [updateCustomer] = useUpdateCustomerMutation();
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -43,16 +45,15 @@ export default function UpdateAdmin(props: CustomerModalProps) {
       const res = await refetch();
       const customerData = res.data;
 
-      if (customerData && customerData.birth_date) {
+      if (customerData) {
         form.setFieldsValue({
           ...customerData,
-          birth_date: dayjs(customerData.birth_date),
+          birth_date: customerData.birth_date
+            ? dayjs(customerData.birth_date)
+            : null,
         });
-      } else {
-        form.setFieldsValue(customerData);
+        setCustomer(customerData as customerData);
       }
-
-      setCustomer(customerData as customerData);
     } catch {
       showError("Lấy thông tin khách hàng thất bại");
     } finally {
@@ -67,8 +68,6 @@ export default function UpdateAdmin(props: CustomerModalProps) {
     }
   }, [isOpen, id]);
 
-  const [updateCustomer] = useUpdateCustomerMutation();
-
   const onFinish = async (values: UpdateCustomerProps) => {
     if (!customer) return;
 
@@ -77,36 +76,27 @@ export default function UpdateAdmin(props: CustomerModalProps) {
       birth_date: values.birth_date
         ? dayjs(values.birth_date).format("YYYY-MM-DD")
         : "",
+      isVerified: true,
     };
-
-    payload.isVerified = true;
 
     setIsLoading(true);
     try {
-      const res = await updateCustomer({
-        id,
-        customerData: payload,
-      });
-
+      const res = await updateCustomer({ id, customerData: payload });
       if (!res.error) {
         showSuccess("Cập nhật tài khoản thành công");
         onReload();
         onClose();
       } else {
-        const err = res.error as {
-          data?: { message?: string | string[] };
-        };
         showError(
           "Cập nhật tài khoản thất bại",
-          extractErrorMessage(err) || "Đã xảy ra lỗi khi cập nhật tài khoản."
+          extractErrorMessage(res.error) ||
+            "Đã xảy ra lỗi khi cập nhật tài khoản."
         );
       }
-    } catch (error) {
+    } catch {
       showError(
-        "Đã có lỗi xảy ra",
-        extractErrorMessage(
-          error as { data?: { message?: string | string[] } }
-        ) || "Vui lòng kiểm tra lại thông tin và thử lại"
+        "Đã có lỗi xảy ra"
+        // extractErrorMessage(error) || "Vui lòng thử lại sau."
       );
     } finally {
       setIsLoading(false);
@@ -114,68 +104,89 @@ export default function UpdateAdmin(props: CustomerModalProps) {
   };
 
   return (
-    <>
-      <Modal
-        open={isOpen}
-        width={800}
-        onCancel={onClose}
-        footer={null}
-        closable={false}
-      >
-        <Spin spinning={isLoading}>
-          <h3 className="text-center">
-            {"Cập nhật thông tin tài khoản khách hàng"}
-          </h3>
-          <Form
-            form={form}
-            name="update-admin-form"
-            layout="vertical"
-            onFinish={onFinish}
-            style={{ margin: "16px" }}
-          >
-            <Form.Item
-              label="Full Name"
-              name="full_name"
-              rules={[{ required: true, message: "Please enter full name" }]}
-            >
-              <Input />
-            </Form.Item>
+    <Modal
+      open={isOpen}
+      width={800}
+      onCancel={onClose}
+      footer={null}
+      title="Cập nhật thông tin khách hàng"
+    >
+      <Spin spinning={isLoading}>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={onFinish}
+          style={{ padding: "0 24px 16px" }}
+        >
+          <Row gutter={[24, 12]}>
+            <Col span={12}>
+              <FancyFormItem
+                label="Họ và tên"
+                name="full_name"
+                type="text"
+                placeholder="Nhập họ và tên"
+                rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
+              />
+            </Col>
 
-            <Form.Item
-              label="Email"
-              name="email"
-              rules={[
-                { required: true, message: "Please enter email" },
-                { type: "email", message: "Invalid email format" },
-              ]}
-            >
-              <Input />
-            </Form.Item>
+            <Col span={12}>
+              <FancyFormItem
+                label="Email"
+                name="email"
+                type="email"
+                placeholder="Nhập email"
+                rules={[
+                  { required: true, message: "Vui lòng nhập email" },
+                  { type: "email", message: "Email không hợp lệ" },
+                ]}
+              />
+            </Col>
 
-            <Form.Item label="Phone" name="phone">
-              <Input />
-            </Form.Item>
+            <Col span={12}>
+              <FancyFormItem
+                label="Số điện thoại"
+                name="phone"
+                type="text"
+                placeholder="Nhập số điện thoại"
+              />
+            </Col>
 
-            <Form.Item label="Address" name="address">
-              <Input />
-            </Form.Item>
+            <Col span={12}>
+              <FancyFormItem
+                label="Địa chỉ"
+                name="address"
+                type="text"
+                placeholder="Nhập địa chỉ"
+              />
+            </Col>
 
-            <Form.Item label="Gender" name="gender">
-              <Select
+            <Col span={12}>
+              <FancyFormItem
+                label="Giới tính"
+                name="gender"
+                type="select"
                 options={[
                   { label: "Nam", value: "male" },
                   { label: "Nữ", value: "female" },
                   { label: "Khác", value: "other" },
                 ]}
               />
-            </Form.Item>
+            </Col>
 
-            <Form.Item label="Birth Date" name="birth_date">
-              <DatePicker style={{ width: "100%" }} />
-            </Form.Item>
+            <Col span={12}>
+              <Form.Item label="Ngày sinh" name="birth_date">
+                <DatePicker
+                  format="YYYY-MM-DD"
+                  style={{ width: "100%", borderRadius: 8 }}
+                />
+              </Form.Item>
+            </Col>
 
-            <Form.Item label="Customer Type" name="customer_type">
-              <Select
+            <Col span={12}>
+              <FancyFormItem
+                label="Loại khách hàng"
+                name="customer_type"
+                type="select"
                 options={[
                   { label: "Thường", value: "regular" },
                   { label: "Thành viên", value: "member" },
@@ -183,37 +194,40 @@ export default function UpdateAdmin(props: CustomerModalProps) {
                   { label: "Thử nghiệm", value: "trial" },
                 ]}
               />
-            </Form.Item>
+            </Col>
 
-            <Form.Item
-              label="Total Spent"
-              name="total_spent"
-              rules={[
-                {
-                  pattern: /^\d+(\.\d{1,2})?$/,
-                  message: "Invalid decimal number",
-                },
-              ]}
-            >
-              <Input placeholder="0.00" />
-            </Form.Item>
+            <Col span={12}>
+              <Form.Item
+                label="Tổng chi tiêu"
+                name="total_spent"
+                rules={[
+                  {
+                    pattern: /^\d+(\.\d{1,2})?$/,
+                    message: "Giá trị không hợp lệ (chỉ số thập phân)",
+                  },
+                ]}
+              >
+                <Input placeholder="0.00" style={{ borderRadius: 8 }} />
+              </Form.Item>
+            </Col>
+          </Row>
 
-            <Row justify="center">
-              <Space size="large">
-                <Button onClick={onClose}>Cancel</Button>
-                <Spin
-                  spinning={false}
-                  indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
-                >
-                  <Button type="primary" htmlType="submit">
-                    Save
-                  </Button>
-                </Spin>
-              </Space>
-            </Row>
-          </Form>
-        </Spin>
-      </Modal>
-    </>
+          <Row justify="end" className="mt-4">
+            <Space size="large">
+              <Button onClick={onClose}>Huỷ</Button>
+              <FancyButton
+                onClick={() => form.submit()}
+                icon={<></>}
+                label="Cập nhật khách hàng"
+                variant="primary"
+                size="small"
+                loading={isLoading}
+                className="w-100"
+              ></FancyButton>
+            </Space>
+          </Row>
+        </Form>
+      </Spin>
+    </Modal>
   );
 }

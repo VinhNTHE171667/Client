@@ -1,3 +1,4 @@
+import FancyButton from "@/components/FancyButton";
 import FancyFormItem from "@/components/FancyFormItem";
 import { showError, showSuccess } from "@/libs/toast";
 import {
@@ -6,7 +7,17 @@ import {
   type UpdateStaffProps,
 } from "@/services/account";
 import { extractErrorMessage } from "@/utils/func";
-import { Button, Form, Input, Modal, Row, Space, Spin, Switch } from "antd";
+import {
+  Button,
+  Col,
+  Form,
+  Input,
+  Modal,
+  Row,
+  Space,
+  Spin,
+  Switch,
+} from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useEffect, useState } from "react";
 
@@ -26,84 +37,36 @@ export default function UpdateStaff(props: StaffModalProps) {
     skip: !isOpen || !id,
   });
 
+  const [updateStaff] = useUpdateStaffMutation();
+
   useEffect(() => {
-    if (staffData) {
+    if (isOpen && staffData) {
       form.setFieldsValue(staffData);
     }
-  }, [staffData]);
-
-  useEffect(() => {
-    if (isOpen && id) {
-      form.resetFields();
-      if (staffData) {
-        form.setFieldsValue(staffData);
-      }
-    }
-  }, [isOpen, id, staffData]);
-
-  // const [roles, setRoles] = useState<Roles[]>([]);
-  // const [getAllRoles] = useGetAllRolesMutation();
-
-  // const handleGetRoles = async () => {
-  //   setIsLoading(true);
-  //   try {
-  //     const res = await getAllRoles();
-
-  //     const tempRes = res.data;
-  //     console.log("tempRes", tempRes);
-
-  //     setRoles(
-  //       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  //       (tempRes ?? []).map((role: any) => ({
-  //         ...role,
-  //       }))
-  //     );
-  //   } catch (error: unknown) {
-  //     if (error instanceof Error) {
-  //       showError("Error", error.message);
-  //     } else {
-  //       showError("Error", "An unexpected error occurred.");
-  //     }
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   handleGetRoles();
-  // }, []);
-
-  const [updateStaff] = useUpdateStaffMutation();
+  }, [isOpen, staffData]);
 
   const onFinish = async (values: UpdateStaffProps) => {
     setIsLoading(true);
     try {
       const res = await updateStaff({
         id,
-        staffData: {
-          ...values,
-        },
+        staffData: { ...values },
       });
 
       if (!res.error) {
-        showSuccess("Cập nhật tài khoản thành công");
+        showSuccess("Cập nhật thông tin nhân viên thành công");
         onReload();
         onClose();
       } else {
-        const err = res.error as {
-          data?: { message?: string | string[] };
-        };
         showError(
-          "Cập nhật tài khoản thất bại",
-          extractErrorMessage(err) || "Đã xảy ra lỗi khi cập nhật tài khoản."
+          "Cập nhật thất bại",
+          extractErrorMessage(res.error) || "Đã xảy ra lỗi khi cập nhật."
         );
       }
-    } catch (error) {
+    } catch {
       showError(
-        "Đã có lỗi xảy ra",
-        extractErrorMessage(
-          error as { data?: { message?: string | string[] } }
-        ) || "Vui lòng kiểm tra lại thông tin và thử lại"
+        "Lỗi hệ thống"
+        // extractErrorMessage(error) || "Vui lòng thử lại sau."
       );
     } finally {
       setIsLoading(false);
@@ -111,82 +74,113 @@ export default function UpdateStaff(props: StaffModalProps) {
   };
 
   return (
-    <>
-      <Modal
-        open={isOpen}
-        width={700}
-        onCancel={onClose}
-        footer={null}
-        closable={false}
-      >
-        <Spin spinning={isLoading}>
-          <h3 className="text-center">Cập nhật thông tin nhân viên</h3>
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={onFinish}
-            style={{ margin: 16 }}
-          >
-            <Form.Item
-              label="Tên nhân viên spa"
-              name="full_name"
-              rules={[
-                { required: true, message: "Vui lòng nhập tên nhân viên spa" },
-              ]}
-            >
-              <Input placeholder="Nhập tên nhân viên spa" />
-            </Form.Item>
+    <Modal
+      open={isOpen}
+      width={800}
+      onCancel={onClose}
+      footer={null}
+      closable={false}
+    >
+      <Spin spinning={isLoading}>
+        <h3 className="text-center mb-4 font-semibold text-lg">
+          Cập nhật thông tin nhân viên
+        </h3>
 
-            <FancyFormItem
-              label="Giới tính"
-              name="gender"
-              type="select"
-              options={[
-                { label: "Nam", value: "male" },
-                { label: "Nữ", value: "female" },
-                { label: "Khác", value: "other" },
-              ]}
-              rules={[{ required: true, message: "Vui lòng chọn giới tính" }]}
-              placeholder="Chọn giới tính"
-            />
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={onFinish}
+          style={{ margin: "0 24px" }}
+        >
+          <Row gutter={[24, 12]}>
+            <Col span={12}>
+              <Form.Item
+                label="Họ và tên"
+                name="full_name"
+                rules={[
+                  {
+                    required: true,
+                    message: "Vui lòng nhập họ và tên nhân viên",
+                  },
+                ]}
+              >
+                <Input
+                  placeholder="Nhập họ và tên nhân viên"
+                  style={{ borderRadius: 8 }}
+                />
+              </Form.Item>
+            </Col>
 
-            <Form.Item
-              label="Email"
-              name="email"
-              rules={[{ type: "email", message: "Email không hợp lệ" }]}
-            >
-              <Input placeholder="Nhập email" />
-            </Form.Item>
+            <Col span={12}>
+              <FancyFormItem
+                label="Giới tính"
+                name="gender"
+                type="select"
+                options={[
+                  { label: "Nam", value: "male" },
+                  { label: "Nữ", value: "female" },
+                  { label: "Khác", value: "other" },
+                ]}
+                rules={[{ required: true, message: "Vui lòng chọn giới tính" }]}
+                placeholder="Chọn giới tính"
+              />
+            </Col>
 
-            <Form.Item
-              label="Số điện thoại"
-              name="phone"
-              rules={[
-                { required: true, message: "Vui lòng nhập số điện thoại" },
-              ]}
-            >
-              <Input placeholder="Nhập số điện thoại" />
-            </Form.Item>
+            <Col span={12}>
+              <Form.Item
+                label="Email"
+                name="email"
+                rules={[{ type: "email", message: "Email không hợp lệ" }]}
+              >
+                <Input placeholder="Nhập email" style={{ borderRadius: 8 }} />
+              </Form.Item>
+            </Col>
 
-            <Form.Item
-              label="Hoạt động"
-              name="isActive"
-              valuePropName="checked"
-            >
-              <Switch />
-            </Form.Item>
+            <Col span={12}>
+              <Form.Item
+                label="Số điện thoại"
+                name="phone"
+                rules={[
+                  { required: true, message: "Vui lòng nhập số điện thoại" },
+                ]}
+              >
+                <Input
+                  placeholder="Nhập số điện thoại"
+                  style={{ borderRadius: 8 }}
+                />
+              </Form.Item>
+            </Col>
 
-            <Row justify="center">
-              <Space size="large">
-                <Button onClick={onClose}>Huỷ</Button>
-                <Button type="primary" htmlType="submit">
-                  Lưu lại
-                </Button>
-              </Space>
-            </Row>
-          </Form>
-        </Spin>
-      </Modal>
-    </>
+            <Col span={12}>
+              <Form.Item
+                label="Trạng thái hoạt động"
+                name="isActive"
+                valuePropName="checked"
+              >
+                <Switch
+                  checkedChildren="Đang hoạt động"
+                  unCheckedChildren="Tạm dừng"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row justify="center" className="mt-4">
+            <Space size="large">
+              <Button onClick={onClose}>Huỷ</Button>
+              <FancyButton
+                onClick={() => form.submit()}
+                icon={<></>}
+                label="Cập nhật nhân viên spa"
+                variant="primary"
+                size="small"
+                loading={isLoading}
+                className="w-100"
+              />
+            </Space>
+          </Row>
+        </Form>
+      </Spin>
+    </Modal>
   );
 }
