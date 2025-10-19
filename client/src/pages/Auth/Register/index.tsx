@@ -2,34 +2,32 @@
 import { Link, useNavigate } from "react-router-dom";
 import styles from "../Auth.module.scss";
 import classNames from "classnames/bind";
-import { Form, DatePicker, Select, notification } from "antd";
+import { Form, DatePicker, Select, Input, Row, Col, Typography } from "antd";
 import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
-import { useState } from "react";
 import dayjs from "dayjs";
 import { http } from "@/utils/config";
 import { configRoutes } from "@/constants/route";
+import { IoIosArrowBack } from "react-icons/io";
+import logo from "@/assets/img/Logo/mainLogo.png";
+import { useBreakpoint } from "@/hooks/UseBreakPoint";
+import FancyButton from "@/components/FancyButton";
+import { showError } from "@/libs/toast";
 
 const cx = classNames.bind(styles);
+const { Title, Text } = Typography;
 
 const RegisterPage = () => {
   const [form] = Form.useForm();
-  const [api, contextHolder] = notification.useNotification();
-
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const navigate = useNavigate();
-
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  // const [showPassword, setShowPassword] = useState(false);
+  // const [showConfirm, setShowConfirm] = useState(false);
+  const { up } = useBreakpoint();
 
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
       if (values.birth_date) {
         values.birth_date = dayjs(values.birth_date).format("YYYY-MM-DD");
-      }
-
-      if (errors) {
-        setErrors({});
       }
 
       const res = await http.post("/auth/register-customer", {
@@ -44,84 +42,96 @@ const RegisterPage = () => {
       });
 
       if (res.status === 201 || res.status === 200) {
-        // setIsLoading(false);
-
-        api.success({
-          message: "Đăng ký thành công",
-          description: "Bạn đã đăng ký tài khoản khách hàng thành công.",
-        });
-
-        setTimeout(() => {
-          navigate(configRoutes.login);
-        }, 1000);
-      } else {
-        // setIsLoading(false);
-        // setError(res.data.message || "Đăng ký không thành công");
-        api.error({
-          message: "Đăng ký không thành công",
-          description: res.data.message || "Vui lòng thử lại sau.",
-        });
+        navigate(configRoutes.login);
       }
-
-      // console.log(" Values:", values);
-    } catch (err: any) {
-      const errorObj: { [key: string]: string } = {};
-      err.errorFields.forEach((e: any) => {
-        errorObj[e.name[0]] = e.errors[0];
-      });
-      setErrors(errorObj);
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "Đăng ký thất bại, vui lòng thử lại.";
+      showError(
+        "Lỗi khi đăng ký",
+        Array.isArray(message) ? message.join(", ") : message
+      );
     }
   };
 
   return (
-    <div className={cx("auth-wrapper")}>
-      {contextHolder}
-
-      <div className={cx("auth-card-register")}>
-        <h2 className="text-center mb-4">Đăng ký</h2>
-
-        <Form
-          form={form}
-          initialValues={{ gender: "male" }}
-          validateMessages={{
-            required: "Không được để trống",
-            types: { email: "Email không hợp lệ!" },
-          }}
-          component={false}
+    <Row className="h-100">
+      <Col
+        xl={12}
+        md={24}
+        sm={24}
+        xs={24}
+        className="vh-100 d-flex flex-column"
+      >
+        <div
+          className={cx(
+            "auth-left",
+            "overflow-auto py-4 px-4 px-md-5"
+            // "max-w-md"
+          )}
         >
-          <div className="mb-3">
-            <label className="form-label" htmlFor="full_name">
-              Họ và tên
-            </label>
-            <Form.Item
-              name="full_name"
-              rules={[{ required: true, message: "Vui lòng nhập họ và tên!" }]}
-              noStyle
+          <div className="d-flex">
+            <div
+              className={cx(
+                "back-btn",
+                "d-flex",
+                "align-items-center",
+                "justify-content-start",
+                "gap-2",
+                "pt-5"
+              )}
+              onClick={() => navigate(configRoutes.home)}
             >
-              <input
-                id="full_name"
-                type="text"
-                className="form-control py-2"
-                placeholder="Nhập họ và tên"
-              />
-            </Form.Item>
-            {errors.full_name && (
-              <div className="text-danger small">{errors.full_name}</div>
-            )}
+              <IoIosArrowBack /> <p className="m-0">{"Trở về trang chủ"}</p>
+            </div>
           </div>
 
-          <div className="mb-3">
-            <label className="form-label" htmlFor="gender">
-              Giới tính
-            </label>
+          <div className="text-center mb-4">
+            <Title level={2} className="m-0">
+              Đăng ký
+            </Title>
+            <Text type="secondary">
+              Chào mừng bạn đến với Spa Management System
+            </Text>
+          </div>
+
+          <div className="py-3">
+            <button className={cx("btn-google")}>
+              <img
+                src="https://www.svgrepo.com/show/475656/google-color.svg"
+                alt="Google"
+              />
+              <span>Đăng ký bằng Google</span>
+            </button>
+          </div>
+
+          <div className={cx("divider", "my-4 text-gray-500")}>
+            Hoặc đăng ký bằng email
+          </div>
+
+          <Form
+            form={form}
+            layout="vertical"
+            initialValues={{ gender: "male" }}
+            onFinish={handleSubmit}
+          >
             <Form.Item
+              label="Họ và tên"
+              name="full_name"
+              rules={[{ required: true, message: "Vui lòng nhập họ và tên!" }]}
+            >
+              <Input size="large" placeholder="Nhập họ và tên" />
+            </Form.Item>
+
+            <Form.Item
+              label="Giới tính"
               name="gender"
               rules={[{ required: true, message: "Vui lòng chọn giới tính!" }]}
-              noStyle
             >
               <Select
-                id="gender"
-                className="w-100 rounded-pill"
+                size="large"
                 options={[
                   { value: "male", label: "Nam" },
                   { value: "female", label: "Nữ" },
@@ -129,196 +139,120 @@ const RegisterPage = () => {
                 ]}
               />
             </Form.Item>
-            {errors.gender && (
-              <div className="text-danger small">{errors.gender}</div>
-            )}
-          </div>
 
-          <div className="mb-3">
-            <label className="form-label" htmlFor="birth_date">
-              Ngày sinh
-            </label>
-            <Form.Item name="birth_date" noStyle>
+            <Form.Item label="Ngày sinh" name="birth_date">
               <DatePicker
-                id="birth_date"
-                className="form-control w-100 py-2"
                 format="DD/MM/YYYY"
                 placeholder="Chọn ngày sinh"
+                className="w-100"
+                size="large"
               />
             </Form.Item>
-            {errors.birth_date && (
-              <div className="text-danger small">{errors.birth_date}</div>
-            )}
-          </div>
 
-          <div className="mb-3">
-            <label className="form-label" htmlFor="phone">
-              Số điện thoại
-            </label>
             <Form.Item
+              label="Số điện thoại"
               name="phone"
               rules={[
                 { required: true, message: "Vui lòng nhập số điện thoại!" },
               ]}
-              noStyle
             >
-              <input
-                id="phone"
-                type="text"
-                className="form-control py-2"
-                placeholder="Nhập số điện thoại"
-              />
+              <Input size="large" placeholder="Nhập số điện thoại" />
             </Form.Item>
-            {errors.phone && (
-              <div className="text-danger small">{errors.phone}</div>
-            )}
-          </div>
 
-          <div className="mb-3">
-            <label className="form-label" htmlFor="email">
-              Email
-            </label>
             <Form.Item
+              label="Email"
               name="email"
-              rules={[{ type: "email", message: "Email không hợp lệ!" }]}
-              noStyle
+              rules={[
+                { required: true, message: "Vui lòng nhập email!" },
+                { type: "email", message: "Email không hợp lệ!" },
+              ]}
             >
-              <input
-                id="email"
-                type="email"
-                className="form-control py-2"
-                placeholder="Nhập email"
+              <Input size="large" placeholder="Nhập email của bạn" />
+            </Form.Item>
+
+            <Form.Item
+              label="Mật khẩu"
+              name="password"
+              rules={[
+                { required: true, message: "Vui lòng nhập mật khẩu!" },
+                { min: 6, message: "Mật khẩu phải ít nhất 6 ký tự!" },
+              ]}
+            >
+              <Input.Password
+                size="large"
+                placeholder="Nhập mật khẩu"
+                iconRender={(visible) =>
+                  visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                }
+                // type={showPassword ? "text" : "password"}
               />
             </Form.Item>
-            {errors.email && (
-              <div className="text-danger small">{errors.email}</div>
-            )}
-          </div>
 
-          <div className="mb-3">
-            <label className="form-label" htmlFor="password">
-              Mật khẩu
-            </label>
-            <div className="position-relative">
-              <Form.Item
-                name="password"
-                rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
-                noStyle
+            <Form.Item
+              label="Xác nhận mật khẩu"
+              name="confirmPassword"
+              dependencies={["password"]}
+              rules={[
+                { required: true, message: "Vui lòng nhập lại mật khẩu!" },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || getFieldValue("password") === value) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(
+                      new Error("Mật khẩu nhập lại không khớp!")
+                    );
+                  },
+                }),
+              ]}
+            >
+              <Input.Password
+                size="large"
+                placeholder="Nhập lại mật khẩu"
+                iconRender={(visible) =>
+                  visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                }
+                // type={showConfirm ? "text" : "password"}
+              />
+            </Form.Item>
+
+            <Form.Item label="Địa chỉ" name="address">
+              <Input size="large" placeholder="Nhập địa chỉ của bạn" />
+            </Form.Item>
+
+            <FancyButton
+              onClick={() => form.submit()}
+              icon={<></>}
+              label="Đăng ký"
+              variant="primary"
+              size="middle"
+              // loading={isLoading}
+              className="w-100"
+            ></FancyButton>
+
+            <div className="text-center mt-3">
+              <Text>Bạn đã có tài khoản? </Text>
+              <Link
+                className="fw-bold cus-text-primary text-decoration-none"
+                to={configRoutes.login}
               >
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  className="form-control py-2"
-                  placeholder="Nhập mật khẩu"
-                />
-              </Form.Item>
-              <span
-                className="position-absolute top-50 end-0 translate-middle-y me-3"
-                style={{ cursor: "pointer" }}
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <EyeTwoTone /> : <EyeInvisibleOutlined />}
-              </span>
+                Đăng nhập
+              </Link>
             </div>
-            {errors.password && (
-              <div className="text-danger small">{errors.password}</div>
-            )}
-          </div>
-
-          <div className="mb-3 ">
-            <label className="form-label" htmlFor="confirmPassword">
-              Xác nhận mật khẩu
-            </label>
-            <div className="position-relative">
-              <Form.Item
-                name="confirmPassword"
-                dependencies={["password"]}
-                rules={[
-                  { required: true, message: "Vui lòng nhập lại mật khẩu!" },
-                  ({ getFieldValue }) => ({
-                    validator(_, value) {
-                      if (!value || getFieldValue("password") === value) {
-                        return Promise.resolve();
-                      }
-                      return Promise.reject(
-                        new Error("Mật khẩu nhập lại không khớp!")
-                      );
-                    },
-                  }),
-                ]}
-                noStyle
-              >
-                <input
-                  id="confirmPassword"
-                  type={showConfirm ? "text" : "password"}
-                  className="form-control py-2"
-                  placeholder="Nhập lại mật khẩu"
-                />
-              </Form.Item>
-              <span
-                className="position-absolute top-50 end-0 translate-middle-y me-3"
-                style={{ cursor: "pointer" }}
-                onClick={() => setShowConfirm(!showConfirm)}
-              >
-                {showConfirm ? <EyeTwoTone /> : <EyeInvisibleOutlined />}
-              </span>
-            </div>
-            {errors.confirmPassword && (
-              <div className="text-danger small">{errors.confirmPassword}</div>
-            )}
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label" htmlFor="address">
-              Địa chỉ
-            </label>
-            <Form.Item name="address" noStyle>
-              <input
-                id="address"
-                type="text"
-                className="form-control py-2"
-                placeholder="Nhập địa chỉ"
-              />
-            </Form.Item>
-            {errors.address && (
-              <div className="text-danger small">{errors.address}</div>
-            )}
-          </div>
-
-          {/* <div className="mb-3">
-            <label className="form-label" htmlFor="referral_source">
-              Nguồn giới thiệu
-            </label>
-            <Form.Item name="referral_source" noStyle>
-              <input
-                id="referral_source"
-                type="text"
-                className="form-control py-2"
-                placeholder="Nhập nguồn giới thiệu"
-              />
-            </Form.Item>
-            {errors.referral_source && (
-              <div className="text-danger small">{errors.referral_source}</div>
-            )}
-          </div> */}
-
-          <button
-            type="button"
-            className="btn cus-btn-primary w-100 py-2 mt-3"
-            onClick={handleSubmit}
-          >
-            Đăng ký ngay
-          </button>
-        </Form>
-
-        <div className="text-center mt-4">
-          <span>Bạn đã có tài khoản? </span>
-          <Link to="/login" className="fw-bold text-primary">
-            Đăng nhập
-          </Link>
+          </Form>
         </div>
-      </div>
-    </div>
+      </Col>
+
+      {up("xl") && (
+        <Col xl={12} className="p-0">
+          <div className={cx("auth-banner")}>
+            <div className={cx("logo-container")}>
+              <img src={logo} alt="Background" />
+            </div>
+          </div>
+        </Col>
+      )}
+    </Row>
   );
 };
 

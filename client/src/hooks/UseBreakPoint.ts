@@ -32,15 +32,18 @@ export function useBreakpoint() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const up = (bp: Breakpoint) => breakpoints[breakpoint] >= breakpoints[bp];
+  const down = (bp: Breakpoint) => breakpoints[breakpoint] < breakpoints[bp];
+
   return {
-    breakpoint, 
+    breakpoint,
     isXs: breakpoint === "xs",
     isSm: breakpoint === "sm",
     isMd: breakpoint === "md",
     isLg: breakpoint === "lg",
     isXl: breakpoint === "xl",
     isXxl: breakpoint === "xxl",
-    up: (bp: Breakpoint) => window.innerWidth >= breakpoints[bp],
-    down: (bp: Breakpoint) => window.innerWidth < breakpoints[bp],
+    up,
+    down,
   };
 }

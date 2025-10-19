@@ -2,12 +2,15 @@ import { Link, useNavigate } from "react-router-dom";
 import styles from "../Auth.module.scss";
 import classNames from "classnames/bind";
 import { useLoginMutation } from "@/services/auth";
-import { Form, Input, Button } from "antd";
+import { Form, Input, Row, Col } from "antd";
 import { useAuthStore } from "@/hooks/UseAuth";
 import { RoleEnum, type RoleEnumType } from "@/common/types/auth";
 import { configRoutes } from "@/constants/route";
 import { showError } from "@/libs/toast";
 import { useBreakpoint } from "@/hooks/UseBreakPoint";
+import { IoIosArrowBack } from "react-icons/io";
+import logo from "@/assets/img/Logo/mainLogo.png";
+import FancyButton from "@/components/FancyButton";
 
 const cx = classNames.bind(styles);
 
@@ -42,7 +45,6 @@ const LoginPage = () => {
         };
         error?: { data?: { message?: string[] } };
       };
-      console.log("Login successful:", res);
 
       if (res.data) {
         setCredentials({
@@ -76,71 +78,142 @@ const LoginPage = () => {
     }
   };
 
-  const { up, down } = useBreakpoint();
-
-  console.log("Breakpoint info:", up("md"));
+  const { up } = useBreakpoint();
 
   return (
     <>
-      {/* <div>
-        <Row>
-          <Col xl={12}>
-            <div className={cx("auth-left")}>
-              <h1>Welcome Back</h1>
-              <p>Please login to your account</p>
+      <Row className="h-100">
+        <Col
+          xl={12}
+          md={24}
+          sm={24}
+          xs={24}
+          className="vh-100 d-flex flex-column"
+        >
+          <div
+            className={cx(
+              "auth-left",
+              "flex-grow-1 d-flex flex-column justify-content-center",
+              "text-center"
+            )}
+          >
+            <div className="d-flex justify-content-center">
+              <div
+                className={cx(
+                  "back-btn",
+                  "max-w-md",
+                  "d-flex",
+                  "align-items-center",
+                  "justify-content-start",
+                  "gap-2",
+                  "pt-5"
+                )}
+                onClick={() => navigate(configRoutes.home)}
+              >
+                <IoIosArrowBack /> <p className="m-0">{"Trở về trang chủ"}</p>
+              </div>
+            </div>
+
+            <div className="flex-grow-1 d-flex justify-content-center align-items-center">
+              <div className={cx("auth-header", "max-w-md", "w-100")}>
+                <h2>{"Đăng nhập"}</h2>
+
+                <div>
+                  <p className="text-gray-500">
+                    Chào mừng bạn đến với Spa Management System
+                  </p>
+                </div>
+
+                <div className="py-3">
+                  <button className={cx("btn-google")}>
+                    <img
+                      src="https://www.svgrepo.com/show/475656/google-color.svg"
+                      alt="Google"
+                    />
+                    <span>Đăng nhập bằng Google</span>
+                  </button>
+                </div>
+
+                <div className={cx("divider", "my-4", "text-gray-500")}>
+                  Hoặc đăng nhập bằng email
+                </div>
+
+                <div>
+                  <Form
+                    form={form}
+                    layout="vertical"
+                    onFinish={handleSubmit}
+                    validateMessages={{
+                      required: "Không được để trống",
+                      types: { email: "Email không hợp lệ!" },
+                    }}
+                  >
+                    <Form.Item
+                      label="Email"
+                      name="email"
+                      rules={[
+                        { required: true, message: "Vui lòng nhập email!" },
+                        { type: "email" },
+                      ]}
+                    >
+                      <Input placeholder="Nhập email của bạn" size="large" />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="Mật khẩu"
+                      name="password"
+                      rules={[
+                        { required: true, message: "Vui lòng nhập mật khẩu!" },
+                      ]}
+                    >
+                      <Input.Password
+                        placeholder="Nhập mật khẩu"
+                        size="large"
+                      />
+                    </Form.Item>
+
+                    <FancyButton
+                      onClick={() => form.submit()}
+                      icon={<></>}
+                      label="Đăng nhập"
+                      variant="primary"
+                      size="middle"
+                      loading={isLoading}
+                      className="w-100"
+                    ></FancyButton>
+
+                    <div className="text-start mt-4">
+                      <span>Bạn chưa có tài khoản? </span>
+                      <Link
+                        to="/register"
+                        className="fw-bold cus-text-primary text-decoration-none"
+                      >
+                        Đăng ký ngay
+                      </Link>
+                    </div>
+                  </Form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Col>
+
+        {up("xl") && (
+          <Col xl={12} className="p-0">
+            <div className={cx("auth-banner")}>
+              <div className={cx("logo-container")}>
+                <img src={logo} alt="Background" />
+              </div>
             </div>
           </Col>
-          {up("md") && (
-            <Col xl={12}>
-              <div
-                className={cx("auth-banner")}
-                style={{ backgroundColor: "#f0f2f5" }}
-              >h1</div>
-            </Col>
-          )}
-        </Row>
-      </div> */}
+        )}
+      </Row>
 
-      <div className={cx("auth-wrapper")}>
+      {/* <div className={cx("auth-wrapper")}>
         <div className={cx("auth-card-login")}>
           <h2 className="text-center mb-4">Đăng nhập</h2>
 
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleSubmit}
-            validateMessages={{
-              required: "Không được để trống",
-              types: { email: "Email không hợp lệ!" },
-            }}
-          >
-            <Form.Item
-              label="Email"
-              name="email"
-              // rules={[{ required: true, type: "email" }]}
-            >
-              <Input placeholder="Nhập email của bạn" size="large" />
-            </Form.Item>
-
-            <Form.Item
-              label="Mật khẩu"
-              name="password"
-              rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
-            >
-              <Input.Password placeholder="Nhập mật khẩu" size="large" />
-            </Form.Item>
-
-            <Button
-              type="primary"
-              htmlType="submit"
-              block
-              size="large"
-              loading={isLoading}
-              className="rounded-pill"
-            >
-              Đăng nhập
-            </Button>
-          </Form>
+          
 
           <div className="text-center mt-4">
             <span>Bạn chưa có tài khoản? </span>
@@ -149,7 +222,7 @@ const LoginPage = () => {
             </Link>
           </div>
         </div>
-      </div>
+      </div> */}
     </>
   );
 };

@@ -17,6 +17,7 @@ import FancyBreadcrumb from "@/components/FancyBreadcrumb";
 import { doctorColumn } from "./_components/columnTypes";
 import AddDoctor from "./add";
 import UpdateDoctor from "./update";
+import FancyCounting from "@/components/FancyCounting";
 
 // import styles from "./AccountCustomer.module.scss";
 // import classNames from "classnames/bind";
@@ -185,7 +186,7 @@ export default function AccountDoctor() {
           </Col>
         </Row>
 
-        {/* <Row className="stats-card">
+        <Row className="stats-card">
           <Col className="metric">
             <p className="metric-label">{"Tổng số bác sĩ"}</p>
             <FancyCounting
@@ -196,36 +197,38 @@ export default function AccountDoctor() {
             />
           </Col>
           <Col className="metric">
-            <p className="metric-label">{"Tổng tiền đã chi tiêu"}</p>
+            <p className="metric-label">{"Số năm kinh nghiệm trung bình"}</p>
             <p className="metric-value">
               <FancyCounting
                 from={0}
-                to={doctors.reduce(
-                  (acc, d) => acc + Number(d.total_spent || 0),
-                  0
-                )}
-                duration={4}
-                format={(value) =>
-                  value.toLocaleString("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  })
+                to={
+                  doctors.length
+                    ? doctors.reduce((sum, d) => sum + d.experience_years, 0) /
+                      doctors.length
+                    : 0
                 }
+                duration={4}
               />
             </p>
           </Col>
           <Col className="metric">
-            <p className="metric-label">{"Khách hàng xác thực"}</p>
+            <p className="metric-label">
+              {"Số dịch vụ trung bình mỗi bác sĩ đảm nhận"}
+            </p>
             <p className="metric-value">
               <FancyCounting
                 from={0}
-                to={doctors.filter((d) => d.isVerified).length}
+                to={
+                  doctors.length
+                    ? doctors.reduce((sum, d) => sum + d.services.length, 0) /
+                      doctors.length
+                    : 0
+                }
                 duration={4}
               />
-              /{doctors.filter((d) => d.isVerified).length}
             </p>
           </Col>
-        </Row> */}
+        </Row>
       </Card>
 
       <Card>

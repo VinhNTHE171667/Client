@@ -28,13 +28,12 @@ const router = createBrowserRouter([
   },
   {
     path: configRoutes.login,
-    element: <HomeLayouts />,
-    children: [{ index: true, element: <LoginPage /> }],
+    element: <LoginPage />,
+    // children: [{ index: true, element: <LoginPage /> }],
   },
   {
     path: configRoutes.register,
-    element: <HomeLayouts />,
-    children: [{ index: true, element: <RegisterPage /> }],
+    element: <RegisterPage />,
   },
 
   {

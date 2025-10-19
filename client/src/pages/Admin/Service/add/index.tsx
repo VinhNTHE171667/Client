@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Button,
+  Col,
   Form,
   Input,
   Modal,
@@ -14,7 +15,7 @@ import {
 } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useEffect, useState } from "react";
-import { PlusOutlined } from "@ant-design/icons";
+import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
 import { showError, showSuccess } from "@/libs/toast";
 import { extractErrorMessage } from "@/utils/func";
 import {
@@ -22,45 +23,39 @@ import {
   useGetCategoriesMutation,
 } from "@/services/services";
 import type { categoriesModelTable } from "@/pages/Admin/Categories/_components/type";
+import FancyButton from "@/components/FancyButton";
 
-interface SpaModalProps {
+interface AddServiceProps {
   isOpen: boolean;
   onClose: () => void;
   onReload: () => void;
 }
 
-export default function AddService(props: SpaModalProps) {
-  const { isOpen, onClose, onReload } = props;
-
+export default function AddService({
+  isOpen,
+  onClose,
+  onReload,
+}: AddServiceProps) {
   const [form] = useForm();
   const [isLoading, setIsLoading] = useState(false);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
-  const [createService] = useCreateServiceMutation();
 
+  const [createService] = useCreateServiceMutation();
   const [getCategories] = useGetCategoriesMutation();
-  const [categories, setCategpries] = useState<categoriesModelTable[]>([]);
+  const [categories, setCategories] = useState<categoriesModelTable[]>([]);
 
   const handleGetCategories = async () => {
-    setIsLoading(true);
     try {
       const res = await getCategories();
-
-      const tempRes = res.data;
-
-      setCategpries(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (tempRes ?? []).map((category: any) => ({
+      setCategories(
+        (res.data ?? []).map((category: any) => ({
           ...category,
+          onUpdate: () => {},
+          onRemove: () => {},
         }))
       );
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        showError("Error", error.message);
-      } else {
-        showError("Error", "An unexpected error occurred.");
-      }
-    } finally {
-      setIsLoading(false);
+    } catch {
+      showError("Không thể tải danh mục");
     }
   };
 
@@ -72,9 +67,17 @@ export default function AddService(props: SpaModalProps) {
     }
   }, [isOpen]);
 
+  const beforeUpload = (file: File) => {
+    const isImage = file.type.startsWith("image/");
+    if (!isImage) {
+      showError("Chỉ được upload hình ảnh!");
+      return Upload.LIST_IGNORE;
+    }
+    return false;
+  };
+
   const onFinish = async (values: any) => {
     setIsLoading(true);
-
     try {
       const formData = new FormData();
       formData.append("name", values.name);
@@ -92,8 +95,8 @@ export default function AddService(props: SpaModalProps) {
       const res = await createService(formData);
 
       if (!res.error) {
-        onReload();
         showSuccess("Tạo dịch vụ thành công");
+        onReload();
         onClose();
       } else {
         showError("Tạo thất bại", extractErrorMessage(res.error));
@@ -106,94 +109,109 @@ export default function AddService(props: SpaModalProps) {
   };
 
   return (
-    <>
-      <Modal
-        open={isOpen}
-        width={800}
-        onCancel={onClose}
-        footer={null}
-        closable={false}
-      >
-        <Spin spinning={isLoading}>
-          <h3 className="text-center">Tạo dịch vụ mới</h3>
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={onFinish}
-            style={{ margin: "16px" }}
-            initialValues={{ isActive: true }}
-          >
-            <Form.Item
-              label="Tên dịch vụ"
-              name="name"
-              rules={[{ required: true, message: "Vui lòng nhập tên dịch vụ" }]}
-            >
-              <Input placeholder="Tên dịch vụ" />
-            </Form.Item>
+    <Modal
+      open={isOpen}
+      width={900}
+      onCancel={onClose}
+      footer={null}
+      closable={false}
+    >
+      <Spin spinning={isLoading} indicator={<LoadingOutlined spin />}>
+        <h3 className="text-center mb-6">Tạo dịch vụ mới</h3>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={onFinish}
+          initialValues={{ isActive: true }}
+          style={{ padding: "0 20px" }}
+        >
+          <Row gutter={[24, 8]}>
+            <Col xs={24} md={12}>
+              <Form.Item
+                label="Tên dịch vụ"
+                name="name"
+                rules={[
+                  { required: true, message: "Vui lòng nhập tên dịch vụ" },
+                ]}
+              >
+                <Input placeholder="Nhập tên dịch vụ" />
+              </Form.Item>
 
-            <Form.Item
-              label="Giá"
-              name="price"
-              rules={[{ required: true, message: "Vui lòng nhập giá" }]}
-            >
-              <Input type="number" placeholder="Nhập giá dịch vụ" />
-            </Form.Item>
+              <Form.Item
+                label="Giá (VNĐ)"
+                name="price"
+                rules={[
+                  { required: true, message: "Vui lòng nhập giá dịch vụ" },
+                ]}
+              >
+                <Input type="number" placeholder="Nhập giá dịch vụ" min={0} />
+              </Form.Item>
 
-            <Form.Item label="Mô tả" name="description">
-              <Input.TextArea rows={4} placeholder="Nhập mô tả dịch vụ" />
-            </Form.Item>
-
-            <Form.Item
-              label="Danh mục"
-              name="categoryId"
-              rules={[{ required: true, message: "Chọn danh mục" }]}
-            >
-              <Select
-                placeholder="Chọn danh mục"
-                options={categories?.map((category) => {
-                  return {
+              <Form.Item
+                label="Danh mục"
+                name="categoryId"
+                rules={[{ required: true, message: "Vui lòng chọn danh mục" }]}
+              >
+                <Select
+                  placeholder="Chọn danh mục"
+                  options={categories.map((category) => ({
                     label: category.name,
                     value: category.id,
-                  };
-                })}
-              />
-            </Form.Item>
+                  }))}
+                />
+              </Form.Item>
 
-            <Form.Item label="Ảnh dịch vụ">
-              <Upload
-                listType="picture-card"
-                fileList={fileList}
-                onChange={({ fileList }) => setFileList(fileList)}
-                beforeUpload={() => false} // 👈
+              <Form.Item
+                label="Kích hoạt"
+                name="isActive"
+                valuePropName="checked"
               >
-                {fileList.length >= 5 ? null : (
-                  <div>
-                    <PlusOutlined />
-                    <div style={{ marginTop: 8 }}>Upload</div>
-                  </div>
-                )}
-              </Upload>
-            </Form.Item>
+                <Switch />
+              </Form.Item>
+            </Col>
 
-            <Form.Item
-              label="Kích hoạt"
-              name="isActive"
-              valuePropName="checked"
-            >
-              <Switch />
-            </Form.Item>
+            <Col xs={24} md={12}>
+              <Form.Item label="Mô tả" name="description">
+                <Input.TextArea
+                  placeholder="Nhập mô tả dịch vụ"
+                  autoSize={{ minRows: 5, maxRows: 8 }}
+                />
+              </Form.Item>
 
-            <Row justify="center">
-              <Space size="large">
-                <Button onClick={onClose}>Huỷ</Button>
-                <Button type="primary" htmlType="submit">
-                  Tạo dịch vụ
-                </Button>
-              </Space>
-            </Row>
-          </Form>
-        </Spin>
-      </Modal>
-    </>
+              <Form.Item label="Ảnh dịch vụ">
+                <Upload
+                  listType="picture-card"
+                  fileList={fileList}
+                  onChange={({ fileList }) => setFileList(fileList)}
+                  beforeUpload={beforeUpload}
+                >
+                  {fileList.length >= 5 ? null : (
+                    <div>
+                      <PlusOutlined />
+                      <div style={{ marginTop: 8 }}>Tải ảnh lên</div>
+                    </div>
+                  )}
+                </Upload>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row justify="center" className="mt-6">
+            <Space size="large">
+              <Button onClick={onClose}>Huỷ</Button>
+              <FancyButton
+                onClick={() => form.submit()}
+                icon={<></>}
+                label="Tạo dịch vụ"
+                variant="primary"
+                size="small"
+                loading={isLoading}
+                className="w-100"
+              />
+            </Space>
+          </Row>
+        </Form>
+      </Spin>
+    </Modal>
   );
 }

@@ -1,16 +1,26 @@
 import { LoadingOutlined } from "@ant-design/icons";
-import { Button, Form, Input, Modal, Row, Select, Space, Spin } from "antd";
+import {
+  Button,
+  Col,
+  Form,
+  Input,
+  Modal,
+  Row,
+  Select,
+  Space,
+  Spin,
+} from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useEffect, useState } from "react";
 import {
   useGetDoctorByIdQuery,
   useUpdateDoctorMutation,
-  type DoctorData,
   type UpdateDoctorProps,
 } from "@/services/account";
 import { showError, showSuccess } from "@/libs/toast";
-import { extractErrorMessage } from "@/utils/func";
 import { useGetServicesMutation } from "@/services/services";
+import FancyFormItem from "@/components/FancyFormItem";
+import FancyButton from "@/components/FancyButton";
 
 interface DoctorModalProps {
   id: string;
@@ -22,26 +32,44 @@ interface DoctorModalProps {
 export default function UpdateDoctor(props: DoctorModalProps) {
   const { id, isOpen, onClose, onReload } = props;
   const [form] = useForm();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [doctor, setDoctor] = useState<DoctorData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  // const [doctor, setDoctor] = useState<DoctorData | null>(null);
 
   const { refetch } = useGetDoctorByIdQuery(id);
+  const [getService] = useGetServicesMutation();
+  const [serviceOptions, setServiceOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
 
-  const fetchData = async () => {
+  const handleGetServices = async () => {
+    try {
+      const res = await getService();
+      if (res.data) {
+        setServiceOptions(
+          res.data.map((service: { id: string; name: string }) => ({
+            label: service.name,
+            value: service.id,
+          }))
+        );
+      }
+    } catch (error) {
+      console.error("Failed to fetch services:", error);
+    }
+  };
+
+  const fetchDoctor = async () => {
     setIsLoading(true);
     try {
       const res = await refetch();
       const doctorData = res.data;
-
       if (doctorData) {
+        // setDoctor(doctorData);
         form.setFieldsValue({
           ...doctorData,
-          experience_years: String(doctorData.experience_years),
-          serviceIds: doctorData.services?.map((service) => service.id) || [],
+          experience_years: String(doctorData.experience_years || ""),
+          serviceIds: doctorData.services?.map((s) => s.id) || [],
         });
       }
-
-      setDoctor(doctorData || null);
     } catch {
       showError("Lấy thông tin bác sĩ thất bại");
     } finally {
@@ -53,69 +81,36 @@ export default function UpdateDoctor(props: DoctorModalProps) {
     if (isOpen && id) {
       form.resetFields();
       handleGetServices();
-      fetchData();
+      fetchDoctor();
     }
   }, [isOpen, id]);
-
-  const [getService] = useGetServicesMutation();
-  const [serviceOptions, setServiceOptions] = useState<
-    { label: string; value: string }[]
-  >([]);
-
-  const handleGetServices = async () => {
-    try {
-      const res = await getService();
-      if (res.data) {
-        setServiceOptions(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          res.data.map((service: any) => ({
-            label: service.name,
-            value: service.id,
-          }))
-        );
-      }
-    } catch (error) {
-      console.error("Failed to fetch services:", error);
-      return [];
-    }
-  };
 
   const [updateDoctor] = useUpdateDoctorMutation();
 
   const onFinish = async (values: UpdateDoctorProps) => {
-    if (!doctor) return;
-
-    const payload: UpdateDoctorProps = {
-      ...values,
-      experience_years: values.experience_years,
-    };
-
     setIsLoading(true);
     try {
-      const res = await updateDoctor({
-        id,
-        specialData: payload,
-      });
+      const payload: UpdateDoctorProps = {
+        ...values,
+        experience_years: Number(values.experience_years) || 0,
+      };
+
+      const res = await updateDoctor({ id, specialData: payload });
 
       if (!res.error) {
-        showSuccess("Cập nhật tài khoản thành công");
+        showSuccess("Cập nhật bác sĩ thành công");
         onReload();
         onClose();
       } else {
-        const err = res.error as {
-          data?: { message?: string | string[] };
-        };
         showError(
-          "Cập nhật tài khoản thất bại",
-          extractErrorMessage(err) || "Đã xảy ra lỗi khi cập nhật tài khoản."
+          "Cập nhật thất bại"
+          // extractErrorMessage(res.error as any) || "Đã xảy ra lỗi khi cập nhật."
         );
       }
-    } catch (error) {
+    } catch {
       showError(
-        "Đã có lỗi xảy ra",
-        extractErrorMessage(
-          error as { data?: { message?: string | string[] } }
-        ) || "Vui lòng kiểm tra lại thông tin và thử lại"
+        "Đã có lỗi xảy ra"
+        // extractErrorMessage(error as any) || "Vui lòng thử lại."
       );
     } finally {
       setIsLoading(false);
@@ -123,115 +118,147 @@ export default function UpdateDoctor(props: DoctorModalProps) {
   };
 
   return (
-    <>
-      <Modal
-        open={isOpen}
-        width={800}
-        onCancel={onClose}
-        footer={null}
-        closable={false}
-      >
-        <Spin spinning={isLoading}>
-          <h3 className="text-center">
-            {"Cập nhật thông tin tài khoản khách hàng"}
-          </h3>
-          <Form
-            form={form}
-            name="update-admin-form"
-            layout="vertical"
-            onFinish={onFinish}
-            style={{ margin: "16px" }}
-          >
-            <Form.Item
-              label="Full Name"
-              name="full_name"
-              rules={[{ required: true, message: "Please enter full name" }]}
-            >
-              <Input />
-            </Form.Item>
+    <Modal
+      open={isOpen}
+      width={800}
+      onCancel={onClose}
+      footer={null}
+      closable={false}
+    >
+      <Spin spinning={isLoading} indicator={<LoadingOutlined spin />}>
+        <h3 className="text-center">Cập nhật thông tin bác sĩ</h3>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={onFinish}
+          style={{ margin: "16px" }}
+        >
+          <Row gutter={[24, 12]}>
+            <Col span={12}>
+              <FancyFormItem
+                label="Họ và tên"
+                name="full_name"
+                type="text"
+                rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
+                placeholder="Nhập họ và tên"
+              />
+            </Col>
 
-            <Form.Item label="Gender" name="gender">
-              <Select
+            <Col span={12}>
+              <FancyFormItem
+                label="Giới tính"
+                name="gender"
+                type="select"
                 options={[
                   { label: "Nam", value: "male" },
                   { label: "Nữ", value: "female" },
                   { label: "Khác", value: "other" },
                 ]}
+                rules={[{ required: true, message: "Vui lòng chọn giới tính" }]}
+                placeholder="Chọn giới tính"
               />
-            </Form.Item>
+            </Col>
 
-            <Form.Item
-              label="Email"
-              name="email"
-              rules={[
-                { required: true, message: "Please enter email" },
-                { type: "email", message: "Invalid email format" },
-              ]}
-            >
-              <Input />
-            </Form.Item>
+            <Col span={12}>
+              <Form.Item
+                label="Email"
+                name="email"
+                rules={[
+                  { required: true, message: "Vui lòng nhập email" },
+                  { type: "email", message: "Email không hợp lệ" },
+                ]}
+              >
+                <Input placeholder="Nhập email" style={{ borderRadius: 8 }} />
+              </Form.Item>
+            </Col>
 
-            <Form.Item label="Phone" name="phone">
-              <Input />
-            </Form.Item>
+            <Col span={12}>
+              <Form.Item
+                label="Số điện thoại"
+                name="phone"
+                rules={[
+                  { required: true, message: "Vui lòng nhập số điện thoại" },
+                ]}
+              >
+                <Input
+                  placeholder="Nhập số điện thoại"
+                  style={{ borderRadius: 8 }}
+                />
+              </Form.Item>
+            </Col>
 
-            <Form.Item
-              label="Tiểu sử"
-              name="biography"
-              rules={[{ required: true, message: "Vui lòng nhập tiểu sử" }]}
-            >
-              <Input.TextArea placeholder="Nhập tiểu sử" />
-            </Form.Item>
+            <Col span={12}>
+              <Form.Item
+                label="Chuyên môn"
+                name="specialization"
+                rules={[
+                  { required: true, message: "Vui lòng nhập chuyên môn" },
+                ]}
+              >
+                <Input
+                  placeholder="Nhập chuyên môn"
+                  style={{ borderRadius: 8 }}
+                />
+              </Form.Item>
+            </Col>
 
-            <Form.Item
-              label="Chuyên môn"
-              name="specialization"
-              rules={[{ required: true, message: "Vui lòng nhập chuyên môn" }]}
-            >
-              <Input placeholder="Nhập chuyên môn" />
-            </Form.Item>
+            <Col span={12}>
+              <Form.Item
+                label="Kinh nghiệm (năm)"
+                name="experience_years"
+                rules={[
+                  { required: true, message: "Vui lòng nhập kinh nghiệm" },
+                ]}
+              >
+                <Input
+                  placeholder="Nhập số năm kinh nghiệm"
+                  style={{ borderRadius: 8 }}
+                />
+              </Form.Item>
+            </Col>
 
-            <Form.Item
-              label="Kinh nghiệm làm việc"
-              name="experience_years"
-              rules={[
-                {
-                  required: true,
-                  message: "Vui lòng nhập kinh nghiệm làm việc",
-                },
-              ]}
-            >
-              <Input placeholder="Nhập kinh nghiệm làm việc" />
-            </Form.Item>
+            <Col span={12}>
+              <Form.Item
+                label="Dịch vụ phụ trách"
+                name="serviceIds"
+                rules={[{ required: true, message: "Vui lòng chọn dịch vụ" }]}
+              >
+                <Select
+                  mode="multiple"
+                  placeholder="Chọn dịch vụ"
+                  options={serviceOptions}
+                  style={{ borderRadius: 8 }}
+                />
+              </Form.Item>
+            </Col>
 
-            <Form.Item
-              label="Dịch vụ"
-              name="serviceIds"
-              // rules={[{ required: true, message: "Vui lòng chọn dịch vụ" }]}
-            >
-              <Select
-                mode="multiple"
-                placeholder="Chọn dịch vụ"
-                options={serviceOptions}
+            <Col span={24}>
+              <Form.Item label="Tiểu sử" name="biography">
+                <Input.TextArea
+                  placeholder="Nhập tiểu sử bác sĩ (tùy chọn)"
+                  rows={4}
+                  style={{ borderRadius: 8 }}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row justify="center">
+            <Space size="large">
+              <Button onClick={onClose}>Huỷ</Button>
+              <FancyButton
+                onClick={() => form.submit()}
+                icon={<></>}
+                label="Cập nhật bác sĩ"
+                variant="primary"
+                size="small"
+                loading={isLoading}
+                className="w-100"
               />
-            </Form.Item>
-
-            <Row justify="center">
-              <Space size="large">
-                <Button onClick={onClose}>Cancel</Button>
-                <Spin
-                  spinning={false}
-                  indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
-                >
-                  <Button type="primary" htmlType="submit">
-                    Save
-                  </Button>
-                </Spin>
-              </Space>
-            </Row>
-          </Form>
-        </Spin>
-      </Modal>
-    </>
+            </Space>
+          </Row>
+        </Form>
+      </Spin>
+    </Modal>
   );
 }
