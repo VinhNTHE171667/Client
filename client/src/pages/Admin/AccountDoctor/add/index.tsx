@@ -9,6 +9,7 @@ import {
   Select,
   Space,
   Spin,
+  Switch,
 } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useEffect, useState } from "react";
@@ -75,7 +76,7 @@ export default function AddDoctor({
       biography: values.biography,
       specialization: values.specialization,
       experience_years: values.experience_years,
-      isActive: true,
+      isActive: values.isActive,
       serviceIds: values.serviceIds || [],
     };
 
@@ -235,6 +236,17 @@ export default function AddDoctor({
                   rows={4}
                   style={{ borderRadius: 8 }}
                 />
+              </Form.Item>
+            </Col>
+
+            <Col span={12}>
+              <Form.Item
+                label="Trạng thái hoạt động"
+                name="isActive"
+                valuePropName="checked"
+                style={{ marginTop: 4 }}
+              >
+                <Switch />
               </Form.Item>
             </Col>
           </Row>

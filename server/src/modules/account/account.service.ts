@@ -339,9 +339,18 @@ export class AccountService {
     return this.doctorRepository.save(doctor);
   }
 
-  async removeDoctor(id: string): Promise<void> {
+  async removeDoctor(id: string): Promise<{ message: string }> {
     const doctor = await this.findOneDoctor(id);
-    await this.doctorRepository.remove(doctor);
+
+    if (!doctor) {
+      throw new NotFoundException('Không tìm thấy bác sĩ');
+    }
+
+    await this.doctorRepository.softRemove(doctor);
+
+    return {
+      message: `Đã xóa bác sĩ "${doctor.full_name}" thành công.`,
+    };
   }
 
   async updateDoctorPassword(data: {

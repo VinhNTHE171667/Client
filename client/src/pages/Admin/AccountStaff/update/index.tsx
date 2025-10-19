@@ -156,11 +156,9 @@ export default function UpdateStaff(props: StaffModalProps) {
                 label="Trạng thái hoạt động"
                 name="isActive"
                 valuePropName="checked"
+                style={{ marginTop: 4 }}
               >
-                <Switch
-                  checkedChildren="Đang hoạt động"
-                  unCheckedChildren="Tạm dừng"
-                />
+                <Switch />
               </Form.Item>
             </Col>
           </Row>

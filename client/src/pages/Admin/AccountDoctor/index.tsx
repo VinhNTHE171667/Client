@@ -2,7 +2,7 @@ import { Card, Col, Input, Row, Space, Table } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { DoctorModelTable } from "./_components/type";
 import {
-  useDeleteCustomerMutation,
+  useDeleteDoctorMutation,
   useGetDoctorsMutation,
 } from "@/services/account";
 import { showError, showSuccess } from "@/libs/toast";
@@ -42,7 +42,7 @@ export default function AccountDoctor() {
     setUpdateState(true);
   };
 
-  const [deleteCustomer] = useDeleteCustomerMutation();
+  const [deleteDoctor] = useDeleteDoctorMutation();
 
   const [search, setSearch] = useState<string>("");
 
@@ -60,7 +60,7 @@ export default function AccountDoctor() {
   const handleDelete = async (id: string) => {
     setIsLoading(true);
     try {
-      const res = await deleteCustomer(id);
+      const res = await deleteDoctor(id);
       if (res.data) {
         handleEvent();
         showSuccess("Xoá tài khoản thành công");
@@ -203,8 +203,9 @@ export default function AccountDoctor() {
                 from={0}
                 to={
                   doctors.length
-                    ? doctors.reduce((sum, d) => sum + d.experience_years, 0) /
-                      doctors.length
+                    ? doctors.reduce((sum, d) => {
+                        return sum + (d.isActive ? 1 : 0);
+                      }, 0)
                     : 0
                 }
                 duration={4}
