@@ -62,14 +62,14 @@ export const doctorColumn = (): ColumnsType<DoctorModelTable> => [
     width: 140,
   },
   {
-    title: "Tiểu sử",
-    dataIndex: "biography",
-    render: (biography) => {
-      return (
-        <span className="text-muted fst-italic">
-          {biography || "Không có tiểu sử"}
-        </span>
-      );
+    title: "Dịch vụ",
+    dataIndex: "services",
+    render: (services: string[]) => {
+      return services.map((service) => (
+        <Tag color="blue" key={service}>
+          {service}
+        </Tag>
+      ));
     },
   },
   {
