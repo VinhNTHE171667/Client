@@ -66,11 +66,15 @@ export const doctorColumn = (): ColumnsType<DoctorModelTable> => [
     dataIndex: "services",
     render: (_, record) => {
       const { services } = record;
-      return services.map((service: { id: string; name: string }) => (
-        <Tag color="blue" key={service.id}>
-          {service.name}
-        </Tag>
-      ));
+      return (
+        <Space size={[4, 4]} wrap>
+          {services.map((service: { id: string; name: string }) => (
+            <Tag color="blue" key={service.id}>
+              {service.name}
+            </Tag>
+          ))}
+        </Space>
+      );
     },
   },
   {
