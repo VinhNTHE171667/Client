@@ -23,7 +23,7 @@
     "seed:data": "ts-node -r tsconfig-paths/register src/seeds/data.seed.ts",
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
-    "migration:generate": "npm run prebuild && npm run typeorm:ts -- migration:generate src/db/migrations/Loicute",
+    "migration:generate": "npm run prebuild && npm run typeorm:ts -- migration:generate src/db/migrations/migrate",
     "migration:run": "npm run build && npm run typeorm -- migration:run",
     "migration:revert": "npm run build && npm run typeorm -- migration:revert",
     "copy:hbs": "copyfiles -u 1 src/**/*.hbs dist",
