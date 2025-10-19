@@ -64,10 +64,11 @@ export const doctorColumn = (): ColumnsType<DoctorModelTable> => [
   {
     title: "Dịch vụ",
     dataIndex: "services",
-    render: (services: string[]) => {
-      return services.map((service) => (
-        <Tag color="blue" key={service}>
-          {service}
+    render: (_, record) => {
+      const { services } = record;
+      return services.map((service: { id: string; name: string }) => (
+        <Tag color="blue" key={service.id}>
+          {service.name}
         </Tag>
       ));
     },
