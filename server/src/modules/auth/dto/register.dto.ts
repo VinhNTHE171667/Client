@@ -1,3 +1,4 @@
+import { Gender } from '@/entities/enums/gender.enum';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsString,
@@ -8,7 +9,6 @@ import {
   // MinLength,
   // Matches,
 } from 'class-validator';
-import { Gender } from '@/entities/customer.entity';
 
 export class RegisterCustomerDto {
   @ApiProperty()

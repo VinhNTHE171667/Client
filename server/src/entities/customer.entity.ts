@@ -15,19 +15,8 @@ import { Appointment } from './appointment.entity';
 import { Invoice } from './invoice.entity';
 import { CustomerVoucher } from './customerVoucher.entity';
 import { Membership } from './membership.entity';
-
-export enum Gender {
-  Male = 'male',
-  Female = 'female',
-  Other = 'other',
-}
-
-export enum CustomerType {
-  Regular = 'regular',
-  Member = 'member',
-  Vip = 'vip',
-}
-
+import { Gender } from './enums/gender.enum';
+import { CustomerType } from './enums/customer-type.enum';
 @Entity()
 export class Customer {
   @PrimaryGeneratedColumn('uuid')
@@ -48,20 +37,14 @@ export class Customer {
   @Column()
   password: string;
 
-  @Column({ default: true })
-  isActive: boolean;
-
-  @Column({ default: false })
-  isVerified: boolean;
-
-  @Column({ default: false })
-  isDeleted: boolean;
-
-  @Column()
-  phone: string;
+  @Column({ nullable: true })
+  refreshToken?: string;
 
   @Column({ unique: true })
   email: string;
+
+  @Column({ nullable: true })
+  phone: string;
 
   @Column({ nullable: true })
   address: string;
@@ -75,9 +58,6 @@ export class Customer {
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   total_spent: number;
-
-  @Column({ nullable: true })
-  refreshToken?: string;
 
   @CreateDateColumn({})
   createdAt: Date;
@@ -108,4 +88,10 @@ export class Customer {
 
   @Column({ nullable: true })
   membershipId?: string;
+
+  @Column({ default: true })
+  isActive: boolean;
+
+  @Column({ default: false })
+  isVerified: boolean;
 }

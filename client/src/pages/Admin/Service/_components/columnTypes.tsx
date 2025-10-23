@@ -53,13 +53,22 @@ export const servicesColumn = (
   {
     title: "Mô tả",
     dataIndex: "description",
-    render: (description) => {
-      return (
-        <span className="text-muted fst-italic">
-          {description || "Không có mô tả"}
-        </span>
-      );
-    },
+    width: 250,
+    render: (description) => (
+      <span
+        className="text-muted fst-italic"
+        style={{
+          display: "-webkit-box",
+          WebkitLineClamp: 3,
+          WebkitBoxOrient: "vertical",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        }}
+        title={description}
+      >
+        {description || "Không có mô tả"}
+      </span>
+    ),
   },
   {
     title: "Danh mục",

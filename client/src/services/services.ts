@@ -23,6 +23,7 @@ export type ServiceData = {
   price: number;
   images:
     | {
+        alt: string;
         url: string;
       }[]
     | [];
@@ -203,106 +204,17 @@ export const serviceApi = createApi({
       }),
     }),
 
-    createAppointment: build.mutation<CreateAppointment, CreateAppointment>({
-      query: (data) => ({
-        url: `/service/appointments`,
-        method: "Post",
-        data,
-      }),
-    }),
-
-    getAppointments: build.mutation<
-      CreateAppointment[],
-      {
-        spaId?: string;
-        customerId?: string;
-      }
-    >({
-      query: ({ spaId, customerId }) => ({
-        url: `/services/appointments`,
-        method: "Get",
-        params: {
-          spaId,
-          customerId,
-        },
-      }),
-    }),
-
-    getAppointmentById: build.query<AppointmentData, string>({
-      query: (id) => ({
-        url: `/services/appointments/${id}`,
+    getPublicServices: build.mutation<ServiceData[], void>({
+      query: () => ({
+        url: `/service/public`,
         method: "Get",
       }),
     }),
 
-    updateAppointment: build.mutation<
-      AppointmentData,
-      { id: string; appointment: UpdateAppointment }
-    >({
-      query: ({ id, appointment }) => ({
-        url: `/services/appointments/${id}`,
-        method: "Put",
-        data: appointment,
-      }),
-    }),
-
-    updateCompletedAppointment: build.mutation<
-      AppointmentData,
-      { id: string; appointment: UpdateCompletedAppointment }
-    >({
-      query: ({ id, appointment }) => ({
-        url: `/services/appointments/${id}/complete`,
-        method: "Post",
-        data: appointment,
-      }),
-    }),
-
-    deleteAppointment: build.mutation<void, string>({
+    getPublicServiceById: build.query<ServiceData, string>({
       query: (id) => ({
-        url: `/services/appointments/${id}`,
-        method: "Delete",
-      }),
-    }),
-
-    getAllInvoices: build.mutation<
-      InvoiceData[],
-      {
-        spaId?: string;
-        customerId?: string;
-      }
-    >({
-      query: ({ spaId, customerId }) => ({
-        url: `/services/invoices`,
+        url: `/service/public/${id}`,
         method: "Get",
-        params: {
-          spaId,
-          customerId,
-        },
-      }),
-    }),
-
-    getInvoiceByAppointmentId: build.query<InvoiceData, string>({
-      query: (id) => ({
-        url: `/services/invoices/${id}`,
-        method: "Get",
-      }),
-    }),
-
-    confirmInvoice: build.mutation<void, string>({
-      query: (id) => ({
-        url: `/services/invoices/confirm/${id}`,
-        method: "Post",
-      }),
-    }),
-
-    updateInvoiceByAppointmentId: build.mutation<
-      InvoiceData,
-      { id: string; data: UpdateCompletedAppointment }
-    >({
-      query: ({ id, data }) => ({
-        url: `/services/invoices/${id}/update-complete`,
-        method: "Post",
-        data,
       }),
     }),
   }),
@@ -321,15 +233,6 @@ export const {
   useUpdateServiceMutation,
   useDeleteServiceMutation,
 
-  useCreateAppointmentMutation,
-  useGetAppointmentsMutation,
-  useGetAppointmentByIdQuery,
-  useUpdateAppointmentMutation,
-  useUpdateCompletedAppointmentMutation,
-  useDeleteAppointmentMutation,
-
-  useGetAllInvoicesMutation,
-  useGetInvoiceByAppointmentIdQuery,
-  useConfirmInvoiceMutation,
-  useUpdateInvoiceByAppointmentIdMutation,
+  useGetPublicServicesMutation,
+  useGetPublicServiceByIdQuery,
 } = serviceApi;

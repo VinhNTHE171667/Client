@@ -14,6 +14,9 @@ import Categories from "@/pages/Admin/Categories";
 import AccountStaff from "@/pages/Admin/AccountStaff";
 import Services from "@/pages/Admin/Service";
 import AccountDoctor from "@/pages/Admin/AccountDoctor";
+import ServicesComp from "@/pages/Services";
+import ServiceDetail from "@/pages/Services/ServiceDetail";
+import CartPage from "@/pages/Customer/Cart";
 
 const router = createBrowserRouter([
   {
@@ -34,6 +37,27 @@ const router = createBrowserRouter([
   {
     path: configRoutes.register,
     element: <RegisterPage />,
+  },
+
+  {
+    path: configRoutes.services,
+    element: <HomeLayouts />,
+    children: [
+      {
+        element: <ServicesComp />,
+        index: true,
+      },
+    ],
+  },
+  {
+    path: configRoutes.serviceDetail,
+    element: <HomeLayouts />,
+    children: [
+      {
+        index: true,
+        element: <ServiceDetail />,
+      },
+    ],
   },
 
   {
@@ -128,6 +152,17 @@ const router = createBrowserRouter([
             element: <Services />,
           },
         ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.cart,
+    element: <HomeLayouts />,
+    children: [
+      {
+        index: true,
+        element: <CartPage />,
       },
     ],
   },

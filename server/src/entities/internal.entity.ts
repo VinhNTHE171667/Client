@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Role } from './role.entity';
+import { Gender } from './enums/gender.enum';
 
 @Entity()
 export class Internal {
@@ -21,24 +22,24 @@ export class Internal {
   @Column({ nullable: true })
   full_name: string;
 
-  @Column({ nullable: true })
-  gender?: string;
+  @Column({ type: 'enum', enum: Gender, default: Gender.Male })
+  gender: Gender;
+
+  @Column({ unique: true })
+  email: string;
 
   @Column({ nullable: true })
   phone: string;
 
   @Column()
-  email: string;
-
-  @Column()
   password: string;
+
+  @Column({ nullable: true })
+  refreshToken?: string;
 
   @ManyToOne(() => Role, (role) => role.roles, { eager: true })
   @JoinColumn({ name: 'roleId' })
   role: Role;
-
-  @Column({ nullable: true })
-  refreshToken?: string;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -51,4 +52,7 @@ export class Internal {
 
   @Column({ default: true })
   isActive: boolean;
+
+  @Column({ default: false })
+  isVerified: boolean;
 }

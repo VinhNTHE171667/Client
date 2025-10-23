@@ -9,17 +9,21 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Service } from './service.entity';
+import { Gender } from './enums/gender.enum';
 
 @Entity()
 export class Doctor {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ nullable: true })
+  avatar?: string;
+
   @Column()
   full_name: string;
 
-  @Column({ nullable: true })
-  gender?: string;
+  @Column({ type: 'enum', enum: Gender, default: Gender.Male })
+  gender: Gender;
 
   @Column({ unique: true })
   email: string;
@@ -31,6 +35,9 @@ export class Doctor {
   password: string;
 
   @Column({ nullable: true })
+  refreshToken?: string;
+
+  @Column({ nullable: true })
   biography?: string;
 
   @Column()
@@ -39,9 +46,6 @@ export class Doctor {
   @ManyToMany(() => Service, (service) => service.doctors)
   @JoinTable()
   services: Service[];
-
-  @Column({ nullable: true })
-  refreshToken?: string;
 
   @Column({ nullable: true })
   experience_years?: number;
@@ -57,4 +61,7 @@ export class Doctor {
 
   @Column({ default: true })
   isActive: boolean;
+
+  @Column({ default: false })
+  isVerified: boolean;
 }
