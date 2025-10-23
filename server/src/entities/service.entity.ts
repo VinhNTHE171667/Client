@@ -26,8 +26,8 @@ export class Service {
   @Column('json')
   images: { url: string; alt?: string }[];
 
-  @Column({ nullable: true })
-  description: string;
+  @Column('text', { nullable: true })
+  description?: string;
 
   @ManyToOne(() => Category)
   @JoinColumn({ name: 'categoryId' })

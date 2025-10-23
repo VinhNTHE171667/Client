@@ -1,3 +1,5 @@
+import { CustomerType } from '@/entities/enums/customer-type.enum';
+import { Gender } from '@/entities/enums/gender.enum';
 import { ApiProperty, ApiPropertyOptional, OmitType } from '@nestjs/swagger';
 import {
   IsString,
@@ -10,7 +12,6 @@ import {
   //   MinLength,
   //   Matches,
 } from 'class-validator';
-import { Gender, CustomerType } from '@/entities/customer.entity';
 
 export class CreateCustomerDto {
   @ApiProperty()

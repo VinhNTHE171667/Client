@@ -19,6 +19,16 @@ import { CreateServiceDto, UpdateServiceDto } from './dto/service.dto';
 export class ServiceController {
   constructor(private servicesService: ServiceService) {}
 
+  @Get('public')
+  getPublicServices() {
+    return this.servicesService.findPublicServices();
+  }
+
+  @Get('public/:id')
+  getPublicService(@Param('id') id: string) {
+    return this.servicesService.findOnePublicService(id);
+  }
+
   @Post('')
   @UseInterceptors(FilesInterceptor('images', 10, { storage: memoryStorage() }))
   @ApiConsumes('multipart/form-data')

@@ -1,4 +1,4 @@
-import { Gender } from '@/entities/customer.entity';
+import { Gender } from '@/entities/enums/gender.enum';
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 import {
   IsString,

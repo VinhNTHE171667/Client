@@ -50,6 +50,11 @@ const Header = () => {
       onClick: () => navigate(""),
     },
     {
+      key: "2",
+      label: "Giỏ hàng",
+      onClick: () => navigate(configRoutes.cart),
+    },
+    {
       key: "5",
       label: "Đăng xuất",
       onClick: logout,
@@ -119,9 +124,26 @@ const Header = () => {
                 >
                   Giới thiệu
                 </Link>
-                {/* <Link to={configRoutes.gallery} className="nav-item nav-link">
-                  Thư viện ảnh
-                </Link> */}
+                <Link
+                  to={configRoutes.services}
+                  className={cx(
+                    "nav-item",
+                    "nav-link",
+                    "px-lg-3",
+                    "my-3",
+                    "fw-bolder",
+                    "text-uppercase",
+                    "text-decoration-none",
+                    "link-underline",
+                    "link-underline-opacity-0",
+                    "link-underline-opacity-75-hover",
+                    "d-flex",
+                    "align-items-center",
+                    location.pathname === configRoutes.services && "active"
+                  )}
+                >
+                  Dịch vụ
+                </Link>
               </div>
 
               <div className="d-flex align-items-center flex-nowrap pt-xl-0">

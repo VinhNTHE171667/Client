@@ -5,6 +5,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { UpdateServiceDto } from './dto/service.dto';
+import omit from 'lodash/omit';
+import { Console } from 'console';
 
 @Injectable()
 export class ServiceService {
@@ -98,5 +100,70 @@ export class ServiceService {
       }),
     );
     return uploads;
+  }
+
+  async findPublicServices(): Promise<Service[]> {
+    const services = await this.serviceRepo.find({
+      where: {
+        isActive: true,
+        deletedAt: IsNull(),
+      },
+      relations: ['category'],
+    });
+
+    return services.map((service) => {
+      const category = service.category
+        ? omit(service.category, [
+            'createdAt',
+            'updatedAt',
+            'deletedAt',
+            'isActive',
+          ])
+        : null;
+
+      service.category = category;
+
+      return omit(service, [
+        'deletedAt',
+        'createdAt',
+        'updatedAt',
+        'isActive',
+        // 'description',
+      ]);
+    });
+  }
+
+  async findOnePublicService(id: string): Promise<Service | null> {
+    const service = await this.serviceRepo.findOne({
+      where: {
+        id,
+        deletedAt: IsNull(),
+        isActive: true,
+      },
+      relations: ['category'],
+    });
+
+    if (!service) {
+      throw new NotFoundException('Không tìm thấy dịch vụ');
+    }
+
+    const category = service.category
+      ? omit(service.category, [
+          'createdAt',
+          'updatedAt',
+          'deletedAt',
+          'isActive',
+        ])
+      : null;
+
+    const result = omit(service, [
+      'deletedAt',
+      'createdAt',
+      'updatedAt',
+      'isActive',
+    ]);
+    result.category = category;
+
+    return result as Service;
   }
 }

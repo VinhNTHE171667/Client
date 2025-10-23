@@ -3,6 +3,12 @@ export const configRoutes = {
   about: "/about",
   login: "/login",
   register: "/register",
+  services: "/services",
+  serviceDetail: "/services/:id",
+
+  profile: "/profile",
+  cart: "/cart",
+  bookings: "/bookings",
 
   adminDashboard: "/admin/dashboard",
   adminCustomers: "/admin/customers",

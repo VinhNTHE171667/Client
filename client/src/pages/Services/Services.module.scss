@@ -1,0 +1,120 @@
+.serviceSection {
+    padding: 100px 0;
+    background: linear-gradient(180deg, #fff, #fafafa);
+    text-align: center;
+}
+
+.header {
+    margin-bottom: 50px;
+
+    h2 {
+        font-weight: 700;
+        color: #1a1a1a;
+    }
+
+    p {
+        color: #666;
+        font-size: 1.1rem;
+        max-width: 600px;
+        margin: 10px auto 0;
+    }
+}
+
+.filterWrapper {
+    margin-bottom: 50px;
+
+    :global(.ant-segmented) {
+        background: #fff;
+        padding: 6px;
+        border-radius: 40px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    }
+
+    :global(.ant-segmented-item) {
+        font-weight: 500;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+
+        &:hover {
+            color: #1677ff;
+        }
+    }
+}
+
+.card {
+    border-radius: 20px !important;
+    overflow: hidden;
+    text-align: left;
+    height: 100%;
+    transition: all 0.3s ease;
+    border: none;
+
+    &:hover {
+        // transform: translateY(-8px);
+        box-shadow: rgba(0, 0, 0, 0.08) 0px 21px 44px !important;
+
+        .image {
+            transform: scale(1.07);
+        }
+    }
+}
+
+.imageWrapper {
+    height: 220px;
+    background: #f0f0f0;
+    overflow: hidden;
+}
+
+.image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.cardTitle {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #222;
+    margin-top: 4px;
+}
+
+.cardDesc {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    min-height: 65px;
+}
+
+.cardFooter {
+    margin-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.price {
+    color: #e91e63;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.paginationWrapper {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+
+    :global(.ant-pagination-item-active) {
+        background-color: #65b175 !important;
+        border-color: #589966 !important;
+
+        a {
+            color: #fff !important;
+        }
+    }
+}

@@ -31,9 +31,9 @@ async function bootstrap() {
 
   app.enableCors();
 
-  await app.listen(process.env.PORT ?? 8081);
+  await app.listen(process.env.PORT ?? 8080);
 
-  const url = `http://localhost:${process.env.PORT ?? 8081}/api`;
+  const url = `http://localhost:${process.env.PORT ?? 8080}/api`;
   // const { default: open } = await import('open');
   // await open(url);
 
