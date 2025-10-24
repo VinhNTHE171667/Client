@@ -160,7 +160,7 @@ export default function Services() {
     <>
       <Row className="mx-2 my-2">
         <Col>
-          <h4>
+          <h4 className="cus-text-primary">
             <strong>{"Dịch vụ"}</strong> <br />
           </h4>
         </Col>
