@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Button,
   Card,
@@ -19,40 +19,25 @@ import { useNavigate } from "react-router-dom";
 import styles from "./Cart.module.scss";
 import NoImage from "@/assets/img/NoImage/NoImage.jpg";
 import FancyButton from "@/components/FancyButton";
+import { configRoutes } from "@/constants/route";
+import {
+  useDeleteFromCartMutation,
+  useGetCartMutation,
+  type CartItemData,
+} from "@/services/cart";
+import { showError } from "@/libs/toast";
+import { useAuthStore } from "@/hooks/UseAuth";
 
-const { Title, Text } = Typography;
-
-type CartItem = {
-  id: string;
-  name: string;
-  duration: string;
-  price: number;
-  image: string;
-};
+const { Title } = Typography;
 
 const CartPage = () => {
   const navigate = useNavigate();
 
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: "1",
-      name: "Triệt lông nách",
-      duration: "30 phút",
-      price: 199000,
-      image:
-        "https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=500&q=60",
-    },
-    {
-      id: "2",
-      name: "Massage mặt thư giãn",
-      duration: "45 phút",
-      price: 299000,
-      image:
-        "https://images.unsplash.com/photo-1594824476967-48c8b9642737?auto=format&fit=crop&w=500&q=60",
-    },
-  ]);
+  const [cartItems, setCartItems] = useState<CartItemData[]>([]);
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  const { auth } = useAuthStore();
 
   const handleToggleSelect = (id: string) => {
     setSelectedIds((prev) =>
@@ -61,8 +46,10 @@ const CartPage = () => {
   };
 
   const handleRemove = (id: string) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
-    message.success("Đã xóa dịch vụ khỏi giỏ hàng");
+    // setCartItems((prev) => prev.filter((item) => item.id !== id));
+    handleDeleteFromCart(id);
+
+    // message.success("Đã xóa dịch vụ khỏi giỏ hàng");
   };
 
   const handleCheckout = () => {
@@ -74,8 +61,53 @@ const CartPage = () => {
   };
 
   const handleBack = () => {
-    navigate("/services");
+    navigate(configRoutes.services);
   };
+
+  const [getCart] = useGetCartMutation();
+
+  const handleGetCart = async () => {
+    try {
+      const cart = await getCart(auth?.accountId || "").unwrap();
+
+      if (!cart) {
+        setCartItems([]);
+        return;
+      }
+
+      setCartItems(cart.items);
+
+      // showSuccess("Lấy giỏ hàng thành công!");
+    } catch (error) {
+      showError("Lấy giỏ hàng thất bại!");
+      console.error(error);
+    }
+  };
+
+  const [deleteFromCart] = useDeleteFromCartMutation();
+
+  const handleDeleteFromCart = async (itemId: string) => {
+    try {
+      await deleteFromCart({
+        customerId: auth?.accountId || "",
+        itemId,
+      }).unwrap();
+
+      message.success("Xóa dịch vụ khỏi giỏ hàng thành công!");
+      handleEvent();
+    } catch (error) {
+      showError("Xóa dịch vụ khỏi giỏ hàng thất bại!");
+      console.error(error);
+    }
+  };
+
+  const handleEvent = () => {
+    handleGetCart();
+  };
+
+  useEffect(() => {
+    handleEvent();
+  }, []);
 
   const total = cartItems
     .filter((item) => selectedIds.includes(item.id))
@@ -96,7 +128,9 @@ const CartPage = () => {
         </div>
 
         <div className={styles.cartHeader}>
-          <Title level={2}>Giỏ dịch vụ của bạn</Title>
+          <Title level={2} className="cus-text-primary">
+            Giỏ dịch vụ của bạn
+          </Title>
         </div>
 
         {cartItems.length === 0 ? (
@@ -114,7 +148,7 @@ const CartPage = () => {
                       cover={
                         <img
                           alt={item.name}
-                          src={item.image || NoImage}
+                          src={item.images?.[0]?.url || NoImage}
                           className={styles.cartImage}
                         />
                       }
@@ -125,8 +159,10 @@ const CartPage = () => {
                         />,
                       ]}
                     >
-                      <Title level={4}>{item.name}</Title>
-                      <Text type="secondary">{item.duration}</Text>
+                      <Title level={4} className="cus-text-primary">
+                        {item.name}
+                      </Title>
+                      {/* <Text type="secondary">{item.duration}</Text> */}
                       <div className={styles.cartPrice}>
                         {item.price.toLocaleString()}đ
                       </div>

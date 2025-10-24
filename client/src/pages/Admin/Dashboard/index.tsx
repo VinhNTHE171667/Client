@@ -183,7 +183,7 @@ export default function AdminDashboardPage() {
           <Title
             level={3}
             style={{ marginBottom: 24 }}
-            className="overview-title"
+            className="overview-title cus-text-primary"
           >
             Tổng quan hệ thống
           </Title>

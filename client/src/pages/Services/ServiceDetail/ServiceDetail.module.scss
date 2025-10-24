@@ -192,3 +192,27 @@
         transition: transform 0.6s ease;
     }
 }
+
+
+.cusButtonGroup {
+    display: flex;
+    gap: 12px;
+
+    button {
+        flex: 1;
+        height: 45px;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .outline {
+        background: transparent;
+        border: 2px solid #4b9460;
+        color: #4b9460;
+
+        &:hover {
+            background: #4b9460;
+            color: #fff;
+        }
+    }
+}

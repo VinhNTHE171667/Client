@@ -7,11 +7,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { Service } from '@/entities/service.entity';
 import { Cart } from '@/entities/cart.entity';
 import { Category } from '@/entities/category.entity';
+import { CartDetail } from '@/entities/cartDetails.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    TypeOrmModule.forFeature([Service, Cart, Category]),
+    TypeOrmModule.forFeature([Service, Cart, CartDetail, Category]),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,

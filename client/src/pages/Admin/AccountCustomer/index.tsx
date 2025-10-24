@@ -175,7 +175,7 @@ export default function AccountCustomer() {
     <>
       <Row className="mx-2 my-2">
         <Col>
-          <h4>
+          <h4 className="cus-text-primary">
             <strong>{"Tài khoản khách hàng"}</strong> <br />
           </h4>
         </Col>

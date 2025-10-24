@@ -180,7 +180,7 @@ export default function AccountStaff() {
     <>
       <Row className="mx-2 my-2">
         <Col>
-          <h4>
+          <h4 className="cus-text-primary">
             <strong>{"Tài khoản hệ thống"}</strong> <br />
           </h4>
         </Col>

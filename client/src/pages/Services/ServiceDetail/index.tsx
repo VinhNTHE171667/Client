@@ -10,6 +10,9 @@ import {
 } from "@/services/services";
 import { useParams, useNavigate } from "react-router-dom";
 import FancyButton from "@/components/FancyButton";
+import { useAuthStore } from "@/hooks/UseAuth";
+import { useAddToCartMutation } from "@/services/cart";
+import { showError, showSuccess } from "@/libs/toast";
 
 const { Title, Paragraph } = Typography;
 
@@ -45,6 +48,35 @@ const ServiceDetail = () => {
   useEffect(() => {
     handleGetServices();
   }, []);
+
+  const { auth } = useAuthStore();
+  const [addToCart] = useAddToCartMutation();
+
+  const handleAddToCart = async () => {
+    if (!auth?.accountId) {
+      showError("Bạn cần đăng nhập để thêm vào giỏ hàng!");
+      return;
+    }
+
+    try {
+      await addToCart({
+        customerId: auth.accountId,
+        itemData: { itemId: id || "", quantity: 1 },
+      }).unwrap();
+
+      showSuccess("Đã thêm dịch vụ vào giỏ hàng!");
+    } catch (error: unknown) {
+      if (error && typeof error === "object" && "message" in error) {
+        showError(
+          "Thêm vào giỏ hàng thất bại!",
+          (error as { message?: string }).message
+        );
+      } else {
+        showError("Thêm vào giỏ hàng thất bại!");
+      }
+      console.error(error);
+    }
+  };
 
   if (isLoading || !serviceData) {
     return (
@@ -109,7 +141,10 @@ const ServiceDetail = () => {
 
           <Col xs={24} md={12}>
             <div className={styles.infoBox}>
-              <Title level={3} className={styles.serviceTitle}>
+              <Title
+                level={3}
+                className={`${styles.serviceTitle} cus-text-primary`}
+              >
                 {name}
               </Title>
 
@@ -123,13 +158,19 @@ const ServiceDetail = () => {
 
               <Paragraph className={styles.shortDesc}>{description}</Paragraph>
 
-              <FancyButton
-                label="Đặt lịch ngay"
-                size="middle"
-                icon={<></>}
-                className={styles.orderButton}
-                onClick={() => navigate("/cart")}
-              />
+              <div className={styles.cusButtonGroup}>
+                <FancyButton
+                  label="Thêm vào giỏ hàng"
+                  size="middle"
+                  variant="outline"
+                  onClick={handleAddToCart}
+                />
+                <FancyButton
+                  label="Đặt lịch ngay"
+                  size="middle"
+                  onClick={() => navigate("/cart")}
+                />
+              </div>
             </div>
           </Col>
         </Row>
