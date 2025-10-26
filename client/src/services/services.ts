@@ -33,6 +33,11 @@ export type ServiceData = {
   spaName: string;
   isActive: boolean;
   category: CategoryData;
+  doctors: {
+    id: string;
+    name: string;
+    avatar: string | null;
+  }[];
 };
 
 export type CreateService = {

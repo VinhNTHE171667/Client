@@ -179,3 +179,39 @@
         font-size: 14px;
     }
 }
+
+.doctorGroup {
+    background: #fff;
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 32px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+    transition: 0.3s ease all;
+
+    &:hover {
+        transform: translateY(-3px);
+    }
+
+    &.activeDoctor {
+        border: 2px solid #d68b97;
+        box-shadow: 0 0 10px rgba(214, 139, 151, 0.3);
+    }
+}
+
+.doctorHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.doctorInfo {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.doctorSub {
+    color: #777;
+    font-size: 0.95rem;
+}

@@ -10,6 +10,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import omit from 'lodash/omit';
+import { Doctor } from '@/entities/doctor.entity';
 
 @Injectable()
 export class CartService {
@@ -25,6 +26,9 @@ export class CartService {
 
     @InjectRepository(CartDetail)
     private readonly cartDetailRepo: Repository<CartDetail>,
+
+    @InjectRepository(Doctor)
+    private readonly doctorRepo: Repository<Doctor>,
   ) {}
 
   async getCartById(customerId: string) {
@@ -42,19 +46,35 @@ export class CartService {
       return this.cartRepo.save(newCart);
     }
 
-    // return cart;
+    const items = await Promise.all(
+      cart.details.map(async (detail) => {
+        const doctor = await this.doctorRepo.findOne({
+          where: { id: detail.doctorId },
+        });
+
+        if (!doctor) {
+          throw new NotFoundException('Không tìm thấy bác sĩ');
+        }
+
+        return {
+          id: detail.service.id,
+          name: detail.service.name,
+          description: detail.service.description,
+          price: detail.service.price,
+          quantity: detail.quantity,
+          images: detail.service.images,
+          categoryId: detail.service.categoryId,
+          doctor: {
+            id: doctor.id,
+            name: doctor.full_name,
+          },
+        };
+      }),
+    );
 
     const cartResponse = {
       id: cart.id,
-      items: cart.details.map((detail) => ({
-        id: detail.service.id,
-        name: detail.service.name,
-        description: detail.service.description,
-        price: detail.service.price,
-        quantity: detail.quantity,
-        images: detail.service.images,
-        categoryId: detail.service.categoryId,
-      })),
+      items,
     };
 
     return omit(cartResponse, ['createdAt', 'updatedAt']);
@@ -63,6 +83,7 @@ export class CartService {
   async addItemToCart(
     customerId: string,
     itemData: { itemId: string; quantity?: number },
+    doctorId: string,
   ) {
     const { itemId, quantity = 1 } = itemData;
 
@@ -79,20 +100,32 @@ export class CartService {
       cart = await this.cartRepo.save(cart);
     }
 
-    const service = await this.serviceRepo.findOne({ where: { id: itemId } });
+    const service = await this.serviceRepo.findOne({
+      where: { id: itemId },
+      relations: ['doctors'],
+    });
     if (!service) throw new NotFoundException('Không tìm thấy dịch vụ');
 
     const existingDetail = cart.details.find(
       (d) => d.service.id === service.id,
     );
 
-    if (existingDetail) {
+    const doctors = service.doctors || [];
+    if (!doctors.find((doc) => doc.id === doctorId)) {
+      throw new BadRequestException(
+        'Bác sĩ không được phép thêm dịch vụ này vào giỏ hàng',
+      );
+    }
+
+    if (existingDetail && existingDetail.doctorId === doctorId) {
       throw new BadRequestException('Dịch vụ này đã có trong giỏ hàng');
     }
+
     const newDetail = this.cartDetailRepo.create({
       cart,
       service,
       quantity,
+      doctorId,
     });
     await this.cartDetailRepo.save(newDetail);
 

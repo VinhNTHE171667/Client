@@ -1,0 +1,144 @@
+.bookingPage {
+    padding: 60px 0;
+    background-color: #f5f9ff;
+    min-height: 100vh;
+}
+
+.bookingCard {
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    padding: 32px;
+    background: #fff;
+    position: relative;
+    overflow: visible;
+}
+
+.title {
+    text-align: center;
+    margin-bottom: 24px;
+    font-weight: 600;
+    font-size: 26px;
+    color: #003366;
+}
+
+.calendarWrapper {
+    position: relative;
+    background: #fff;
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    margin-bottom: 24px;
+
+    .rbc-toolbar {
+        background-color: #eaf2ff;
+        border-radius: 8px;
+        padding: 10px;
+        position: relative;
+        z-index: 10;
+    }
+
+    .rbc-toolbar button {
+        background: #1677ff;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 4px 10px;
+        transition: 0.3s;
+
+        &:hover {
+            background: #4096ff;
+        }
+    }
+
+    .rbc-event {
+        background-color: #1677ff;
+        border: none;
+    }
+}
+
+.selectedList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.serviceItem {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    background: #f0f6ff;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #d6e4ff;
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: scale(1.02);
+        background: #e3efff;
+    }
+}
+
+.serviceImage {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.serviceInfo {
+    flex: 1;
+
+    h4 {
+        font-size: 18px;
+        margin: 0;
+        font-weight: 500;
+    }
+
+    .doctorName {
+        font-size: 14px;
+        color: #555;
+        margin-top: 4px;
+
+        span {
+            color: #1677ff;
+            font-weight: 500;
+        }
+    }
+
+    .price {
+        margin-top: 6px;
+        font-weight: 600;
+        color: #003366;
+    }
+}
+
+.submitBtn {
+    width: 100%;
+    height: 45px;
+    font-weight: 600;
+    font-size: 16px;
+    background: linear-gradient(90deg, #1677ff, #4096ff);
+    border: none;
+    border-radius: 8px;
+
+    &:hover {
+        background: linear-gradient(90deg, #4096ff, #1677ff);
+    }
+}
+
+:global {
+    .rbc-calendar {
+        position: relative;
+    }
+
+    .rbc-toolbar {
+        z-index: 10 !important;
+    }
+
+    .rbc-btn-group button {
+        cursor: pointer;
+    }
+
+
+}

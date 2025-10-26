@@ -7,6 +7,7 @@ import { IsNull, Repository } from 'typeorm';
 import { UpdateServiceDto } from './dto/service.dto';
 import omit from 'lodash/omit';
 import { Console } from 'console';
+import { Doctor } from '@/entities/doctor.entity';
 
 @Injectable()
 export class ServiceService {
@@ -16,18 +17,29 @@ export class ServiceService {
 
     @InjectRepository(Service)
     private readonly serviceRepo: Repository<Service>,
+
+    @InjectRepository(Doctor)
+    private readonly doctorRepo: Repository<Doctor>,
   ) {}
 
   async createService(dto: any, files: Express.Multer.File[]) {
     const images = files?.length
       ? await this.uploadImagesToCloudinary(files)
       : [];
+
+    const doctorsIds = Array.isArray(dto.doctorsIds) ? dto.doctorsIds : [];
+
+    if (doctorsIds.length > 0) {
+      const doctors = await this.doctorRepo.findByIds(doctorsIds);
+      dto.doctors = doctors;
+    }
+
     const service = this.serviceRepo.create({ ...dto, images });
 
     return this.serviceRepo.save(service);
   }
 
-  async findAllServices(): Promise<Service[]> {
+  async findAllServices(): Promise<Service[] | null> {
     const services = await this.serviceRepo.find({
       where: {
         deletedAt: IsNull(),
@@ -35,7 +47,35 @@ export class ServiceService {
       relations: ['category'],
     });
 
-    return services;
+    if (!services || services.length === 0) {
+      throw new NotFoundException('Không tìm thấy dịch vụ');
+    }
+
+    const result = await Promise.all(
+      services.map(async (service) => {
+        const doctorsRaw = await this.doctorRepo
+          .createQueryBuilder('doctor')
+          .innerJoin('doctor.services', 'service', 'service.id = :serviceId', {
+            serviceId: service.id,
+          })
+          .where('doctor.deletedAt IS NULL')
+          .andWhere('doctor.isActive = :isActive', { isActive: true })
+          .getMany();
+
+        const doctors = doctorsRaw.map((d) => ({
+          id: d.id,
+          name: d.full_name,
+          avatar: d.avatar,
+        }));
+
+        return {
+          ...service,
+          doctors,
+        };
+      }),
+    );
+
+    return result as unknown as Service[];
   }
 
   async findOneService(id: string) {
@@ -46,7 +86,33 @@ export class ServiceService {
 
     if (!service) throw new NotFoundException('Không tìm thấy dịch vụ');
 
-    return service;
+    const doctorsRaw = await this.doctorRepo
+      .createQueryBuilder('doctor')
+      .innerJoin('doctor.services', 'service', 'service.id = :serviceId', {
+        serviceId: service.id,
+      })
+      .where('doctor.deletedAt IS NULL')
+      .andWhere('doctor.isActive = :isActive', { isActive: true })
+      .getMany();
+
+    const doctors = doctorsRaw.map((d) => {
+      id = d.id;
+      return {
+        id: d.id,
+        name: d.full_name,
+        avatar: d.avatar,
+      };
+    });
+
+    const result = omit(
+      {
+        ...service,
+        doctors,
+      },
+      ['deletedAt', 'createdAt', 'updatedAt', 'isActive'],
+    );
+
+    return result;
   }
 
   async updateService(
@@ -66,6 +132,18 @@ export class ServiceService {
     if (files?.length) {
       const uploadedImages = await this.uploadImagesToCloudinary(files);
       service.images = [...service.images, ...uploadedImages];
+    }
+
+    const doctorsIds = Array.isArray(dto.doctorsIds) ? dto.doctorsIds : [];
+
+    console.log('doctorsIds', doctorsIds);
+    if (doctorsIds.length > 0) {
+      const doctors = await this.doctorRepo.findByIds(doctorsIds);
+
+      console.log('doctors', doctors);
+      service.doctors = doctors;
+    } else {
+      service.doctors = [];
     }
 
     const isActive =
@@ -111,7 +189,31 @@ export class ServiceService {
       relations: ['category'],
     });
 
-    return services.map((service) => {
+    const result = await Promise.all(
+      services.map(async (service) => {
+        const doctorsRaw = await this.doctorRepo
+          .createQueryBuilder('doctor')
+          .innerJoin('doctor.services', 'service', 'service.id = :serviceId', {
+            serviceId: service.id,
+          })
+          .where('doctor.deletedAt IS NULL')
+          .andWhere('doctor.isActive = :isActive', { isActive: true })
+          .getMany();
+
+        const doctors = doctorsRaw.map((d) => ({
+          id: d.id,
+          name: d.full_name,
+          avatar: d.avatar,
+        }));
+
+        return {
+          ...service,
+          doctors,
+        };
+      }),
+    );
+
+    return result.map((service) => {
       const category = service.category
         ? omit(service.category, [
             'createdAt',
@@ -123,13 +225,7 @@ export class ServiceService {
 
       service.category = category;
 
-      return omit(service, [
-        'deletedAt',
-        'createdAt',
-        'updatedAt',
-        'isActive',
-        // 'description',
-      ]);
+      return omit(service, ['deletedAt', 'createdAt', 'updatedAt', 'isActive']);
     });
   }
 
@@ -147,6 +243,24 @@ export class ServiceService {
       throw new NotFoundException('Không tìm thấy dịch vụ');
     }
 
+    const doctorsRaw = await this.doctorRepo
+      .createQueryBuilder('doctor')
+      .innerJoin('doctor.services', 'service', 'service.id = :serviceId', {
+        serviceId: service.id,
+      })
+      .where('doctor.deletedAt IS NULL')
+      .andWhere('doctor.isActive = :isActive', { isActive: true })
+      .getMany();
+
+    const doctors = doctorsRaw.map((d) => {
+      id = d.id;
+      return {
+        id: d.id,
+        name: d.full_name,
+        avatar: d.avatar,
+      };
+    });
+
     const category = service.category
       ? omit(service.category, [
           'createdAt',
@@ -156,14 +270,34 @@ export class ServiceService {
         ])
       : null;
 
-    const result = omit(service, [
-      'deletedAt',
-      'createdAt',
-      'updatedAt',
-      'isActive',
-    ]);
+    const result = omit(
+      {
+        ...service,
+        doctors,
+      },
+      ['deletedAt', 'createdAt', 'updatedAt', 'isActive'],
+    );
     result.category = category;
 
     return result as Service;
+  }
+
+  async findDoctorsByService(serviceId: string): Promise<Doctor[]> {
+    const service = await this.findOneService(serviceId);
+
+    const doctors = await this.doctorRepo
+      .createQueryBuilder('doctor')
+      .innerJoin('doctor.services', 'service', 'service.id = :serviceId', {
+        serviceId: service.id,
+      })
+      .where('doctor.deletedAt IS NULL')
+      .andWhere('doctor.isActive = :isActive', { isActive: true })
+      .getMany();
+
+    if (!doctors || doctors.length === 0) {
+      throw new NotFoundException('Không tìm thấy bác sĩ cho dịch vụ này');
+    }
+
+    return doctors;
   }
 }

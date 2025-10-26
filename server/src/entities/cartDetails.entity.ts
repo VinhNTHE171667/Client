@@ -30,6 +30,9 @@ export class CartDetail {
   @Column({ default: 1 })
   quantity: number;
 
+  @Column()
+  doctorId: string;
+
   // @Column({ type: 'decimal', precision: 10, scale: 2 })
   // price: number;
 }

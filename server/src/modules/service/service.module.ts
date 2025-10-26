@@ -6,11 +6,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { Category } from '@/entities/category.entity';
 import { Service } from '@/entities/service.entity';
+import { Doctor } from '@/entities/doctor.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    TypeOrmModule.forFeature([Category, Service]),
+    TypeOrmModule.forFeature([Category, Service, Doctor]),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,

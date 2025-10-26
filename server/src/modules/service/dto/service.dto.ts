@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsBoolean,
   //   IsArray,
   //   IsNotEmpty,
@@ -42,6 +43,12 @@ export class CreateServiceDto {
   @IsOptional()
   @IsBoolean({ message: 'Trạng thái hoạt động phải là true hoặc false' })
   isActive: boolean;
+
+  @ApiProperty({ type: [String], required: false })
+  @IsOptional()
+  @IsArray()
+  @IsUUID('all', { each: true })
+  doctorsIds?: string[];
 }
 
 export class UpdateServiceDto extends CreateServiceDto {

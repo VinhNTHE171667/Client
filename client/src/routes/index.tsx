@@ -17,6 +17,7 @@ import AccountDoctor from "@/pages/Admin/AccountDoctor";
 import ServicesComp from "@/pages/Services";
 import ServiceDetail from "@/pages/Services/ServiceDetail";
 import CartPage from "@/pages/Customer/Cart";
+import Booking from "@/pages/Customer/Bookings";
 
 const router = createBrowserRouter([
   {
@@ -163,6 +164,17 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <CartPage />,
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.bookings,
+    element: <HomeLayouts />,
+    children: [
+      {
+        index: true,
+        element: <Booking />,
       },
     ],
   },

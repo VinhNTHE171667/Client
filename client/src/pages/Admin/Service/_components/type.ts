@@ -18,5 +18,10 @@ export type servicesModelTable = {
   category: CategoryData;
   onUpdate: () => void;
   onRemove: () => void;
+  doctors: {
+    id: string;
+    name: string;
+    avatar: string | null;
+  }[];
   // onDisable: () => void;
 };

@@ -20,6 +20,10 @@ export type CartItemData = {
     }
   ];
   categoryId: string;
+  doctor: {
+    id: string;
+    name: string;
+  };
 };
 
 export const cartApi = createApi({
@@ -38,12 +42,16 @@ export const cartApi = createApi({
 
     addToCart: build.mutation<
       void,
-      { customerId: string; itemData: { itemId: string; quantity?: number } }
+      {
+        customerId: string;
+        itemData: { itemId: string; quantity?: number };
+        doctorId: string;
+      }
     >({
-      query: ({ customerId, itemData }) => ({
+      query: ({ customerId, itemData, doctorId }) => ({
         url: `/cart/add/${customerId}`,
         method: "Post",
-        data: itemData,
+        data: { ...itemData, doctorId },
       }),
     }),
 
