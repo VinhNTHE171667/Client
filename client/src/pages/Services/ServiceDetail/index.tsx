@@ -1,5 +1,16 @@
 import { useEffect, useState } from "react";
-import { Typography, Row, Col, Button, Card, Skeleton } from "antd";
+import {
+  Typography,
+  Row,
+  Col,
+  Button,
+  Card,
+  Skeleton,
+  Modal,
+  Empty,
+  List,
+  Avatar,
+} from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import styles from "./ServiceDetail.module.scss";
 
@@ -7,6 +18,7 @@ import NoImage from "@/assets/img/NoImage/NoImage.jpg";
 import {
   useGetPublicServiceByIdQuery,
   useGetPublicServicesMutation,
+  type ServiceData,
 } from "@/services/services";
 import { useParams, useNavigate } from "react-router-dom";
 import FancyButton from "@/components/FancyButton";
@@ -36,6 +48,13 @@ const ServiceDetail = () => {
   const [servicesData, setServicesData] = useState<Service[]>([]);
   const [getServices] = useGetPublicServicesMutation();
 
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedService, setSelectedService] = useState<ServiceData | null>(
+    null
+  );
+  const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
+
   const handleGetServices = async () => {
     try {
       const response = await getServices().unwrap();
@@ -52,29 +71,32 @@ const ServiceDetail = () => {
   const { auth } = useAuthStore();
   const [addToCart] = useAddToCartMutation();
 
-  const handleAddToCart = async () => {
-    if (!auth?.accountId) {
-      showError("Bạn cần đăng nhập để thêm vào giỏ hàng!");
+  const handleConfirmDoctor = async () => {
+    if (!selectedService || !selectedDoctorId) {
+      showError("Vui lòng chọn bác sĩ trước khi thêm vào giỏ hàng!");
       return;
     }
 
     try {
+      setIsAdding(true);
       await addToCart({
-        customerId: auth.accountId,
-        itemData: { itemId: id || "", quantity: 1 },
+        customerId: auth?.accountId || "",
+        itemData: { itemId: selectedService.id, quantity: 1 },
+        doctorId: selectedDoctorId,
       }).unwrap();
 
-      showSuccess("Đã thêm dịch vụ vào giỏ hàng!");
+      showSuccess("Thêm vào giỏ hàng thành công!");
+      setIsModalVisible(false);
+      setSelectedDoctorId(null);
     } catch (error: unknown) {
       if (error && typeof error === "object" && "message" in error) {
         showError(
           "Thêm vào giỏ hàng thất bại!",
           (error as { message?: string }).message
         );
-      } else {
-        showError("Thêm vào giỏ hàng thất bại!");
       }
-      console.error(error);
+    } finally {
+      setIsAdding(false);
     }
   };
 
@@ -163,7 +185,10 @@ const ServiceDetail = () => {
                   label="Thêm vào giỏ hàng"
                   size="middle"
                   variant="outline"
-                  onClick={handleAddToCart}
+                  onClick={() => {
+                    setSelectedService(serviceData);
+                    setIsModalVisible(true);
+                  }}
                 />
                 <FancyButton
                   label="Đặt lịch ngay"
@@ -208,6 +233,43 @@ const ServiceDetail = () => {
           </div>
         )}
       </div>
+
+      <Modal
+        title={`Chọn bác sĩ cho dịch vụ "${selectedService?.name || ""}"`}
+        open={isModalVisible}
+        onCancel={() => {
+          setIsModalVisible(false);
+          setSelectedDoctorId(null);
+        }}
+        onOk={handleConfirmDoctor}
+        okText="Xác nhận"
+        cancelText="Hủy"
+        confirmLoading={isAdding}
+        width={600}
+      >
+        {!selectedService?.doctors || selectedService.doctors.length === 0 ? (
+          <Empty description="Không có bác sĩ nào khả dụng cho dịch vụ này" />
+        ) : (
+          <List
+            dataSource={selectedService.doctors}
+            renderItem={(doctor) => (
+              <List.Item
+                className={`${styles.doctorItem} ${
+                  selectedDoctorId === doctor.id ? styles.selectedDoctor : ""
+                }`}
+                onClick={() => setSelectedDoctorId(doctor.id)}
+                style={{ cursor: "pointer" }}
+              >
+                <List.Item.Meta
+                  avatar={<Avatar src={doctor.avatar} />}
+                  title={doctor.name}
+                  description="Bác sĩ chuyên khoa"
+                />
+              </List.Item>
+            )}
+          />
+        )}
+      </Modal>
     </section>
   );
 };

@@ -1,28 +1,38 @@
-import { Card, Row, Col, Segmented, Typography, Empty, Pagination } from "antd";
+import {
+  Card,
+  Row,
+  Col,
+  Segmented,
+  Typography,
+  Empty,
+  Pagination,
+  Modal,
+  List,
+  Avatar,
+  Slider,
+  Button,
+} from "antd";
 import styles from "./Services.module.scss";
 import {
   useGetCategoriesMutation,
   useGetPublicServicesMutation,
+  type ServiceData,
 } from "@/services/services";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import NoImage from "@/assets/img/NoImage/NoImage.jpg";
 import FancyButton from "@/components/FancyButton";
 import { useAuthStore } from "@/hooks/UseAuth";
 import { showError, showSuccess } from "@/libs/toast";
-import { ShoppingCartOutlined } from "@ant-design/icons";
+import {
+  ReloadOutlined,
+  // SearchOutlined,
+  ShoppingCartOutlined,
+} from "@ant-design/icons";
 import { useAddToCartMutation } from "@/services/cart";
 import HeroSection from "@/components/HeroSection";
+import Search from "antd/es/transfer/search";
 
 const { Title, Paragraph } = Typography;
-
-type Service = {
-  id: string;
-  name: string;
-  price: number;
-  images: { url: string }[];
-  description: string;
-  category: { id: string; name: string };
-};
 
 type Category = {
   id: string;
@@ -35,11 +45,21 @@ const ServicesComp = () => {
   const [addToCart] = useAddToCartMutation();
 
   const [categoriesData, setCategoriesData] = useState<Category[]>([]);
-  const [servicesData, setServicesData] = useState<Service[]>([]);
+  const [servicesData, setServicesData] = useState<ServiceData[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
 
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 4;
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedService, setSelectedService] = useState<ServiceData | null>(
+    null
+  );
+  const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
+
+  const [searchText, setSearchText] = useState("");
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000000]);
 
   const { auth } = useAuthStore();
 
@@ -55,24 +75,32 @@ const ServicesComp = () => {
     }
   };
 
-  const handleAddToCart = async (serviceId: string) => {
+  const handleConfirmDoctor = async () => {
+    if (!selectedService || !selectedDoctorId) {
+      showError("Vui lòng chọn bác sĩ trước khi thêm vào giỏ hàng!");
+      return;
+    }
+
     try {
+      setIsAdding(true);
       await addToCart({
         customerId: auth?.accountId || "",
-        itemData: { itemId: serviceId, quantity: 1 },
+        itemData: { itemId: selectedService.id, quantity: 1 },
+        doctorId: selectedDoctorId,
       }).unwrap();
 
       showSuccess("Thêm vào giỏ hàng thành công!");
+      setIsModalVisible(false);
+      setSelectedDoctorId(null);
     } catch (error: unknown) {
       if (error && typeof error === "object" && "message" in error) {
         showError(
           "Thêm vào giỏ hàng thất bại!",
           (error as { message?: string }).message
         );
-      } else {
-        showError("Thêm vào giỏ hàng thất bại!");
       }
-      console.error(error);
+    } finally {
+      setIsAdding(false);
     }
   };
 
@@ -90,16 +118,34 @@ const ServicesComp = () => {
     handleGetServices();
   }, []);
 
-  const filteredServices =
-    selectedCategory === "all"
-      ? servicesData
-      : servicesData.filter((s) => s.category.id === selectedCategory);
+  const filteredServices = useMemo(() => {
+    return servicesData.filter((s) => {
+      if (selectedCategory !== "all" && s.category.id !== selectedCategory)
+        return false;
+
+      if (
+        searchText &&
+        !s.name.toLowerCase().includes(searchText.toLowerCase())
+      )
+        return false;
+
+      if (s.price < priceRange[0] || s.price > priceRange[1]) return false;
+
+      return true;
+    });
+  }, [servicesData, selectedCategory, searchText, priceRange]);
 
   const startIndex = (currentPage - 1) * pageSize;
   const currentServices = filteredServices.slice(
     startIndex,
     startIndex + pageSize
   );
+
+  const handleResetFilters = () => {
+    setSearchText("");
+    setPriceRange([0, 5000000]);
+    setSelectedCategory("all");
+  };
 
   return (
     <>
@@ -117,6 +163,7 @@ const ServicesComp = () => {
 
           <div className={styles.filterWrapper}>
             <Segmented
+              className={styles.categoryFilter}
               options={categoriesData.map((c) => ({
                 label: c.name,
                 value: c.id,
@@ -128,6 +175,36 @@ const ServicesComp = () => {
                 setCurrentPage(1);
               }}
             />
+
+            <div className={styles.advancedFilters}>
+              <Search
+                placeholder="Tìm kiếm dịch vụ..."
+                // className={styles.searchInput}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+
+              <div className={styles.priceFilter}>
+                <span>Khoảng giá:</span>
+                <Slider
+                  range
+                  min={0}
+                  max={5000000}
+                  step={10000}
+                  value={priceRange}
+                  onChange={(val) => setPriceRange(val as [number, number])}
+                  tooltip={{ formatter: (v) => `${v?.toLocaleString()}₫` }}
+                />
+              </div>
+
+              <Button
+                icon={<ReloadOutlined />}
+                onClick={handleResetFilters}
+                className={styles.resetBtn}
+              >
+                Xóa bộ lọc
+              </Button>
+            </div>
           </div>
 
           {currentServices.length === 0 ? (
@@ -197,7 +274,8 @@ const ServicesComp = () => {
                             className={styles.addToCartIcon}
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleAddToCart(service.id);
+                              setSelectedService(service);
+                              setIsModalVisible(true);
                             }}
                           />
                         </div>
@@ -220,6 +298,43 @@ const ServicesComp = () => {
           )}
         </div>
       </section>
+
+      <Modal
+        title={`Chọn bác sĩ cho dịch vụ "${selectedService?.name || ""}"`}
+        open={isModalVisible}
+        onCancel={() => {
+          setIsModalVisible(false);
+          setSelectedDoctorId(null);
+        }}
+        onOk={handleConfirmDoctor}
+        okText="Xác nhận"
+        cancelText="Hủy"
+        confirmLoading={isAdding}
+        width={600}
+      >
+        {!selectedService?.doctors || selectedService.doctors.length === 0 ? (
+          <Empty description="Không có bác sĩ nào khả dụng cho dịch vụ này" />
+        ) : (
+          <List
+            dataSource={selectedService.doctors}
+            renderItem={(doctor) => (
+              <List.Item
+                className={`${styles.doctorItem} ${
+                  selectedDoctorId === doctor.id ? styles.selectedDoctor : ""
+                }`}
+                onClick={() => setSelectedDoctorId(doctor.id)}
+                style={{ cursor: "pointer" }}
+              >
+                <List.Item.Meta
+                  avatar={<Avatar src={doctor.avatar} />}
+                  title={doctor.name}
+                  description="Bác sĩ chuyên khoa"
+                />
+              </List.Item>
+            )}
+          />
+        )}
+      </Modal>
     </>
   );
 };

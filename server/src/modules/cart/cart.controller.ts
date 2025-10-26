@@ -14,8 +14,9 @@ export class CartController {
   addItemToCart(
     @Param('id') customerId: string,
     @Body() itemData: { itemId: string; quantity?: number },
+    @Body('doctorId') doctorId: string,
   ) {
-    return this.cartService.addItemToCart(customerId, itemData);
+    return this.cartService.addItemToCart(customerId, itemData, doctorId);
   }
 
   @Delete(':id/items/:itemId')

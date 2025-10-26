@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   Button,
   Card,
   Col,
   Empty,
   Row,
-  Space,
   Typography,
   message,
+  Divider,
 } from "antd";
 import {
   DeleteOutlined,
@@ -32,59 +32,23 @@ const { Title } = Typography;
 
 const CartPage = () => {
   const navigate = useNavigate();
-
-  const [cartItems, setCartItems] = useState<CartItemData[]>([]);
-
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-
   const { auth } = useAuthStore();
 
-  const handleToggleSelect = (id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    );
-  };
-
-  const handleRemove = (id: string) => {
-    // setCartItems((prev) => prev.filter((item) => item.id !== id));
-    handleDeleteFromCart(id);
-
-    // message.success("Đã xóa dịch vụ khỏi giỏ hàng");
-  };
-
-  const handleCheckout = () => {
-    if (selectedIds.length === 0) {
-      message.warning("Hãy chọn ít nhất một dịch vụ để đặt lịch nhé!");
-      return;
-    }
-    message.success("Đi đến trang đặt lịch (mock)");
-  };
-
-  const handleBack = () => {
-    navigate(configRoutes.services);
-  };
+  const [cartItems, setCartItems] = useState<CartItemData[]>([]);
+  // const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);
 
   const [getCart] = useGetCartMutation();
+  const [deleteFromCart] = useDeleteFromCartMutation();
 
   const handleGetCart = async () => {
     try {
       const cart = await getCart(auth?.accountId || "").unwrap();
-
-      if (!cart) {
-        setCartItems([]);
-        return;
-      }
-
-      setCartItems(cart.items);
-
-      // showSuccess("Lấy giỏ hàng thành công!");
-    } catch (error) {
+      setCartItems(cart?.items || []);
+    } catch {
       showError("Lấy giỏ hàng thất bại!");
-      console.error(error);
     }
   };
-
-  const [deleteFromCart] = useDeleteFromCartMutation();
 
   const handleDeleteFromCart = async (itemId: string) => {
     try {
@@ -92,26 +56,66 @@ const CartPage = () => {
         customerId: auth?.accountId || "",
         itemId,
       }).unwrap();
-
-      message.success("Xóa dịch vụ khỏi giỏ hàng thành công!");
-      handleEvent();
-    } catch (error) {
-      showError("Xóa dịch vụ khỏi giỏ hàng thất bại!");
-      console.error(error);
+      message.success("Xóa dịch vụ thành công!");
+      handleGetCart();
+    } catch {
+      showError("Xóa dịch vụ thất bại!");
     }
   };
 
-  const handleEvent = () => {
-    handleGetCart();
-  };
-
   useEffect(() => {
-    handleEvent();
+    handleGetCart();
   }, []);
 
-  const total = cartItems
-    .filter((item) => selectedIds.includes(item.id))
-    .reduce((sum, item) => sum + item.price, 0);
+  const groupedByDoctor = useMemo(() => {
+    const groups: Record<string, CartItemData[]> = {};
+    cartItems.forEach((item) => {
+      const docId = item.doctor?.id || "no-doctor";
+      if (!groups[docId]) groups[docId] = [];
+      groups[docId].push(item);
+    });
+    return groups;
+  }, [cartItems]);
+
+  const handleSelectDoctor = (doctorId: string) => {
+    if (selectedDoctorId === doctorId) {
+      setSelectedDoctorId(null);
+      // setSelectedIds([]);
+    } else {
+      setSelectedDoctorId(doctorId);
+      // const doctorItems = groupedByDoctor[doctorId] || [];
+      // setSelectedIds(doctorItems.map((i) => i.id));
+    }
+  };
+
+  const total = (groupedByDoctor[selectedDoctorId || ""] || []).reduce(
+    (sum, i) => sum + i.price,
+    0
+  );
+
+  const handleCheckout = () => {
+    if (!selectedDoctorId) {
+      message.warning("Hãy chọn nhóm bác sĩ trước khi đặt lịch!");
+      return;
+    }
+
+    const selectedServices = groupedByDoctor[selectedDoctorId];
+
+    // navigate(configRoutes.bookings, {
+    //   state: {
+    //     doctorId: selectedDoctorId,
+    //     services: selectedServices,
+    //   },
+    // });
+
+    sessionStorage.setItem(
+      "booking-services",
+      JSON.stringify(selectedServices)
+    );
+    navigate(configRoutes.bookings);
+  };
+
+  const handleBack = () => navigate(configRoutes.services);
 
   return (
     <section className={styles.cartSection}>
@@ -137,82 +141,89 @@ const CartPage = () => {
           <Empty description="Chưa có dịch vụ nào trong giỏ hàng" />
         ) : (
           <>
-            <Row gutter={[16, 16]}>
-              {cartItems.map((item) => {
-                const selected = selectedIds.includes(item.id);
-                return (
-                  <Col xs={24} md={12} lg={8} key={item.id}>
-                    <Card
-                      //   hoverable
-                      className={styles.relatedCard}
-                      cover={
-                        <img
-                          alt={item.name}
-                          src={item.images?.[0]?.url || NoImage}
-                          className={styles.cartImage}
-                        />
-                      }
-                      actions={[
-                        <DeleteOutlined
-                          key="delete"
-                          onClick={() => handleRemove(item.id)}
-                        />,
-                      ]}
-                    >
-                      <Title level={4} className="cus-text-primary">
-                        {item.name}
+            {Object.entries(groupedByDoctor).map(([doctorId, items]) => {
+              const doctor = items[0]?.doctor;
+              const isSelected = selectedDoctorId === doctorId;
+
+              const doctorTotal = items.reduce((sum, i) => sum + i.price, 0);
+
+              return (
+                <div
+                  key={doctorId}
+                  className={`${styles.doctorGroup} ${
+                    isSelected ? styles.activeDoctor : ""
+                  }`}
+                >
+                  <div className={styles.doctorHeader}>
+                    <div className={styles.doctorInfo}>
+                      <Title level={4}>
+                        👨‍⚕️ {doctor?.name || "Không rõ bác sĩ"}
                       </Title>
-                      {/* <Text type="secondary">{item.duration}</Text> */}
-                      <div className={styles.cartPrice}>
-                        {item.price.toLocaleString()}đ
-                      </div>
+                      <span className={styles.doctorSub}>
+                        {items.length} dịch vụ • Tổng:{" "}
+                        {doctorTotal.toLocaleString()}đ
+                      </span>
+                    </div>
+                    <Button
+                      type={isSelected ? "primary" : "default"}
+                      icon={<CheckOutlined />}
+                      onClick={() => handleSelectDoctor(doctorId)}
+                    >
+                      {isSelected ? "Đã chọn" : "Chọn bác sĩ này"}
+                    </Button>
+                  </div>
 
-                      <Button
-                        block
-                        className={`${styles.selectButton} ${
-                          selected ? styles.selected : ""
-                        }`}
-                        icon={selected ? <CheckOutlined /> : undefined}
-                        onClick={() => handleToggleSelect(item.id)}
-                      >
-                        {selected ? "Đã chọn" : "Chọn dịch vụ"}
-                      </Button>
-                    </Card>
-                  </Col>
-                );
-              })}
-            </Row>
+                  <Row gutter={[16, 16]} style={{ marginTop: 20 }}>
+                    {items.map((item) => (
+                      <Col xs={24} md={12} lg={8} key={item.id}>
+                        <Card
+                          cover={
+                            <img
+                              alt={item.name}
+                              src={item.images?.[0]?.url || NoImage}
+                              className={styles.cartImage}
+                            />
+                          }
+                          actions={[
+                            <DeleteOutlined
+                              key="delete"
+                              onClick={() => handleDeleteFromCart(item.id)}
+                            />,
+                          ]}
+                          className={styles.relatedCard}
+                        >
+                          <Title level={5}>{item.name}</Title>
+                          <div className={styles.cartPrice}>
+                            {item.price.toLocaleString()}đ
+                          </div>
+                        </Card>
+                      </Col>
+                    ))}
+                  </Row>
 
-            <div className={styles.cartSummary}>
-              <div className={styles.summaryBox}>
-                <div className={styles.summaryRow}>
-                  <span>Tạm tính:</span>
-                  <span>{total.toLocaleString()}đ</span>
+                  <Divider />
                 </div>
-                <div className={`${styles.summaryRow} ${styles.total}`}>
-                  <span>Tổng cộng:</span>
-                  <span>{total.toLocaleString()}đ</span>
-                </div>
-              </div>
+              );
+            })}
 
-              <Space size="middle" className={styles.cartActions}>
-                <FancyButton
-                  variant="outline"
-                  icon={<ArrowLeftOutlined />}
-                  onClick={handleBack}
-                  size="middle"
-                  label="Trở về dịch vụ"
-                />
+            {selectedDoctorId && (
+              <div className={styles.cartSummary}>
+                <div className={styles.summaryBox}>
+                  <div className={styles.summaryRow}>
+                    <span>Tổng cộng:</span>
+                    <span>{total.toLocaleString()}đ</span>
+                  </div>
+                </div>
+
                 <FancyButton
                   icon={<CalendarOutlined />}
                   size="middle"
                   onClick={handleCheckout}
-                  disabled={selectedIds.length === 0}
                   variant="primary"
                   label="Đặt lịch ngay"
                 />
-              </Space>
-            </div>
+              </div>
+            )}
           </>
         )}
       </div>

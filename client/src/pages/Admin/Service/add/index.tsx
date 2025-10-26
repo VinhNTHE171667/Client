@@ -24,6 +24,7 @@ import {
 } from "@/services/services";
 import type { categoriesModelTable } from "@/pages/Admin/Categories/_components/type";
 import FancyButton from "@/components/FancyButton";
+import { useGetDoctorsMutation, type DoctorDatas } from "@/services/account";
 
 interface AddServiceProps {
   isOpen: boolean;
@@ -42,6 +43,8 @@ export default function AddService({
 
   const [createService] = useCreateServiceMutation();
   const [getCategories] = useGetCategoriesMutation();
+  const [getDoctors] = useGetDoctorsMutation();
+  const [doctors, setDoctors] = useState<DoctorDatas[]>([]);
   const [categories, setCategories] = useState<categoriesModelTable[]>([]);
 
   const handleGetCategories = async () => {
@@ -59,11 +62,21 @@ export default function AddService({
     }
   };
 
+  const handleGetDoctors = async () => {
+    try {
+      const res = await getDoctors();
+      setDoctors(res.data ?? []);
+    } catch {
+      showError("Không thể tải danh sách bác sĩ");
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       form.resetFields();
       setFileList([]);
       handleGetCategories();
+      handleGetDoctors();
     }
   }, [isOpen]);
 
@@ -79,12 +92,17 @@ export default function AddService({
   const onFinish = async (values: any) => {
     setIsLoading(true);
     try {
+      const doctorsIds = Array.isArray(values.doctorsIds)
+        ? values.doctorsIds
+        : [];
+
       const formData = new FormData();
       formData.append("name", values.name);
       formData.append("price", values.price);
       formData.append("categoryId", values.categoryId);
       formData.append("description", values.description ?? "");
       formData.append("isActive", values.isActive ? "true" : "false");
+      formData.append("doctorsIds", JSON.stringify(doctorsIds));
 
       fileList.forEach((file) => {
         if (file.originFileObj) {
@@ -192,6 +210,21 @@ export default function AddService({
                     </div>
                   )}
                 </Upload>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={[24, 8]} className="mb-5">
+            <Col span={24}>
+              <Form.Item label="Chọn bác sĩ" name="doctorsIds">
+                <Select
+                  mode="multiple"
+                  placeholder="Chọn bác sĩ cho dịch vụ"
+                  options={doctors.map((doctor) => ({
+                    label: doctor.full_name,
+                    value: doctor.id,
+                  }))}
+                />
               </Form.Item>
             </Col>
           </Row>

@@ -83,6 +83,25 @@ export const servicesColumn = (
     onFilter: (value, record) => record.categoryId === value,
   },
   {
+    title: "Bác sĩ thực hiện",
+    dataIndex: "doctors",
+    render: (_, record) => {
+      return (
+        <>
+          {record.doctors && record.doctors.length > 0 ? (
+            record.doctors.map((doc) => (
+              <Tag color="blue" key={doc.id}>
+                {doc.name}
+              </Tag>
+            ))
+          ) : (
+            <Tag color="red">Chưa có bác sĩ</Tag>
+          )}
+        </>
+      );
+    },
+  },
+  {
     title: "Trạng thái",
     dataIndex: "isActive",
     render: (_, record) => {
