@@ -101,18 +101,18 @@ const CartPage = () => {
 
     const selectedServices = groupedByDoctor[selectedDoctorId];
 
-    // navigate(configRoutes.bookings, {
-    //   state: {
-    //     doctorId: selectedDoctorId,
-    //     services: selectedServices,
-    //   },
-    // });
+    navigate(configRoutes.bookings, {
+      state: {
+        doctorId: selectedDoctorId,
+        services: selectedServices,
+      },
+    });
 
-    sessionStorage.setItem(
-      "booking-services",
-      JSON.stringify(selectedServices)
-    );
-    navigate(configRoutes.bookings);
+    // sessionStorage.setItem(
+    //   "booking-services",
+    //   JSON.stringify(selectedServices)
+    // );
+    // navigate(configRoutes.bookings);
   };
 
   const handleBack = () => navigate(configRoutes.services);

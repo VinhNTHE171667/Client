@@ -66,6 +66,10 @@ const BookingCalendar: React.FC = () => {
   const state = (location.state || {}) as LocationState;
   const services = state.services ?? [];
 
+  // const [currentView, setCurrentView] = useState<"month" | "week" | "day">(
+  //   "week"
+  // );
+
   // const [currentView, setCurrentView] = useState<View>("week");
 
   if (!services.length) {
