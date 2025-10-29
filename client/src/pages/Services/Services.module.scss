@@ -405,7 +405,7 @@
     visibility: hidden;
     transform: translateY(10px);
     z-index: 20;
-    pointer-events: none; // tránh bị flicker khi hover
+    pointer-events: none;
 }
 
 .doctorHoverContent {
