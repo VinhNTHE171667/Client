@@ -1,0 +1,48 @@
+.profilePage {
+    background: linear-gradient(135deg, #e8f9e9, #ffffff);
+    min-height: 100vh;
+
+    .profileCard {
+        border-radius: 20px;
+        border: none;
+        max-width: 600px;
+        margin: 0 auto;
+        background: #fff;
+    }
+
+    .cardTitle {
+        color: #1b8c2e;
+        font-weight: 700;
+        text-align: center;
+        font-size: 1.4rem;
+    }
+
+    .avatar {
+        border: 4px solid #3ac24b;
+        box-shadow: 0 4px 15px rgba(50, 150, 50, 0.3);
+    }
+
+    .uploadBtn {
+        background-color: #3ac24b;
+        border: none;
+        font-weight: 600;
+
+        &:hover {
+            background-color: #2b9f3b !important;
+        }
+    }
+
+    .saveBtn {
+        background-color: #2ebd47;
+        border: none;
+        padding: 8px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background-color: #249a3a !important;
+            transform: translateY(-2px);
+        }
+    }
+}

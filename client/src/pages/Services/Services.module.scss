@@ -366,3 +366,87 @@
 
     padding: 12px 12px !important;
 }
+
+.doctorWrapper {
+    position: relative;
+}
+
+.doctorItem {
+    border-radius: 10px;
+    margin: 10px;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    padding: 12px;
+
+    &:hover {
+        background-color: #f9f9f9;
+        transform: translateY(-2px);
+    }
+
+    &:hover+.doctorHoverCard {
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, -10px);
+    }
+}
+
+.doctorHoverCard {
+    position: absolute;
+    top: 0;
+    left: 105%;
+    width: 300px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    padding: 18px;
+    transition: all 0.3s ease;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    z-index: 20;
+    pointer-events: none;
+}
+
+.doctorHoverContent {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.doctorHoverInfo {
+    h4 {
+        margin: 0 0 6px;
+        font-size: 1.05rem;
+        color: #2f3e46;
+    }
+
+    p {
+        font-size: 0.85rem;
+        margin: 3px 0;
+        color: #6b7c74;
+
+        &.bio {
+            margin-top: 8px;
+            font-style: italic;
+            color: #8a9b95;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    }
+}
+
+.doctorHoverCard::before {
+    content: "";
+    position: absolute;
+    top: 20px;
+    left: -10px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 10px solid white;
+    filter: drop-shadow(-1px 2px 2px rgba(0, 0, 0, 0.05));
+}

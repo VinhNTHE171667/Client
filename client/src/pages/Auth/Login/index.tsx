@@ -41,7 +41,7 @@ const LoginPage = () => {
           address?: string;
           image?: string;
           role?: string;
-          spaId?: string;
+          avatar?: string | null;
         };
         error?: { data?: { message?: string[] } };
       };
@@ -56,7 +56,7 @@ const LoginPage = () => {
           address: res.data.address || "",
           image: res.data.image || "",
           roles: res.data.role ? (res.data.role as RoleEnumType) : null,
-          spaId: res.data.spaId || null,
+          avatar: res.data.avatar || null,
         });
 
         if (res.data.role === RoleEnum.Admin) {

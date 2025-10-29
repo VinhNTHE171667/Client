@@ -1,0 +1,126 @@
+.profilePage {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+.heroSection {
+    position: relative;
+    background: linear-gradient(180deg, #3ddab4, #0faf90);
+    padding: 80px 0 60px;
+    text-align: center;
+    color: #fff;
+
+    .overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+    .heroContent {
+        position: relative;
+        z-index: 2;
+    }
+
+    .avatar {
+        border: 4px solid #fff;
+        margin-bottom: 16px;
+    }
+
+    h1 {
+        font-size: 28px;
+        font-weight: 700;
+    }
+
+    .specialization {
+        font-size: 18px;
+        opacity: 0.9;
+    }
+
+    .backBtn {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        border: none;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+    }
+}
+
+.infoCard {
+    margin-top: -60px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    padding: 24px;
+    background: #fff;
+}
+
+.biography {
+    color: #555;
+    line-height: 1.6;
+}
+
+.tags {
+    margin-bottom: 16px;
+}
+
+.bookBtn {
+    margin-top: 16px;
+    background: #1890ff;
+    border: none;
+    font-weight: 600;
+
+    &:hover {
+        background: #40a9ff;
+    }
+}
+
+.serviceSection {
+    margin-top: 80px;
+    text-align: center;
+
+    .header {
+        margin-bottom: 32px;
+
+        h2 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #2f3e46;
+        }
+
+        p {
+            color: #6b7c74;
+            font-size: 15px;
+        }
+    }
+
+    .card {
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        text-align: left;
+
+        &:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .cardContent {
+            padding: 20px;
+
+            h3 {
+                font-size: 17px;
+                font-weight: 600;
+                color: #2f3e46;
+            }
+
+            p {
+                color: #6b7c74;
+                font-size: 14px;
+            }
+        }
+    }
+}
