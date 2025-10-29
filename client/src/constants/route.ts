@@ -9,6 +9,7 @@ export const configRoutes = {
   profile: "/profile",
   cart: "/cart",
   bookings: "/bookings",
+  doctorProfile: "/services/doctor/:id",
 
   adminDashboard: "/admin/dashboard",
   adminCustomers: "/admin/customers",

@@ -136,4 +136,9 @@ export class AccountController {
   updateDoctorPassword(@Body() dto: UpdatePasswordDto) {
     return this.accountService.updateDoctorPassword(dto);
   }
+
+  @Get('doctors/public-profile/:id')
+  publishDoctorProfile(@Param('id') id: string) {
+    return this.accountService.getPublicDoctorProfile(id);
+  }
 }

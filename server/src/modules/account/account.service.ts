@@ -367,4 +367,20 @@ export class AccountService {
     doctor.isActive = !doctor.isActive;
     return this.doctorRepository.save(doctor);
   }
+
+  async getPublicDoctorProfile(id: string): Promise<Doctor> {
+    const doctor = await this.findOneDoctor(id);
+    doctor.isActive = true;
+    const result = await this.doctorRepository.save(doctor);
+
+    const doctorEdited = {
+      ...omit(result, ['password', 'refreshToken']),
+      services: result.services.map((s) => ({
+        id: s.id,
+        name: s.name,
+      })),
+    };
+
+    return doctorEdited;
+  }
 }

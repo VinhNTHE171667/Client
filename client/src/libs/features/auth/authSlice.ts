@@ -14,7 +14,7 @@ export type AuthState = {
 
   roles: Role | null;
 
-  spaId: string | null;
+  avatar?: string | null;
 
   //   levelMembership: SpaMembershipLevelType | null;
 };
@@ -30,7 +30,8 @@ const initialState: AuthState = {
   image: null,
   roles: null,
 
-  spaId: null,
+  avatar: null,
+  // spaId: null,
   //   levelMembership: null,
 };
 

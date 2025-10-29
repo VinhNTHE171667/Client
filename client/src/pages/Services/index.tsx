@@ -31,6 +31,7 @@ import {
 import { useAddToCartMutation } from "@/services/cart";
 import HeroSection from "@/components/HeroSection";
 import Search from "antd/es/transfer/search";
+import { Link } from "react-router-dom";
 
 const { Title, Paragraph } = Typography;
 
@@ -318,19 +319,41 @@ const ServicesComp = () => {
           <List
             dataSource={selectedService.doctors}
             renderItem={(doctor) => (
-              <List.Item
-                className={`${styles.doctorItem} ${
-                  selectedDoctorId === doctor.id ? styles.selectedDoctor : ""
-                }`}
-                onClick={() => setSelectedDoctorId(doctor.id)}
-                style={{ cursor: "pointer" }}
-              >
-                <List.Item.Meta
-                  avatar={<Avatar src={doctor.avatar} />}
-                  title={doctor.name}
-                  description="Bác sĩ chuyên khoa"
-                />
-              </List.Item>
+              <div className={styles.doctorWrapper}>
+                <List.Item
+                  className={`${styles.doctorItem} ${
+                    selectedDoctorId === doctor.id ? styles.selectedDoctor : ""
+                  }`}
+                  onClick={() => setSelectedDoctorId(doctor.id)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <List.Item.Meta
+                    avatar={<Avatar src={doctor.avatar} />}
+                    title={
+                      <Link to={`/services/doctor/${doctor.id}`}>
+                        {doctor.name}
+                      </Link>
+                    }
+                    description="Bác sĩ chuyên khoa"
+                  />
+                </List.Item>
+
+                <div className={styles.doctorHoverCard}>
+                  <div className={styles.doctorHoverContent}>
+                    <Avatar size={80} src={doctor.avatar} />
+                    <div className={styles.doctorHoverInfo}>
+                      <h4>{doctor.name}</h4>
+                      <p>
+                        <b>Chuyên môn:</b> {doctor.specialization}
+                      </p>
+                      <p>
+                        <b>Kinh nghiệm:</b> {doctor.experience_years} năm
+                      </p>
+                      <p className={styles.bio}>{doctor.biography}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
           />
         )}

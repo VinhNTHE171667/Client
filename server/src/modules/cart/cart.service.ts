@@ -67,6 +67,10 @@ export class CartService {
           doctor: {
             id: doctor.id,
             name: doctor.full_name,
+            specialization: doctor.specialization,
+            avatar: doctor.avatar,
+            biography: doctor.biography,
+            experience_years: doctor.experience_years,
           },
         };
       }),

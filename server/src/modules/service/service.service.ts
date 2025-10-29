@@ -204,6 +204,9 @@ export class ServiceService {
           id: d.id,
           name: d.full_name,
           avatar: d.avatar,
+          specialization: d.specialization,
+          biography: d.biography,
+          experience_years: d.experience_years,
         }));
 
         return {
@@ -258,6 +261,9 @@ export class ServiceService {
         id: d.id,
         name: d.full_name,
         avatar: d.avatar,
+        specialization: d.specialization,
+        biography: d.biography,
+        experience_years: d.experience_years,
       };
     });
 

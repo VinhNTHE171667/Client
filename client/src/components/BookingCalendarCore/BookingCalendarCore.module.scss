@@ -1,0 +1,112 @@
+.calendarContainer {
+    background-color: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    padding: 20px;
+    transition: all 0.3s ease;
+    border: 1px solid #f0f0f0;
+
+    &:hover {
+        box-shadow: 0 8px 26px rgba(0, 0, 0, 0.12);
+    }
+
+    .rbc-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        font-size: 15px;
+        flex-wrap: wrap;
+        gap: 10px;
+
+        .rbc-btn-group {
+            button {
+                background-color: var(--color-secondary);
+                border: 1px solid #d9d9d9;
+                color: #3a3a3a;
+                padding: 6px 14px;
+                border-radius: 8px;
+                margin-right: 6px;
+                transition: all 0.2s ease;
+
+                &:hover {
+                    background-color: var(--color-primary);
+                    border-color: var(--color-accent);
+                    color: #fff;
+                }
+
+                &.rbc-active {
+                    background-color: var(--color-primary);
+                    color: #fff;
+                    border-color: var(--color-primary);
+                }
+            }
+        }
+
+        .rbc-toolbar-label {
+            font-weight: 600;
+            color: var(--color-accent);
+            font-size: 16px;
+        }
+    }
+
+    .rbc-month-view,
+    .rbc-time-view {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .rbc-header {
+        background-color: var(--color-secondary);
+        font-weight: 600;
+        color: var(--color-accent);
+        border-bottom: 1px solid #e0d2c0;
+        padding: 8px 0;
+    }
+
+    .rbc-date-cell {
+        color: #555;
+        font-weight: 500;
+
+        &.rbc-now {
+            color: var(--color-primary);
+        }
+    }
+
+    .rbc-today {
+        background-color: rgba(127, 185, 122, 0.15);
+    }
+
+    .rbc-event {
+        background-color: var(--color-primary) !important;
+        border-radius: 10px;
+        padding: 4px 8px;
+        color: #fff !important;
+        font-weight: 500;
+        font-size: 13px;
+        border: none !important;
+    }
+
+    .rbc-selected-cell {
+        background-color: rgba(124, 183, 119, 0.2) !important;
+    }
+
+    .rbc-time-slot {
+        transition: background-color 0.15s ease;
+
+        &:hover {
+            background-color: rgba(92, 161, 106, 0.12);
+        }
+    }
+
+    .rbc-time-view {
+        .rbc-time-header {
+            background-color: var(--color-secondary);
+        }
+
+        .rbc-timeslot-group {
+            border-color: #f1ede7;
+        }
+    }
+}

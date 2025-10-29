@@ -1,27 +1,12 @@
-import React, { useState } from "react";
-import {
-  Calendar,
-  dateFnsLocalizer,
-  type SlotInfo,
-  type Event as RBCEvent,
-} from "react-big-calendar";
-import { format, parse, startOfWeek, getDay } from "date-fns";
-import { vi } from "date-fns/locale/vi";
+import React, { useEffect, useState } from "react";
+import { type SlotInfo, type Event as RBCEvent } from "react-big-calendar";
 import dayjs from "dayjs";
 import { Modal, Form, Input, TimePicker, Button, message, Card } from "antd";
 import { Container } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import styles from "./Booking.module.scss";
 import { configRoutes } from "@/constants/route";
-
-const locales = { vi };
-const localizer = dateFnsLocalizer({
-  format,
-  parse,
-  startOfWeek,
-  getDay,
-  locales,
-});
+import BookingCalendarCore from "@/components/BookingCalendarCore";
 
 interface ServiceImage {
   url: string;
@@ -66,11 +51,11 @@ const BookingCalendar: React.FC = () => {
   const state = (location.state || {}) as LocationState;
   const services = state.services ?? [];
 
-  // const [currentView, setCurrentView] = useState<"month" | "week" | "day">(
-  //   "week"
-  // );
-
-  // const [currentView, setCurrentView] = useState<View>("week");
+  useEffect(() => {
+    setTimeout(() => {
+      window.dispatchEvent(new Event("loading"));
+    }, 300);
+  }, []);
 
   if (!services.length) {
     return (
@@ -133,29 +118,9 @@ const BookingCalendar: React.FC = () => {
         <h2 className={styles.title}>Chọn lịch hẹn của bạn</h2>
 
         <div className={styles.calendarWrapper}>
-          <Calendar
-            selectable
-            popup
-            localizer={localizer}
+          <BookingCalendarCore
             events={events}
-            startAccessor="start"
-            endAccessor="end"
-            style={{ height: "75vh", backgroundColor: "#fff" }}
-            onSelectSlot={(e) => {
-              handleSelectSlot(e);
-            }}
-            // view={currentView}
-            // onView={(view) => setCurrentView(view)}
-            messages={{
-              next: "Tiếp",
-              previous: "Trước",
-              today: "Hôm nay",
-              month: "Tháng",
-              week: "Tuần",
-              day: "Ngày",
-            }}
-            views={["month", "week", "day"]}
-            defaultView="week"
+            onSelectSlot={handleSelectSlot}
           />
         </div>
 

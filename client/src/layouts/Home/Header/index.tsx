@@ -47,7 +47,7 @@ const Header = () => {
     {
       key: "1",
       label: "Trang cá nhân",
-      onClick: () => navigate(""),
+      onClick: () => navigate(configRoutes.profile),
     },
     {
       key: "2",
@@ -157,16 +157,28 @@ const Header = () => {
                         transition: "0.2s ease-in-out",
                       }}
                     >
-                      <Avatar
-                        size="large"
-                        style={{
-                          backgroundColor: "#1677ff",
-                          fontWeight: "bold",
-                          transition: "transform 0.2s",
-                        }}
-                      >
-                        {userInitial}
-                      </Avatar>
+                      {auth?.avatar ? (
+                        <Avatar
+                          size="large"
+                          src={auth.avatar}
+                          style={{
+                            backgroundColor: "#1677ff",
+                            fontWeight: "bold",
+                            transition: "transform 0.2s",
+                          }}
+                        />
+                      ) : (
+                        <Avatar
+                          size="large"
+                          style={{
+                            backgroundColor: "#1677ff",
+                            fontWeight: "bold",
+                            transition: "transform 0.2s",
+                          }}
+                        >
+                          {userInitial}
+                        </Avatar>
+                      )}
                       <span className="d-none d-xl-block fw-bold text-dark">
                         {auth?.fullName || "Tài khoản"}
                       </span>

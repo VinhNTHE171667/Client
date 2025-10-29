@@ -18,6 +18,8 @@ import ServicesComp from "@/pages/Services";
 import ServiceDetail from "@/pages/Services/ServiceDetail";
 import CartPage from "@/pages/Customer/Cart";
 import Booking from "@/pages/Customer/Bookings";
+import Profile from "@/pages/Customer/Profile";
+import DoctorPublicProfile from "@/pages/Services/DoctorProfile";
 
 const router = createBrowserRouter([
   {
@@ -175,6 +177,28 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <Booking />,
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.profile,
+    element: <HomeLayouts />,
+    children: [
+      {
+        index: true,
+        element: <Profile />,
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.doctorProfile,
+    element: <HomeLayouts />,
+    children: [
+      {
+        index: true,
+        element: <DoctorPublicProfile />,
       },
     ],
   },

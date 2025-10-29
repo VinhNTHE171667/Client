@@ -37,6 +37,9 @@ export type ServiceData = {
     id: string;
     name: string;
     avatar: string | null;
+    specialization: string;
+    biography: string | null;
+    experience_years: number | null;
   }[];
 };
 

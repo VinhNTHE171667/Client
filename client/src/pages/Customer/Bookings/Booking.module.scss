@@ -1,3 +1,8 @@
+.bookingPage * {
+    pointer-events: auto !important;
+    z-index: auto !important;
+}
+
 .bookingPage {
     padding: 60px 0;
     background-color: #f5f9ff;
@@ -29,31 +34,7 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
     margin-bottom: 24px;
 
-    .rbc-toolbar {
-        background-color: #eaf2ff;
-        border-radius: 8px;
-        padding: 10px;
-        position: relative;
-        z-index: 10;
-    }
 
-    .rbc-toolbar button {
-        background: #1677ff;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        padding: 4px 10px;
-        transition: 0.3s;
-
-        &:hover {
-            background: #4096ff;
-        }
-    }
-
-    .rbc-event {
-        background-color: #1677ff;
-        border: none;
-    }
 }
 
 .selectedList {
@@ -125,20 +106,4 @@
     &:hover {
         background: linear-gradient(90deg, #4096ff, #1677ff);
     }
-}
-
-:global {
-    .rbc-calendar {
-        position: relative;
-    }
-
-    .rbc-toolbar {
-        z-index: 10 !important;
-    }
-
-    .rbc-btn-group button {
-        cursor: pointer;
-    }
-
-
 }
