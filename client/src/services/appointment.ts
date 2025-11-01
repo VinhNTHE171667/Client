@@ -56,6 +56,26 @@ export type AppointmentProps = {
       isActive: boolean;
     }[];
   }[];
+  customer: {
+    id: string;
+    avatar: string | null;
+    full_name: string;
+    gender: "male" | "female" | "other";
+    birth_date: string;
+    password: string;
+    refreshToken: string;
+    email: string;
+    phone: string;
+    address: string | null;
+    customer_type: "regular" | "vip" | "premium";
+    total_spent: string;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: null;
+    membershipId: null;
+    isActive: true;
+    isVerified: false;
+  };
   staff: null;
 };
 
@@ -98,11 +118,58 @@ export const appointmentApi = createApi({
       { customerId: string }
     >({
       query: ({ customerId }) => ({
-        url: `/appointment`,
+        url: `/appointment/customer`,
         method: "GET",
         params: {
           customerId,
         },
+      }),
+    }),
+
+    getAppointmentsForManagement: build.mutation<AppointmentProps[], void>({
+      query: () => ({
+        url: `/appointment/management`,
+        method: "GET",
+      }),
+    }),
+
+    updateAppointmentStatusConfirmed: build.mutation<
+      AppointmentProps,
+      { appointmentId: string }
+    >({
+      query: ({ appointmentId }) => ({
+        url: `/appointment/${appointmentId}/confirm`,
+        method: "PATCH",
+      }),
+    }),
+
+    updateAppointmentStatusImported: build.mutation<
+      AppointmentProps,
+      { appointmentId: string }
+    >({
+      query: ({ appointmentId }) => ({
+        url: `/appointment/${appointmentId}/imported`,
+        method: "PATCH",
+      }),
+    }),
+
+    updateAppointmentStatusApproved: build.mutation<
+      AppointmentProps,
+      { appointmentId: string }
+    >({
+      query: ({ appointmentId }) => ({
+        url: `/appointment/${appointmentId}/approve`,
+        method: "PATCH",
+      }),
+    }),
+
+    updateAppointmentStatusRejected: build.mutation<
+      AppointmentProps,
+      { appointmentId: string }
+    >({
+      query: ({ appointmentId }) => ({
+        url: `/appointment/${appointmentId}/reject`,
+        method: "PATCH",
       }),
     }),
 
@@ -142,4 +209,11 @@ export const {
   useGetAppointmentsByCustomerMutation,
   useCreateLinkPaymentMutation,
   useUpdatePaymentStatusMutation,
+
+  useUpdateAppointmentStatusConfirmedMutation,
+  useUpdateAppointmentStatusImportedMutation,
+  useUpdateAppointmentStatusApprovedMutation,
+  useUpdateAppointmentStatusRejectedMutation,
+
+  useGetAppointmentsForManagementMutation,
 } = appointmentApi;

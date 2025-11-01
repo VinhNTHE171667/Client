@@ -112,4 +112,7 @@ export class Appointment {
 
   @Column({ nullable: true })
   orderCode?: number;
+
+  @Column({ default: 'online' })
+  appointmentType?: 'online' | 'offline';
 }

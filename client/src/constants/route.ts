@@ -22,6 +22,9 @@ export const configRoutes = {
   adminDoctors: "/admin/doctors",
   adminServices: "/admin/services",
   adminVouchers: "/admin/vouchers",
+
+  staffDashboard: "/staff/dashboard",
+  staffOrders: "/staff/orders",
 };
 
 export const configError = {

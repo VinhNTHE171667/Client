@@ -26,16 +26,17 @@ import dayjs from "dayjs";
 import { Container, Row, Col } from "react-bootstrap";
 import styles from "./Order.module.scss";
 import {
+  useCreateLinkPaymentMutation,
   useGetAppointmentsByCustomerMutation,
   type AppointmentProps,
 } from "@/services/appointment";
 import { useAuthStore } from "@/hooks/UseAuth";
 import {
-  CalendarOutlined,
   EditOutlined,
   DeleteOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
+import { configRoutes } from "@/constants/route";
 
 const { confirm } = Modal;
 
@@ -116,6 +117,54 @@ const CustomerOrders: React.FC = () => {
       setEditModal(false);
     });
   };
+  const [createPaymentLink] = useCreateLinkPaymentMutation();
+
+  const handleDeposit = async (item: AppointmentProps) => {
+    try {
+      const total = (item.details ?? []).reduce(
+        (sum, d) => sum + Number(d.price ?? 0),
+        0
+      );
+
+      if (total <= 0) {
+        message.error("Không có giá trị dịch vụ để đặt cọc.");
+        return;
+      }
+
+      const depositAmount = Math.ceil(total * 0.5);
+
+      const payload = {
+        appointmentId: item.id,
+        amount: depositAmount,
+        description: `Coc lich hen #${item.id}`.slice(0, 25),
+        returnUrl: `${window.location.origin}${configRoutes.paymentSuccess}`,
+        cancelUrl: `${window.location.origin}${configRoutes.paymentFail}`,
+        customerName: item.customer?.full_name || "Khách hàng",
+      };
+
+      const res = await createPaymentLink(payload).unwrap();
+
+      if (res?.checkoutUrl) {
+        message.success("Tạo liên kết thanh toán thành công!");
+        window.location.href = res.checkoutUrl;
+      } else {
+        throw new Error("Không nhận được liên kết thanh toán từ máy chủ.");
+      }
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : "Đã xảy ra lỗi khi tạo đặt cọc.";
+      message.error(msg);
+    }
+  };
+
+  const statusTagColor = (status?: string) =>
+    status === "CANCELLED"
+      ? "red"
+      : status === "COMPLETED"
+      ? "green"
+      : status === "CONFIRMED" || status === "confirmed"
+      ? "blue"
+      : "cyan";
 
   return (
     <Container className={styles.ordersPage}>
@@ -216,94 +265,114 @@ const CustomerOrders: React.FC = () => {
               <List
                 itemLayout="vertical"
                 dataSource={appointments}
-                renderItem={(item) => (
-                  <Card
-                    className={styles.orderCard}
-                    key={item.id}
-                    bordered={false}
-                  >
-                    <List.Item>
-                      <List.Item.Meta
-                        avatar={
-                          <Avatar
-                            shape="square"
-                            size={72}
-                            src={
-                              item.details?.[0]?.service?.[0]?.images?.[0]?.url
-                            }
-                          />
-                        }
-                        title={
-                          <div className={styles.header}>
-                            <h4>
-                              {item.details?.[0]?.service?.[0]?.name ||
-                                "Dịch vụ"}
-                            </h4>
-                            <Tag
-                              color={
-                                item.status === "CANCELLED"
-                                  ? "red"
-                                  : item.status === "COMPLETED"
-                                  ? "green"
-                                  : "blue"
+                renderItem={(item) => {
+                  const totalPrice = item.details
+                    ?.reduce((sum, d) => sum + Number(d.price ?? 0), 0)
+                    .toLocaleString("vi-VN");
+                  const isConfirmed =
+                    item.status === "CONFIRMED" || item.status === "confirmed";
+                  const isImported =
+                    item.status === "IMPORTED" || item.status === "imported";
+
+                  return (
+                    <Card
+                      className={styles.orderCard}
+                      key={item.id}
+                      bordered={false}
+                    >
+                      <List.Item>
+                        <List.Item.Meta
+                          avatar={
+                            <Avatar
+                              shape="square"
+                              size={72}
+                              src={
+                                item.details?.[0]?.service?.[0]?.images?.[0]
+                                  ?.url
                               }
-                            >
-                              {item.status}
-                            </Tag>
+                            />
+                          }
+                          title={
+                            <div className={styles.header}>
+                              <h4>
+                                {item.details?.[0]?.service?.[0]?.name ||
+                                  "Dịch vụ"}
+                              </h4>
+                              <Tag color={statusTagColor(item.status)}>
+                                {item.status}
+                              </Tag>
+                            </div>
+                          }
+                          description={
+                            <>
+                              <p>
+                                <strong>Ngày:</strong>{" "}
+                                {dayjs(item.startTime).format(
+                                  "DD/MM/YYYY HH:mm"
+                                )}
+                              </p>
+                              <p>
+                                <strong>Bác sĩ:</strong>{" "}
+                                {item.doctor
+                                  ? item.doctor.full_name
+                                  : "Chưa có"}
+                              </p>
+                              <p>
+                                <strong>Ghi chú:</strong>{" "}
+                                {item.note || "Không có"}
+                              </p>
+                            </>
+                          }
+                        />
+                        <div className={styles.footer}>
+                          <div
+                            className={`${styles.totalPrice} cus-text-primary`}
+                          >
+                            {totalPrice}₫
                           </div>
-                        }
-                        description={
-                          <>
-                            <p>
-                              <strong>Ngày:</strong>{" "}
-                              {dayjs(item.startTime).format("DD/MM/YYYY HH:mm")}
-                            </p>
-                            <p>
-                              <strong>Bác sĩ:</strong>{" "}
-                              {item.doctor ? item.doctor.full_name : "Chưa có"}
-                            </p>
-                            <p>
-                              <strong>Ghi chú:</strong>{" "}
-                              {item.note || "Không có"}
-                            </p>
-                          </>
-                        }
-                      />
-                      <div className={styles.footer}>
-                        <div
-                          className={`${styles.totalPrice} cus-text-primary`}
-                        >
-                          {item.details
-                            ?.reduce((sum, d) => sum + Number(d.price), 0)
-                            .toLocaleString("vi-VN")}
-                          ₫
+                          <div className={styles.actions}>
+                            {!isImported && (
+                              <>
+                                <Button
+                                  icon={<EditOutlined />}
+                                  onClick={() =>
+                                    handleSelectEvent({
+                                      ...item,
+                                      resource: item,
+                                      start: new Date(item.startTime),
+                                      end: new Date(
+                                        item.endTime ?? item.startTime
+                                      ),
+                                    })
+                                  }
+                                >
+                                  Chỉnh sửa
+                                </Button>
+
+                                <Button
+                                  icon={<DeleteOutlined />}
+                                  danger
+                                  onClick={() => handleCancelAppointment(item)}
+                                >
+                                  Huỷ
+                                </Button>
+                              </>
+                            )}
+                            {isConfirmed && (
+                              <Button
+                                type="primary"
+                                onClick={() => handleDeposit(item)}
+                                style={{ marginLeft: 8 }}
+                              >
+                                Đặt cọc 50%
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                        <div className={styles.actions}>
-                          <Button
-                            icon={<EditOutlined />}
-                            onClick={() =>
-                              handleSelectEvent({
-                                ...item,
-                                resource: item,
-                                start: new Date(item.startTime),
-                                end: new Date(item.endTime ?? item.startTime),
-                              })
-                            }
-                          >
-                            Chỉnh sửa
-                          </Button>
-                          <Button
-                            icon={<DeleteOutlined />}
-                            danger
-                            onClick={() => handleCancelAppointment(item)}
-                          >
-                            Huỷ
-                          </Button>
-                        </div>
-                      </div>
-                    </List.Item>
-                  </Card>
-                )}
+                      </List.Item>
+                    </Card>
+                  );
+                }}
               />
             )}
           </Card>

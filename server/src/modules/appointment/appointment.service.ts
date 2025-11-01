@@ -26,8 +26,17 @@ export class AppointmentService {
     private readonly serviceRepo: Repository<Service>,
   ) {}
 
-  findAll() {
+  async findAll() {
+    const appointments = await this.appointmentRepo.find({
+      relations: ['customer', 'doctor', 'details', 'details.service'],
+    });
+    console.log(appointments);
+    return appointments;
+  }
+
+  findAllAppointmentsManaged(doctorId: string) {
     return this.appointmentRepo.find({
+      where: { doctorId },
       relations: ['customer', 'doctor', 'details', 'details.service'],
     });
   }
@@ -76,6 +85,13 @@ export class AppointmentService {
   async update(id: string, dto: UpdateAppointmentDto) {
     await this.appointmentRepo.update(id, dto);
     return this.findOne(id);
+  }
+
+  async updateStatus(id: string, status: Appointment['status']) {
+    const appointment = await this.findOne(id);
+    appointment.status = status;
+    await this.appointmentRepo.save(appointment);
+    return appointment;
   }
 
   async cancel(id: string, reason: string) {

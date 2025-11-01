@@ -9,7 +9,7 @@ import { configRoutes } from "@/constants/route";
 import BookingCalendarCore from "@/components/BookingCalendarCore";
 import {
   useCreateAppointmentMutation,
-  useCreateLinkPaymentMutation,
+  // useCreateLinkPaymentMutation,
   type CreateAppointmentProps,
 } from "@/services/appointment";
 import { showError, showSuccess } from "@/libs/toast";
@@ -67,7 +67,7 @@ const BookingCalendar: React.FC = () => {
     }, 300);
   }, []);
 
-  const [createLinkPayment] = useCreateLinkPaymentMutation();
+  // const [createLinkPayment] = useCreateLinkPaymentMutation();
 
   if (!services.length) {
     return (
@@ -126,24 +126,24 @@ const BookingCalendar: React.FC = () => {
         voucherId: null,
       };
 
-      const res = await createAppointment(payload).unwrap();
+      await createAppointment(payload).unwrap();
 
-      console.log("Created appointment:", res);
+      // console.log("Created appointment:", res);
 
-      const totalAmount = services.reduce(
-        (sum, service) => sum + service.price,
-        0
-      );
-      const paymentLinkResponse = await createLinkPayment({
-        appointmentId: res.id,
-        amount: totalAmount,
-        description: "Thanh toán cho lịch hẹn",
-        returnUrl: window.location.origin + configRoutes.paymentSuccess,
-        cancelUrl: window.location.origin + configRoutes.paymentFail,
-        customerName: values.name,
-      }).unwrap();
+      // const totalAmount = services.reduce(
+      //   (sum, service) => sum + service.price,
+      //   0
+      // );
+      // const paymentLinkResponse = await createLinkPayment({
+      //   appointmentId: res.id,
+      //   amount: totalAmount,
+      //   description: "Thanh toán cho lịch hẹn",
+      //   returnUrl: window.location.origin + configRoutes.paymentSuccess,
+      //   cancelUrl: window.location.origin + configRoutes.paymentFail,
+      //   customerName: values.name,
+      // }).unwrap();
 
-      window.location.href = paymentLinkResponse.checkoutUrl;
+      // window.location.href = paymentLinkResponse.checkoutUrl;
 
       showSuccess("Đặt lịch thành công!");
 

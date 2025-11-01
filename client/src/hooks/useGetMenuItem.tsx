@@ -69,6 +69,33 @@ export const getSidebarItemsByRole = (role: string): SiderItem[] => {
     },
   ];
 
+  const StaffSidebar = (): SiderItem[] => [
+    {
+      name: "Dashboard",
+      link: configRoutes.staffDashboard,
+      icon: <MdDashboard />,
+      activeLink: [configRoutes.staffDashboard],
+    },
+    {
+      name: "Đơn hàng",
+      link: configRoutes.staffOrders,
+      icon: <MdPeopleAlt className="ml-3" />,
+      activeLink: [configRoutes.staffOrders],
+    },
+    // {
+    //   name: "Khách hàng",
+    //   link: configRoutes.staffCustomers,
+    //   icon: <RiUser3Fill className="ml-3" />,
+    //   activeLink: [configRoutes.staffCustomers],
+    // },
+    // {
+    //   name: "Bác sĩ",
+    //   link: configRoutes.staffDoctors,
+    //   icon: <FaUserDoctor className="ml-3" />,
+    //   activeLink: [configRoutes.staffDoctors],
+    // },
+  ];
+
   // const SpaAdminSidebar = (): SiderItem[] => [
   //   {
   //     name: "Dashboard",
@@ -138,10 +165,8 @@ export const getSidebarItemsByRole = (role: string): SiderItem[] => {
   switch (role) {
     case RoleEnum.Admin:
       return AdminSidebar();
-    // case RoleEnum.SpaAdmin:
-    //   return SpaAdminSidebar();
-    // case RoleEnum.Staff:
-    //   return SpaStaffSidebar();
+    case RoleEnum.Staff:
+      return StaffSidebar();
     default:
       return [];
   }
