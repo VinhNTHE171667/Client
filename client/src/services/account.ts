@@ -140,6 +140,14 @@ export type DoctorDatas = {
     | {
         id: string;
         name: string;
+        images:
+          | {
+              alt: string;
+              url: string;
+            }[]
+          | [];
+        description: string;
+        price: number;
       }[]
     | null;
 };
@@ -163,6 +171,14 @@ export type DoctorData = {
     | {
         id: string;
         name: string;
+        images:
+          | {
+              alt: string;
+              url: string;
+            }[]
+          | [];
+        description: string;
+        price: number;
       }[]
     | null;
 };

@@ -55,6 +55,11 @@ const Header = () => {
       onClick: () => navigate(configRoutes.cart),
     },
     {
+      key: "3",
+      label: "Lịch đặt của tôi",
+      onClick: () => navigate(configRoutes.customerOrders),
+    },
+    {
       key: "5",
       label: "Đăng xuất",
       onClick: logout,

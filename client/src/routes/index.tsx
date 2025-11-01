@@ -20,6 +20,9 @@ import CartPage from "@/pages/Customer/Cart";
 import Booking from "@/pages/Customer/Bookings";
 import Profile from "@/pages/Customer/Profile";
 import DoctorPublicProfile from "@/pages/Services/DoctorProfile";
+import CustomerOrders from "@/pages/Customer/Order";
+import SuccessPayment from "@/pages/Customer/Payment/success";
+import FailPayment from "@/pages/Customer/Payment/fail";
 
 const router = createBrowserRouter([
   {
@@ -201,6 +204,27 @@ const router = createBrowserRouter([
         element: <DoctorPublicProfile />,
       },
     ],
+  },
+
+  {
+    path: configRoutes.customerOrders,
+    element: <HomeLayouts />,
+    children: [
+      {
+        index: true,
+        element: <CustomerOrders />,
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.paymentSuccess,
+    element: <SuccessPayment />,
+  },
+
+  {
+    path: configRoutes.paymentFail,
+    element: <FailPayment />,
   },
 ]);
 

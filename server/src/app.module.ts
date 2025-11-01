@@ -10,6 +10,7 @@ import { CategoryModule } from './modules/category/category.module';
 import { ServiceModule } from './modules/service/service.module';
 import { CartModule } from './modules/cart/cart.module';
 import { AppointmentModule } from './modules/appointment/appointment.module';
+import { PaymentModule } from './modules/payment/payment.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { AppointmentModule } from './modules/appointment/appointment.module';
     ServiceModule,
     CartModule,
     AppointmentModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

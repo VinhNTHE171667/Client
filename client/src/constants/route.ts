@@ -10,6 +10,10 @@ export const configRoutes = {
   cart: "/cart",
   bookings: "/bookings",
   doctorProfile: "/services/doctor/:id",
+  customerOrders: "/customer/orders",
+  customerPayments: "/customer/payments",
+  paymentSuccess: "/customer/payments/success",
+  paymentFail: "/customer/payments/fail",
 
   adminDashboard: "/admin/dashboard",
   adminCustomers: "/admin/customers",

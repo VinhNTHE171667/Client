@@ -15,6 +15,7 @@ import {
   PhoneOutlined,
   CalendarOutlined,
   ArrowLeftOutlined,
+  ShoppingCartOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -23,6 +24,7 @@ import {
 } from "@/services/account";
 import styles from "./DoctorProfile.module.scss";
 import FancyButton from "@/components/FancyButton";
+import NoImage from "@/assets/img/NoImage/NoImage.jpg";
 
 const DoctorProfile: React.FC = () => {
   const navigate = useNavigate();
@@ -130,31 +132,97 @@ const DoctorProfile: React.FC = () => {
           </Row>
         </Card>
 
-        {doctor.services && doctor.services.length > 0 && (
-          <section className={styles.serviceSection}>
+        <section className={styles.serviceSection}>
+          <div className="container">
             <div className={styles.header}>
-              <h2>Dịch vụ do {doctor.full_name} thực hiện</h2>
+              <h2 className="cus-text-primary">
+                Dịch vụ do {doctor.full_name} thực hiện
+              </h2>
               <p>Chọn liệu trình phù hợp và đặt lịch ngay hôm nay</p>
             </div>
 
             <Row gutter={[24, 24]} justify="center">
-              {doctor.services.map((service) => (
-                <Col key={service.id} xs={24} sm={12} md={8} lg={6}>
-                  <Card
-                    hoverable
-                    className={styles.card}
-                    onClick={() => navigate(`/services/${service.id}`)}
+              {doctor.services &&
+                doctor.services.length > 0 &&
+                doctor.services.map((service) => (
+                  <Col
+                    key={service.id}
+                    xs={24}
+                    sm={24}
+                    md={12}
+                    lg={8}
+                    xl={6}
+                    xxl={6}
                   >
-                    <div className={styles.cardContent}>
-                      <h3>{service.name}</h3>
-                      <p>Dịch vụ được thực hiện bởi {doctor.full_name}</p>
-                    </div>
-                  </Card>
-                </Col>
-              ))}
+                    <Card
+                      className={styles.card}
+                      cover={
+                        <div
+                          className={styles.imageWrapper}
+                          onClick={() =>
+                            (window.location.href = `/services/${service.id}`)
+                          }
+                          style={{ cursor: "pointer" }}
+                        >
+                          <img
+                            src={service.images[0]?.url || NoImage}
+                            alt={service.name}
+                            className={styles.image}
+                          />
+                        </div>
+                      }
+                    >
+                      <Card.Meta
+                        title={
+                          <span
+                            className={`${styles.cardTitle} cus-text-primary`}
+                            onClick={() =>
+                              (window.location.href = `/services/${service.id}`)
+                            }
+                            style={{ cursor: "pointer" }}
+                          >
+                            {service.name}
+                          </span>
+                        }
+                        description={
+                          <span className={styles.cardDesc}>
+                            {service.description ||
+                              "Dịch vụ làm đẹp & chăm sóc sức khỏe."}
+                          </span>
+                        }
+                      />
+                      <div className={styles.cardFooter}>
+                        <span className={styles.price}>
+                          {service.price?.toLocaleString("vi-VN")}₫
+                        </span>
+                        <div className={styles.actions}>
+                          <div className={styles.cusButtonGroup}>
+                            <div className={styles.actions}>
+                              <FancyButton
+                                icon={<></>}
+                                size="small"
+                                variant="primary"
+                                label="Đặt lịch"
+                              />
+
+                              <ShoppingCartOutlined
+                                className={styles.addToCartIcon}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // setSelectedService(service);
+                                  // setIsModalVisible(true);
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  </Col>
+                ))}
             </Row>
-          </section>
-        )}
+          </div>
+        </section>
       </div>
     </div>
   );

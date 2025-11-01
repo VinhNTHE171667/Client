@@ -1,0 +1,39 @@
+.calendarContainer {
+    background-color: #fafafa;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+    .rbc-event {
+        font-size: 13px;
+        font-weight: 500;
+        padding: 4px 8px;
+    }
+}
+
+.modalContent {
+    text-align: center;
+
+    h2 {
+        font-weight: 600;
+        color: #222;
+        margin-bottom: 12px;
+    }
+
+    p {
+        margin: 6px 0;
+        color: #555;
+    }
+
+    .ant-tag {
+        font-size: 13px;
+        padding: 4px 10px;
+        border-radius: 8px;
+    }
+
+    .modalActions {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+    }
+}
