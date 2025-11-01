@@ -40,10 +40,10 @@ export class Invoice {
 
   @Column({
     type: 'enum',
-    enum: ['pending', 'confirmed', 'cancelled', 'completed'],
+    enum: ['pending', 'confirmed', 'paid', 'cancelled', 'completed'],
     default: 'pending',
   })
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  status: 'pending' | 'confirmed' | 'paid' | 'cancelled' | 'completed';
 
   @Column({
     type: 'enum',

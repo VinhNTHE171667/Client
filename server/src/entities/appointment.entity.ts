@@ -47,10 +47,29 @@ export class Appointment {
 
   @Column({
     type: 'enum',
-    enum: ['pending', 'deposited', 'confirmed', 'completed', 'cancelled'],
+    enum: [
+      'pending',
+      'confirmed',
+      'imported',
+      'deposited',
+      'approved',
+      'rejected',
+      'completed',
+      'paid',
+      'cancelled',
+    ],
     default: 'pending',
   })
-  status: 'pending' | 'deposited' | 'confirmed' | 'completed' | 'cancelled';
+  status:
+    | 'pending'
+    | 'confirmed'
+    | 'imported'
+    | 'deposited'
+    | 'approved'
+    | 'rejected'
+    | 'completed'
+    | 'paid'
+    | 'cancelled';
 
   @OneToMany(() => AppointmentDetail, (detail) => detail.appointment, {
     cascade: true,
@@ -90,4 +109,10 @@ export class Appointment {
 
   @OneToMany(() => AppointmentHistory, (history) => history.appointment)
   histories: AppointmentHistory[];
+
+  @Column({ nullable: true })
+  orderCode?: number;
+
+  @Column({ default: 'online' })
+  appointmentType?: 'online' | 'offline';
 }

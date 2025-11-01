@@ -63,8 +63,10 @@ const LoginPage = () => {
           navigate(configRoutes.adminDashboard, { replace: true });
         } else if (res.data.role === RoleEnum.Customer) {
           navigate(configRoutes.home);
+        } else if (res.data.role === RoleEnum.Staff) {
+          navigate(configRoutes.staffDashboard, { replace: true });
         } else {
-          navigate("/");
+          navigate(configRoutes.home);
         }
       } else if (res.error) {
         const message = res.error.data?.message;

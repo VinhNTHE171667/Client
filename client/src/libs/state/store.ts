@@ -8,6 +8,7 @@ import persistStore from "redux-persist/es/persistStore";
 import { accountApi } from "@/services/account";
 import { serviceApi } from "@/services/services";
 import { cartApi } from "@/services/cart";
+import { appointmentApi } from "@/services/appointment";
 
 const persistConfig = {
   key: "root",
@@ -21,6 +22,7 @@ const rootReducer = combineReducers({
   [accountApi.reducerPath]: accountApi.reducer,
   [serviceApi.reducerPath]: serviceApi.reducer,
   [cartApi.reducerPath]: cartApi.reducer,
+  [appointmentApi.reducerPath]: appointmentApi.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -32,7 +34,8 @@ export const store = configureStore({
       authApi.middleware,
       accountApi.middleware,
       serviceApi.middleware,
-      cartApi.middleware
+      cartApi.middleware,
+      appointmentApi.middleware
     );
   },
 });

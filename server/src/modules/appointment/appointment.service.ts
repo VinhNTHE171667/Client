@@ -1,24 +1,42 @@
 import { Appointment } from '@/entities/appointment.entity';
 import { AppointmentDetail } from '@/entities/appointmentDetails.entity';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm/dist/common/typeorm.decorators';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import {
   CreateAppointmentDto,
   UpdateAppointmentDto,
 } from './appointment/appointment.dto';
+import { Service } from '@/entities/service.entity';
 
 @Injectable()
 export class AppointmentService {
   constructor(
     @InjectRepository(Appointment)
     private readonly appointmentRepo: Repository<Appointment>,
+
     @InjectRepository(AppointmentDetail)
     private readonly detailRepo: Repository<AppointmentDetail>,
+
+    @InjectRepository(Service)
+    private readonly serviceRepo: Repository<Service>,
   ) {}
 
-  findAll() {
+  async findAll() {
+    const appointments = await this.appointmentRepo.find({
+      relations: ['customer', 'doctor', 'details', 'details.service'],
+    });
+    console.log(appointments);
+    return appointments;
+  }
+
+  findAllAppointmentsManaged(doctorId: string) {
     return this.appointmentRepo.find({
+      where: { doctorId },
       relations: ['customer', 'doctor', 'details', 'details.service'],
     });
   }
@@ -41,19 +59,25 @@ export class AppointmentService {
   }
 
   async create(dto: CreateAppointmentDto) {
+    const serviceIds = dto.details.map((d) => d.serviceId);
+
+    const services = await this.serviceRepo.findBy({
+      id: In(serviceIds),
+    });
+
+    if (services.length !== serviceIds.length) {
+      throw new BadRequestException('Một hoặc nhiều dịch vụ không hợp lệ');
+    }
+
     const appointment = this.appointmentRepo.create({
       ...dto,
       status: 'pending',
-    });
-    const saved = await this.appointmentRepo.save(appointment);
-
-    const details = dto.details.map((d) =>
-      this.detailRepo.create({
+      details: dto.details.map((d) => ({
         ...d,
-        appointmentId: saved.id,
-      }),
-    );
-    await this.detailRepo.save(details);
+      })),
+    });
+
+    const saved = await this.appointmentRepo.save(appointment);
 
     return this.findOne(saved.id);
   }
@@ -61,6 +85,13 @@ export class AppointmentService {
   async update(id: string, dto: UpdateAppointmentDto) {
     await this.appointmentRepo.update(id, dto);
     return this.findOne(id);
+  }
+
+  async updateStatus(id: string, status: Appointment['status']) {
+    const appointment = await this.findOne(id);
+    appointment.status = status;
+    await this.appointmentRepo.save(appointment);
+    return appointment;
   }
 
   async cancel(id: string, reason: string) {

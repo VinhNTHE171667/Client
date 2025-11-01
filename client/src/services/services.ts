@@ -30,7 +30,6 @@ export type ServiceData = {
   description: string;
   categoryId: string;
   categoryName: string;
-  spaName: string;
   isActive: boolean;
   category: CategoryData;
   doctors: {

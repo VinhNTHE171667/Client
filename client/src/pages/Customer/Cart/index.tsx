@@ -215,11 +215,7 @@ const CartPage = () => {
                 </Title>
                 <div className={styles.summaryRow}>
                   <span>Tạm tính:</span>
-                  <span>{(total * 0.9).toLocaleString()}đ</span>
-                </div>
-                <div className={styles.summaryRow}>
-                  <span>Thuế (10%):</span>
-                  <span>{(total * 0.1).toLocaleString()}đ</span>
+                  <span>{total.toLocaleString()}đ</span>
                 </div>
                 <div className={`${styles.summaryRow} ${styles.summaryTotal}`}>
                   <span>Tổng cộng:</span>

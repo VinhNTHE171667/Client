@@ -20,11 +20,13 @@ import {
 export class AppointmentController {
   constructor(private readonly appointmentService: AppointmentService) {}
 
-  @Get()
-  findAll(@Query('customerId') customerId?: string) {
-    if (customerId) {
-      return this.appointmentService.findByCustomer(customerId);
-    }
+  @Get('/customer')
+  findAll(@Query('customerId') customerId: string) {
+    return this.appointmentService.findByCustomer(customerId);
+  }
+
+  @Get('/management')
+  findAllForManagement() {
     return this.appointmentService.findAll();
   }
 
@@ -39,6 +41,26 @@ export class AppointmentController {
       throw new BadRequestException('Thiếu thông tin đặt lịch');
     }
     return this.appointmentService.create(dto);
+  }
+
+  @Patch(':id/confirm')
+  confirm(@Param('id') id: string) {
+    return this.appointmentService.updateStatus(id, 'confirmed');
+  }
+
+  @Patch(':id/imported')
+  complete(@Param('id') id: string) {
+    return this.appointmentService.updateStatus(id, 'imported');
+  }
+
+  @Patch(':id/approve')
+  approve(@Param('id') id: string) {
+    return this.appointmentService.updateStatus(id, 'approved');
+  }
+
+  @Patch(':id/reject')
+  reject(@Param('id') id: string) {
+    return this.appointmentService.updateStatus(id, 'rejected');
   }
 
   @Patch(':id')

@@ -34,6 +34,8 @@ const BookingCalendarCore: React.FC<BookingCalendarCoreProps> = ({
   return (
     <div className={styles.calendarContainer}>
       <Calendar
+        step={60}
+        timeslots={1}
         selectable
         popup={false}
         localizer={localizer}
@@ -44,6 +46,26 @@ const BookingCalendarCore: React.FC<BookingCalendarCoreProps> = ({
         style={{ height: "75vh", backgroundColor: "#fff" }}
         min={new Date(0, 0, 0, 9, 0, 0)}
         max={new Date(0, 0, 0, 17, 0, 0)}
+        slotPropGetter={(date) => {
+          const now = new Date();
+
+          if (date < now) {
+            return {
+              style: {
+                backgroundColor: "#e0e0e0",
+                opacity: 0.6,
+                pointerEvents: "none",
+              },
+            };
+          }
+
+          return {
+            style: {
+              backgroundColor: "#f0f8ff",
+              cursor: "pointer",
+            },
+          };
+        }}
         view={currentView}
         date={currentDate}
         onView={(view) => setCurrentView(view)}

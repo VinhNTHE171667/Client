@@ -1,12 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { type SlotInfo, type Event as RBCEvent } from "react-big-calendar";
 import dayjs from "dayjs";
-import { Modal, Form, Input, TimePicker, Button, message, Card } from "antd";
+import { Modal, Form, Input, Button, message, Card } from "antd";
 import { Container } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import styles from "./Booking.module.scss";
 import { configRoutes } from "@/constants/route";
 import BookingCalendarCore from "@/components/BookingCalendarCore";
+import {
+  useCreateAppointmentMutation,
+  // useCreateLinkPaymentMutation,
+  type CreateAppointmentProps,
+} from "@/services/appointment";
+import { showError, showSuccess } from "@/libs/toast";
+import { useAuthStore } from "@/hooks/UseAuth";
 
 interface ServiceImage {
   url: string;
@@ -45,6 +52,9 @@ const BookingCalendar: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const [createAppointment] = useCreateAppointmentMutation();
+  const { auth } = useAuthStore();
+
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -56,6 +66,8 @@ const BookingCalendar: React.FC = () => {
       window.dispatchEvent(new Event("loading"));
     }, 300);
   }, []);
+
+  // const [createLinkPayment] = useCreateLinkPaymentMutation();
 
   if (!services.length) {
     return (
@@ -71,6 +83,21 @@ const BookingCalendar: React.FC = () => {
   }
 
   const handleSelectSlot = (slotInfo: SlotInfo) => {
+    const now = new Date();
+
+    if (new Date(slotInfo.start) < now) {
+      message.warning("Không thể đặt lịch ở thời gian đã qua!");
+      return;
+    }
+
+    const highlightEvent: RBCEvent = {
+      title: "Đang chọn",
+      start: slotInfo.start,
+      end: slotInfo.end,
+      allDay: false,
+    };
+
+    setEvents([highlightEvent]);
     setSelectedSlot(slotInfo);
     setOpen(true);
   };
@@ -84,29 +111,46 @@ const BookingCalendar: React.FC = () => {
     try {
       setLoading(true);
 
-      const startBase = new Date(selectedSlot.start);
-      const endBase = new Date(selectedSlot.end);
-
-      if (values.time) {
-        const t = values.time;
-        startBase.setHours(t.hour(), t.minute(), 0, 0);
-        endBase.setTime(startBase.getTime() + 60 * 60 * 1000);
-      }
-
-      const newEvent: RBCEvent = {
-        title: `Hẹn: ${values.name}`,
-        start: startBase,
-        end: endBase,
+      const payload: CreateAppointmentProps = {
+        customerId: auth.accountId!,
+        doctorId: state.doctorId || null,
+        staffId: null,
+        appointment_date: dayjs(selectedSlot.start).toISOString(),
+        startTime: dayjs(selectedSlot.start).toISOString(),
+        endTime: dayjs(selectedSlot.end).toISOString(),
+        details: services.map((service) => ({
+          serviceId: service.id,
+          price: service.price,
+        })),
+        note: values.note || "",
+        voucherId: null,
       };
 
-      setEvents((prev) => [...prev, newEvent]);
+      await createAppointment(payload).unwrap();
 
-      message.success("Đặt lịch thành công!");
+      // console.log("Created appointment:", res);
+
+      // const totalAmount = services.reduce(
+      //   (sum, service) => sum + service.price,
+      //   0
+      // );
+      // const paymentLinkResponse = await createLinkPayment({
+      //   appointmentId: res.id,
+      //   amount: totalAmount,
+      //   description: "Thanh toán cho lịch hẹn",
+      //   returnUrl: window.location.origin + configRoutes.paymentSuccess,
+      //   cancelUrl: window.location.origin + configRoutes.paymentFail,
+      //   customerName: values.name,
+      // }).unwrap();
+
+      // window.location.href = paymentLinkResponse.checkoutUrl;
+
+      showSuccess("Đặt lịch thành công!");
+
       setOpen(false);
       form.resetFields();
-    } catch (err) {
-      console.error(err);
-      message.error("Đặt lịch thất bại!");
+    } catch {
+      showError("Đặt lịch thất bại. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }
@@ -175,13 +219,13 @@ const BookingCalendar: React.FC = () => {
             <Input placeholder="Nhập số điện thoại" />
           </Form.Item>
 
-          <Form.Item label="Giờ cụ thể (tuỳ chọn)" name="time">
+          {/* <Form.Item label="Giờ cụ thể (tuỳ chọn)" name="time">
             <TimePicker
               format="HH:mm"
               style={{ width: "100%" }}
               minuteStep={15}
             />
-          </Form.Item>
+          </Form.Item> */}
 
           <Form.Item label="Ghi chú" name="note">
             <Input.TextArea rows={3} placeholder="Ghi chú thêm (nếu có)" />
