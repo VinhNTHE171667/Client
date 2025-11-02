@@ -52,14 +52,24 @@ export class PaymentController {
     return payment;
   }
 
-  @Post('update-status')
-  async updateStatus(
+  @Post('update-status-deposited')
+  async updateStatusDeposited(
     @Body()
     body: {
       orderCode: string;
     },
   ) {
-    return this.payosService.updatePaymentStatus(body);
+    return this.payosService.updatePaymentStatusDeposited(body);
+  }
+
+  @Post('update-status-paid')
+  async updateStatusPaid(
+    @Body()
+    body: {
+      orderCode: string;
+    },
+  ) {
+    return this.payosService.updatePaymentStatusPaid(body);
   }
 
   // @Post('webhook')

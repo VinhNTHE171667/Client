@@ -32,6 +32,11 @@ export class AppointmentController {
     return this.appointmentService.findAllAppointmentsBooked(doctorId);
   }
 
+  @Get('/doctor-schedule-managed')
+  findAllManagedForDoctor(@Query('doctorId') doctorId: string) {
+    return this.appointmentService.findAllAppointmentsManaged(doctorId);
+  }
+
   @Get('/management')
   findAllForManagement() {
     return this.appointmentService.findAll();
@@ -60,6 +65,14 @@ export class AppointmentController {
     return this.appointmentService.updateStatus(
       id,
       AppointmentStatus.Confirmed,
+    );
+  }
+
+  @Patch(':id/completed')
+  complete(@Param('id') id: string) {
+    return this.appointmentService.updateStatus(
+      id,
+      AppointmentStatus.Completed,
     );
   }
 

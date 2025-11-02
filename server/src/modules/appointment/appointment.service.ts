@@ -91,6 +91,8 @@ export class AppointmentService {
       details: dto.details.map((d) => ({
         ...d,
       })),
+
+      totalAmount: services.reduce((sum, service) => sum + service.price, 0),
     });
 
     const saved = await this.appointmentRepo.save(appointment);
@@ -108,9 +110,9 @@ export class AppointmentService {
       throw new NotFoundException('Lịch hẹn không tồn tại');
     }
 
-    if (original.status !== AppointmentStatus.Pending) {
-      throw new BadRequestException('Không thể cập nhật lịch hẹn đã xác nhận');
-    }
+    // if (original.status !== AppointmentStatus.Pending) {
+    //   throw new BadRequestException('Không thể cập nhật lịch hẹn đã xác nhận');
+    // }
 
     Object.assign(original, dto);
 
@@ -133,6 +135,7 @@ export class AppointmentService {
         .where('appointmentId = :id', { id })
         .execute();
 
+      let totalAmount = 0;
       if (dto.details && dto.details.length) {
         const newDetails: AppointmentDetail[] = [];
         for (const d of dto.details) {
@@ -145,8 +148,12 @@ export class AppointmentService {
             );
           }
 
+          const price = d.price ?? service.price ?? 0;
+          totalAmount += price;
+
           const detail = detailRepo.create({
             ...d,
+            price,
             service,
             appointment: managedAppointment,
           });
@@ -159,6 +166,7 @@ export class AppointmentService {
       Object.assign(managedAppointment, {
         ...dto,
         details: undefined,
+        totalAmount: totalAmount,
       });
 
       return await appointmentRepo.save(managedAppointment);
