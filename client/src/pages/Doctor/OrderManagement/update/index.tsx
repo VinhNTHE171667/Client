@@ -1,149 +1,295 @@
-import { showError, showSuccess } from "@/libs/toast";
-import { extractErrorMessage } from "@/utils/func";
-import { Button, Form, Input, Modal, Row, Space, Spin, Switch } from "antd";
-import { useForm } from "antd/es/form/Form";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  useGetCategoryByIdQuery,
-  useUpdateCategoryMutation,
-  type CreateCategory,
-} from "@/services/services";
-import FancyButton from "@/components/FancyButton";
+  Form,
+  Input,
+  Button,
+  DatePicker,
+  TimePicker,
+  Select,
+  message,
+  Space,
+  Modal,
+} from "antd";
+import dayjs from "dayjs";
+import {
+  useGetAppointmentByIdMutation,
+  useUpdateAppointmentMutation,
+  type AppointmentProps,
+} from "@/services/appointment";
+import styles from "../add/CreateAppointment.module.scss";
+import {
+  useGetCustomersMutation,
+  useGetPublicDoctorProfileMutation,
+} from "@/services/account";
+import { showError } from "@/libs/toast";
 
-interface SpaModalProps {
-  id: string;
+type Props = {
+  appointmentId: string;
   isOpen: boolean;
   onClose: () => void;
-  onReload: () => void;
-}
+  onReload?: () => void;
+};
 
-export default function UpdateSpa(props: SpaModalProps) {
-  const { id, isOpen, onClose, onReload } = props;
-  const [form] = useForm();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+const UpdateAppointmentModal: React.FC<Props> = ({
+  appointmentId,
+  isOpen,
+  onClose,
+  onReload,
+}) => {
+  const [form] = Form.useForm();
+  const [updateAppointment, { isLoading }] = useUpdateAppointmentMutation();
 
-  const { data: staffData, refetch } = useGetCategoryByIdQuery(id, {
-    skip: !isOpen || !id,
-  });
+  const [getAppointmentById] = useGetAppointmentByIdMutation();
+  const [appointment, setAppointment] = useState<AppointmentProps>();
 
-  useEffect(() => {
-    if (staffData) {
-      form.setFieldsValue(staffData);
-    }
-  }, [staffData]);
+  const [doctorSelected, setDoctorSelected] = useState<string>("");
 
-  useEffect(() => {
-    if (isOpen && id) {
-      form.resetFields();
-      if (staffData) {
-        form.setFieldsValue(staffData);
-      }
-    }
-  }, [isOpen, id, staffData]);
+  const [getServiceByDoctor] = useGetPublicDoctorProfileMutation();
+  const [services, setServices] = useState<
+    {
+      id: string;
+      name: string;
+      description: string;
+      price: number;
+      images:
+        | {
+            alt: string;
+            url: string;
+          }[]
+        | [];
+    }[]
+  >([]);
 
-  useEffect(() => {
-    if (isOpen && id) {
-      form.resetFields();
-      refetch();
-      // fetchData(); // Removed undefined function call
-    }
-  }, [isOpen, id]);
+  const [getAllCustomers] = useGetCustomersMutation();
+  const [customers, setCustomers] = useState<
+    {
+      id: string;
+      full_name: string;
+      email: string;
+      phone: string;
+    }[]
+  >([]);
 
-  const [updateCategory] = useUpdateCategoryMutation();
-
-  const onFinish = async (values: CreateCategory) => {
-    setIsLoading(true);
+  const handleGetAppointmentDetails = async () => {
     try {
-      const res = await updateCategory({
-        id,
-        data: values,
+      const response = await getAppointmentById({ appointmentId }).unwrap();
+
+      form.setFieldsValue({
+        customerId: response.customer.id,
+        doctorId: response.doctor.id,
+        services: response.details.map((d) => d.service.id),
+        date: dayjs(response.appointment_date),
+        time: [dayjs(response.startTime), dayjs(response.endTime)],
+        note: response.note,
       });
 
-      if (!res.error) {
-        showSuccess("Cập nhật danh mục thành công");
-        onReload();
-        onClose();
-      } else {
-        const err = res.error as {
-          data?: { message?: string | string[] };
-        };
-        showError(
-          "Cập nhật danh mục thất bại",
-          extractErrorMessage(err) || "Đã xảy ra lỗi khi cập nhật danh mục."
-        );
+      setDoctorSelected(response.doctor.id);
+      setAppointment(response);
+    } catch {
+      showError("Không thể tải chi tiết lịch hẹn");
+    }
+  };
+
+  const handleGetServicesByDoctor = async (doctorId: string) => {
+    try {
+      const response = await getServiceByDoctor(doctorId).unwrap();
+
+      if (!response.services) {
+        setServices([]);
+        return;
       }
-    } catch (error) {
-      showError(
-        "Đã có lỗi xảy ra",
-        extractErrorMessage(
-          error as { data?: { message?: string | string[] } }
-        ) || "Vui lòng kiểm tra lại thông tin và thử lại"
+
+      setServices(
+        response.services.map((s) => ({
+          id: s.id,
+          name: s.name,
+          description: s.description,
+          price: s.price,
+          images: s.images || [],
+        }))
       );
-    } finally {
-      setIsLoading(false);
+    } catch {
+      showError("Không thể tải dịch vụ của bác sĩ này");
+    }
+  };
+
+  const handleGetCustomers = async () => {
+    try {
+      const response = await getAllCustomers().unwrap();
+      setCustomers(response);
+    } catch {
+      showError("Không thể tải danh sách khách hàng");
+    }
+  };
+
+  useEffect(() => {
+    if (doctorSelected) {
+      handleGetServicesByDoctor(doctorSelected);
+    }
+  }, [doctorSelected]);
+
+  useEffect(() => {
+    if (isOpen) {
+      handleGetAppointmentDetails();
+      handleGetCustomers();
+    }
+  }, [isOpen]);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleSubmit = async (values: any) => {
+    try {
+      const appointmentDate = values.date;
+      const startTime = values.time[0];
+      const endTime = values.time[1];
+
+      const startDateTime = appointmentDate
+        .hour(startTime.hour())
+        .minute(startTime.minute())
+        .second(0);
+
+      const endDateTime = appointmentDate
+        .hour(endTime.hour())
+        .minute(endTime.minute())
+        .second(0);
+
+      const payload = {
+        customerId: values.customerId,
+        doctorId: doctorSelected,
+        staffId: appointment?.staffId || null,
+        appointment_date: values.date.format("YYYY-MM-DD"),
+        startTime: startDateTime.toISOString(),
+        endTime: endDateTime.toISOString(),
+        details: values.services.map((id: string) => ({
+          serviceId: id,
+          price: services.find((s) => s.id === id)?.price || 0,
+        })),
+        note: values.note || "",
+        voucherId: null,
+      };
+
+      await updateAppointment({
+        appointmentId,
+        data: payload,
+      }).unwrap();
+      message.success("Cập nhật lịch hẹn thành công!");
+      form.resetFields();
+      onClose();
+      onReload?.();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      message.error(err?.data?.message || "Không thể cập nhật lịch hẹn");
     }
   };
 
   return (
-    <>
-      <Modal
-        open={isOpen}
-        width={700}
-        onCancel={onClose}
-        footer={null}
-        closable={false}
+    <Modal
+      title="Cập nhật lịch hẹn"
+      open={isOpen}
+      onCancel={onClose}
+      footer={null}
+      centered
+      width={600}
+    >
+      <Form
+        layout="vertical"
+        form={form}
+        onFinish={handleSubmit}
+        className={styles.form}
       >
-        <Spin spinning={isLoading}>
-          <h3 className="text-center">Cập nhật thông tin danh mục</h3>
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={onFinish}
-            style={{ margin: "16px" }}
-            initialValues={{ isActive: true }}
-          >
-            <Form.Item
-              label="Tên danh mục"
-              name="name"
-              rules={[
-                { required: true, message: "Vui lòng nhập tên danh mục" },
-              ]}
-            >
-              <Input placeholder="Nhập tên danh mục" />
-            </Form.Item>
+        <Form.Item
+          label="Chọn khách hàng"
+          name="customerId"
+          rules={[{ required: true, message: "Vui lòng chọn khách hàng" }]}
+        >
+          <Select
+            placeholder="Chọn khách hàng"
+            options={customers.map((customer) => ({
+              label: customer.full_name,
+              value: customer.id,
+            }))}
+          />
+        </Form.Item>
 
-            <Form.Item label="Mô tả" name="description">
-              <Input.TextArea
-                placeholder="Nhập mô tả"
-                autoSize={{ minRows: 3, maxRows: 5 }}
-              />
-            </Form.Item>
+        <Form.Item
+          label="Dịch vụ"
+          name="services"
+          rules={[
+            { required: true, message: "Vui lòng chọn ít nhất 1 dịch vụ" },
+          ]}
+        >
+          <Select
+            mode="multiple"
+            placeholder="Chọn dịch vụ"
+            options={services.map((service) => ({
+              label: `${service.name} - ${service.price.toLocaleString()} VND`,
+              value: service.id,
+            }))}
+          />
+        </Form.Item>
 
-            <Form.Item
-              label="Hoạt động"
-              name="isActive"
-              valuePropName="checked"
-            >
-              <Switch />
-            </Form.Item>
+        <Form.Item
+          label="Ngày hẹn"
+          name="date"
+          rules={[{ required: true, message: "Vui lòng chọn ngày hợp lệ" }]}
+        >
+          <DatePicker
+            style={{ width: "100%" }}
+            disabledDate={(current) => {
+              return current && current < dayjs().startOf("day");
+            }}
+          />
+        </Form.Item>
 
-            <Row justify="center">
-              <Space size="large">
-                <Button onClick={onClose}>Huỷ</Button>
-                <FancyButton
-                  onClick={() => form.submit()}
-                  icon={<></>}
-                  label="Cập nhật danh mục"
-                  variant="primary"
-                  size="small"
-                  loading={isLoading}
-                  className="w-100"
-                />
-              </Space>
-            </Row>
-          </Form>
-        </Spin>
-      </Modal>
-    </>
+        <Form.Item
+          label="Giờ hẹn"
+          name="time"
+          rules={[
+            { required: true, message: "Vui lòng chọn giờ từ 09:00 đến 17:00" },
+          ]}
+        >
+          <TimePicker.RangePicker
+            format="HH:mm"
+            style={{ width: "100%" }}
+            minuteStep={15}
+            disabledTime={() => {
+              const disabledHours = Array.from(
+                { length: 24 },
+                (_, i) => i
+              ).filter((h) => h < 9 || h > 16);
+              return {
+                disabledHours: () => disabledHours,
+                disabledMinutes: () => [],
+                disabledSeconds: () => [],
+              };
+            }}
+            onChange={(times) => {
+              if (times && times[0]) {
+                const start = times[0];
+                const end = start.clone().add(1, "hour");
+                const endHour = end.hour() > 17 ? 17 : end.hour();
+                const endMinute = end.hour() > 17 ? 0 : end.minute();
+                const finalEnd = end.clone().hour(endHour).minute(endMinute);
+                form.setFieldsValue({ time: [start, finalEnd] });
+              }
+            }}
+          />
+        </Form.Item>
+
+        <Form.Item label="Ghi chú" name="note">
+          <Input.TextArea rows={3} placeholder="Nhập ghi chú (nếu có)" />
+        </Form.Item>
+
+        <Form.Item className={styles.actions}>
+          <Space>
+            <Button onClick={onClose}>Huỷ</Button>
+            <Button type="primary" htmlType="submit" loading={isLoading}>
+              Xác nhận
+            </Button>
+          </Space>
+        </Form.Item>
+      </Form>
+    </Modal>
   );
-}
+};
+
+export default UpdateAppointmentModal;

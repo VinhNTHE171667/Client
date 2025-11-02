@@ -8,32 +8,28 @@ import {
   Table,
   Divider,
   Select,
+  message,
 } from "antd";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { showError, showSuccess } from "@/libs/toast";
 import { AppointmentColumn } from "./_components/columnTypes";
-// import FancyButton from "@/components/FancyButton";
 import { configRoutes } from "@/constants/route";
 import { Link } from "react-router-dom";
 import FancyBreadcrumb from "@/components/FancyBreadcrumb";
 import {
-  useGetAppointmentsManagedByDoctorMutation,
-  useUpdateAppointmentMutationCompleteMutation,
+  useCreateLinkPaymentMutation,
+  useGetAppointmentsForManagementMutation,
+  useUpdatePaymentStatusPaidMutation,
+  type AppointmentProps,
 } from "@/services/appointment";
 import type { AppointmentTableProps } from "./_components/type";
-import CreateAppointment from "./add";
 import { appointmentStatusEnum } from "@/common/types/auth";
-import UpdateAppointmentModal from "./update";
-import { useAuthStore } from "@/hooks/UseAuth";
 
 const { RangePicker } = DatePicker;
 
-export default function OrderManagementDoctor() {
+export default function OrderManagementCasher() {
   const [isLoading, setIsLoading] = useState(false);
-  const [createState, setCreateState] = useState(false);
-  const [updateState, setUpdateState] = useState(false);
-  const [updateId, setUpdateId] = useState("");
   const [appointments, setAppointments] = useState<AppointmentTableProps[]>([]);
 
   const [search, setSearch] = useState("");
@@ -42,32 +38,21 @@ export default function OrderManagementDoctor() {
   );
 
   const [getAppointmentsForManagement] =
-    useGetAppointmentsManagedByDoctorMutation();
-
-  const [updateCompleted] = useUpdateAppointmentMutationCompleteMutation();
+    useGetAppointmentsForManagementMutation();
 
   const [statusFilter, setStatusFilter] = useState<string[] | null>(null);
-
-  const handleUpdate = (id: string) => {
-    setUpdateId(id);
-    setUpdateState(true);
-  };
-
-  const { auth } = useAuthStore();
 
   const handleGetAppointments = async () => {
     setIsLoading(true);
     try {
-      const res = await getAppointmentsForManagement({
-        doctorId: auth.accountId || "",
-      });
+      const res = await getAppointmentsForManagement();
       const tempRes = res.data ?? [];
       setAppointments(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         tempRes.map((appointment: any) => ({
           ...appointment,
-          onComplete: () => handleUpdateStatus(appointment.id, "completed"),
-          onUpdate: () => handleUpdate(appointment.id),
+          onPaymentByCash: () => handlePaymentByCash(appointment),
+          onPaymentByQR: () => handlePaymentByQR(appointment),
         }))
       );
     } catch (error) {
@@ -80,28 +65,6 @@ export default function OrderManagementDoctor() {
   useEffect(() => {
     handleGetAppointments();
   }, []);
-
-  const handleUpdateStatus = async (id: string, status: "completed") => {
-    setIsLoading(true);
-    console.log("Updating status to:", status);
-    try {
-      let updateMutation;
-      switch (status) {
-        case "completed":
-          updateMutation = updateCompleted;
-          break;
-        default:
-          throw new Error("Unknown status");
-      }
-      await updateMutation({ appointmentId: id });
-      showSuccess("Cập nhật trạng thái thành công");
-      handleEvent();
-    } catch (error) {
-      showError("Error", error instanceof Error ? error.message : "Unknown");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const filteredAppointments = appointments.filter((a) => {
     const matchSearch =
@@ -118,6 +81,59 @@ export default function OrderManagementDoctor() {
 
     return matchSearch && matchDate && matchStatus;
   });
+
+  const [createPaymentLink] = useCreateLinkPaymentMutation();
+  const [paymentCash] = useUpdatePaymentStatusPaidMutation();
+
+  const handlePaymentByCash = (item: AppointmentProps) => {
+    try {
+      paymentCash({
+        orderCode: item.orderCode || "",
+      }).unwrap();
+
+      showSuccess(
+        "Cập nhật trạng thái thanh toán thành công!",
+        "Lịch hẹn đã được cập nhật trạng thái thanh toán bằng tiền mặt."
+      );
+
+      handleEvent();
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : "Đã xảy ra lỗi khi tạo đặt cọc.";
+      message.error(msg);
+    }
+  };
+
+  const handlePaymentByQR = async (item: AppointmentProps) => {
+    try {
+      const totalAmount = Math.ceil(item.totalAmount - item.depositAmount);
+
+      const payload = {
+        appointmentId: item.id,
+        amount: totalAmount,
+        description: `Thanh toan #${item.id}`.slice(0, 25),
+        returnUrl: `${window.location.origin}${configRoutes.paymentSuccessPaid}`,
+        cancelUrl: `${window.location.origin}${configRoutes.paymentFailPaid}`,
+        customerName: item.customer?.full_name || "Khách hàng",
+      };
+
+      console.log(payload);
+
+      const res = await createPaymentLink(payload).unwrap();
+
+      if (res?.checkoutUrl) {
+        message.success("Tạo liên kết thanh toán thành công!");
+        window.location.href = res.checkoutUrl;
+      } else {
+        throw new Error("Không nhận được liên kết thanh toán từ máy chủ.");
+      }
+      handleEvent();
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : "Đã xảy ra lỗi khi tạo đặt cọc.";
+      message.error(msg);
+    }
+  };
 
   const handleEvent = () => {
     handleGetAppointments();
@@ -202,18 +218,6 @@ export default function OrderManagementDoctor() {
                 ]}
               />
               <Divider type="vertical" />
-              {/* <FancyButton
-                variant="primary"
-                label="Thêm lịch hẹn"
-                size="middle"
-                onClick={() => setCreateState(true)}
-                // disabled={true}
-              /> */}
-              <CreateAppointment
-                isOpen={createState}
-                onClose={() => setCreateState(false)}
-                onReload={handleGetAppointments}
-              />
             </Space>
           </Col>
         </Row>
@@ -235,13 +239,6 @@ export default function OrderManagementDoctor() {
           }}
         />
       </Card>
-
-      <UpdateAppointmentModal
-        appointmentId={updateId}
-        isOpen={updateState}
-        onClose={() => setUpdateState(false)}
-        onReload={handleGetAppointments}
-      />
     </>
   );
 }

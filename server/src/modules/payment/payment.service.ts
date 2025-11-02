@@ -54,9 +54,10 @@ export class PaymentService {
     return paymentLinkRes;
   }
 
-  async updatePaymentStatus(body: { orderCode: string }) {
+  async updatePaymentStatusDeposited(body: { orderCode: string }) {
     const appointment = await this.appointmentRepo.findOne({
       where: { orderCode: parseInt(body.orderCode, 10) },
+      relations: ['details'],
     });
     if (!appointment) {
       throw new Error('Không tìm thấy lịch hẹn');
@@ -64,6 +65,11 @@ export class PaymentService {
 
     if (appointment.status === AppointmentStatus.Confirmed) {
       appointment.status = AppointmentStatus.Deposited;
+      appointment.depositAmount =
+        appointment.details.reduce(
+          (sum, detail) => sum + detail.service.price,
+          0,
+        ) * 0.5;
       await this.appointmentRepo.save(appointment);
     } else {
       throw new Error(
@@ -102,6 +108,25 @@ export class PaymentService {
     // }
     // invoice.status = body.status;
     // await this.invoiceRepo.save(invoice);
+  }
+
+  async updatePaymentStatusPaid(body: { orderCode: string }) {
+    const appointment = await this.appointmentRepo.findOne({
+      where: { orderCode: parseInt(body.orderCode, 10) },
+    });
+    if (!appointment) {
+      throw new Error('Không tìm thấy lịch hẹn');
+    }
+
+    if (appointment.status === AppointmentStatus.Completed) {
+      appointment.status = AppointmentStatus.Paid;
+      appointment.paymentMethod = 'qr';
+      await this.appointmentRepo.save(appointment);
+    } else {
+      throw new Error(
+        'Trạng thái lịch hẹn không hợp lệ để cập nhật thanh toán',
+      );
+    }
   }
 
   // async processWebhook(body: any) {

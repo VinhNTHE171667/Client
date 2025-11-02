@@ -100,4 +100,13 @@ export class Appointment {
 
   @Column({ default: 'online' })
   appointmentType?: 'online' | 'offline';
+
+  @Column({ nullable: true })
+  paymentMethod?: 'cash' | 'qr' | 'card';
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  totalAmount: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  depositAmount: number;
 }

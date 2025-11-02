@@ -5,6 +5,7 @@ import {
   EditOutlined,
   // DeleteOutlined,
   CheckOutlined,
+  ScanOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import type { AppointmentTableProps } from "./type";
@@ -50,20 +51,29 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => [
     ),
   },
   {
-    title: "Dịch vụ",
-    dataIndex: "services",
+    title: "Bác sĩ",
+    dataIndex: "doctor",
     render: (_, record) => {
-      const { details } = record;
-
-      return (
-        <Space size={[4, 4]} wrap>
-          {details.map((service) => (
-            <Tag color="blue" key={service.id}>
-              {service.service.name}
-            </Tag>
-          ))}
-        </Space>
-      );
+      if (record.doctor) {
+        return (
+          <Space size={12}>
+            <AvatarTable
+              src={record.doctor.avatar ?? NoAvatarImage}
+              alt="avatar"
+              fallback={NoAvatarImage}
+            />
+            <div>
+              <div style={{ fontWeight: 600, fontSize: 14 }}>
+                {record.customer.full_name}
+              </div>
+              <div style={{ color: "#8c8c8c", fontSize: 12 }}>
+                {record.customer.email}
+              </div>
+            </div>
+          </Space>
+        );
+      }
+      return <em>Chưa có bác sĩ phụ trách</em>;
     },
   },
   {
@@ -100,6 +110,39 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => [
     },
   },
   {
+    title: "Tổng tiền (VNĐ)",
+    dataIndex: "totalAmount",
+    align: "right",
+    width: 150,
+    render: (value: number) =>
+      value.toLocaleString("vi-VN", {
+        style: "currency",
+        currency: "VND",
+      }),
+  },
+  {
+    title: "Đã đặt cọc (VNĐ)",
+    dataIndex: "depositAmount",
+    align: "right",
+    width: 150,
+    render: (value: number) =>
+      value.toLocaleString("vi-VN", {
+        style: "currency",
+        currency: "VND",
+      }),
+  },
+  {
+    title: "Tiền còn lại (VNĐ)",
+    dataIndex: "remainingAmount",
+    align: "right",
+    width: 150,
+    render: (_, record) =>
+      (record.totalAmount - record.depositAmount).toLocaleString("vi-VN", {
+        style: "currency",
+        currency: "VND",
+      }),
+  },
+  {
     title: "",
     dataIndex: "operation",
     key: "operation",
@@ -109,31 +152,31 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => [
     render: (_, record) => {
       const renderItems = (
         record: AppointmentTableProps,
-        onComplete: () => void,
-        onUpdate: () => void
+        onPaymentByCash: () => void,
+        onPaymentByQR: () => void
       ): MenuProps["items"] => {
         const items: MenuProps["items"] = [];
 
-        if (record.status === appointmentStatusEnum.Deposited) {
+        if (record.status === appointmentStatusEnum.Completed) {
           items.push({
             key: "0",
             label: (
-              <a onClick={onUpdate}>
+              <a onClick={onPaymentByCash}>
                 <Space>
-                  <EditOutlined /> Cập nhật lịch hẹn
+                  <CheckOutlined /> Thanh toán bằng tiền mặt
                 </Space>
               </a>
             ),
           });
         }
 
-        if (record.status === appointmentStatusEnum.Deposited) {
+        if (record.status === appointmentStatusEnum.Completed) {
           items.push({
             key: "1",
             label: (
-              <a onClick={onComplete}>
+              <a onClick={onPaymentByQR}>
                 <Space>
-                  <CheckOutlined /> Cập nhật thành hoàn thành
+                  <ScanOutlined /> Thanh toán bằng QR
                 </Space>
               </a>
             ),
@@ -158,7 +201,11 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => [
       return (
         <Dropdown
           menu={{
-            items: renderItems(record, record.onComplete!, record.onUpdate!),
+            items: renderItems(
+              record,
+              record.onPaymentByCash!,
+              record.onPaymentByQR!
+            ),
           }}
           trigger={["click"]}
           placement="bottomRight"
@@ -167,10 +214,8 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => [
             type="text"
             icon={<EllipsisOutlined style={{ fontSize: 18 }} />}
             disabled={
-              !(
-                (record.status === appointmentStatusEnum.Deposited)
-                // || record.onRemove
-              )
+              !(record.status === appointmentStatusEnum.Completed)
+              // || record.onRemove
             }
           />
         </Dropdown>

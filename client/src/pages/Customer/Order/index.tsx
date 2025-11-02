@@ -90,7 +90,8 @@ const CustomerOrders: React.FC = () => {
           return (
             a.status !== appointmentStatusEnum.Cancelled &&
             a.status !== appointmentStatusEnum.Rejected &&
-            a.status !== appointmentStatusEnum.Completed
+            a.status !== appointmentStatusEnum.Completed &&
+            a.status !== appointmentStatusEnum.Paid
           );
         })
         .map((a) => ({
@@ -199,8 +200,8 @@ const CustomerOrders: React.FC = () => {
         appointmentId: item.id,
         amount: depositAmount,
         description: `Coc lich hen #${item.id}`.slice(0, 25),
-        returnUrl: `${window.location.origin}${configRoutes.paymentSuccess}`,
-        cancelUrl: `${window.location.origin}${configRoutes.paymentFail}`,
+        returnUrl: `${window.location.origin}${configRoutes.paymentSuccessDeposit}`,
+        cancelUrl: `${window.location.origin}${configRoutes.paymentFailDeposit}`,
         customerName: item.customer?.full_name || "Khách hàng",
       };
 

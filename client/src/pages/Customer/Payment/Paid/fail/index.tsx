@@ -1,7 +1,9 @@
 import { configRoutes } from "@/constants/route";
 import { Button, Result } from "antd";
+import { useNavigate } from "react-router-dom";
 
-const FailPayment: React.FC = () => {
+const FailPaymentPaid: React.FC = () => {
+  const navigate = useNavigate();
   return (
     <Result
       status="error"
@@ -11,7 +13,7 @@ const FailPayment: React.FC = () => {
         <Button
           type="primary"
           key="console"
-          onClick={() => window.location.replace(configRoutes.customerOrders)}
+          onClick={() => navigate(configRoutes.casherOrderManagement)}
         >
           Về home
         </Button>,
@@ -21,4 +23,4 @@ const FailPayment: React.FC = () => {
   );
 };
 
-export default FailPayment;
+export default FailPaymentPaid;

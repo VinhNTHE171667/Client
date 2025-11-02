@@ -12,8 +12,11 @@ export const configRoutes = {
   doctorProfile: "/services/doctor/:id",
   customerOrders: "/customer/orders",
   customerPayments: "/customer/payments",
-  paymentSuccess: "/customer/payments/success",
-  paymentFail: "/customer/payments/fail",
+
+  paymentSuccessPaid: "/casher/payments/success-paid",
+  paymentFailPaid: "/casher/payments/fail-paid",
+  paymentSuccessDeposit: "/customer/payments/success-deposit",
+  paymentFailDeposit: "/customer/payments/fail-deposit",
 
   adminDashboard: "/admin/dashboard",
   adminCustomers: "/admin/customers",
@@ -28,6 +31,9 @@ export const configRoutes = {
 
   doctorDashboard: "/doctor/dashboard",
   doctorOrderManagement: "/doctor/orders",
+
+  // casherDashboard: "/casher/dashboard",
+  casherOrderManagement: "/casher/orders",
 };
 
 export const configError = {
