@@ -27,6 +27,7 @@ export const appointmentStatusEnum = {
   Rejected: "rejected",
   Paid: "paid",
   Cancelled: "cancelled",
+  Completed: "completed",
 } as const;
 
 export type RoleEnumType = (typeof RoleEnum)[keyof typeof RoleEnum];

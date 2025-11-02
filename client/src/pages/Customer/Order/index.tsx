@@ -90,7 +90,7 @@ const CustomerOrders: React.FC = () => {
           return (
             a.status !== appointmentStatusEnum.Cancelled &&
             a.status !== appointmentStatusEnum.Rejected &&
-            a.status !== appointmentStatusEnum.Paid
+            a.status !== appointmentStatusEnum.Completed
           );
         })
         .map((a) => ({
@@ -513,6 +513,10 @@ const CustomerOrders: React.FC = () => {
         onCancel={() => setEditModal(false)}
         onOk={handleSaveEdit}
         okText="Chỉnh sửa"
+        okButtonProps={{
+          disabled:
+            selectedAppointment?.status !== appointmentStatusEnum.Pending,
+        }}
         cancelText="Huỷ"
       >
         <div className={styles.selectedList}>

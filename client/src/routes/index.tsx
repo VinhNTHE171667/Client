@@ -25,6 +25,8 @@ import SuccessPayment from "@/pages/Customer/Payment/success";
 import FailPayment from "@/pages/Customer/Payment/fail";
 import StaffDashboard from "@/pages/Staff/Dashboard";
 import OrderManagementStaff from "@/pages/Staff/OrderManagement";
+import OrderManagementDoctor from "@/pages/Doctor/OrderManagement";
+import DoctorDashboard from "@/pages/Doctor/Dashboard";
 
 const router = createBrowserRouter([
   {
@@ -260,6 +262,38 @@ const router = createBrowserRouter([
       },
     ],
   },
+
+  {
+    path: configRoutes.doctorDashboard,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Doctor]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <DoctorDashboard />,
+          },
+        ],
+      },
+    ],
+  },
+
+  // {
+  //   path: configRoutes.doctorOrderManagement,
+  //   element: <ProtectedRoute allowedRoles={[RoleEnum.Doctor]} />,
+  //   children: [
+  //     {
+  //       element: <SystemLayoutReposive />,
+  //       children: [
+  //         {
+  //           index: true,
+  //           element: <OrderManagementDoctor />,
+  //         },
+  //       ],
+  //     },
+  //   ],
+  // },
 ]);
 
 export default router;

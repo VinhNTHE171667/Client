@@ -31,7 +31,7 @@ import CreateAppointment from "./add";
 
 const { RangePicker } = DatePicker;
 
-export default function OrderManagementStaff() {
+export default function OrderManagementDoctor() {
   const [isLoading, setIsLoading] = useState(false);
   const [createState, setCreateState] = useState(false);
   const [updateState, setUpdateState] = useState(false);

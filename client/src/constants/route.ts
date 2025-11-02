@@ -25,6 +25,9 @@ export const configRoutes = {
 
   staffDashboard: "/staff/dashboard",
   staffOrders: "/staff/orders",
+
+  doctorDashboard: "/doctor/dashboard",
+  doctorOrderManagement: "/doctor/orders",
 };
 
 export const configError = {
