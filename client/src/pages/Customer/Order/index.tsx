@@ -513,6 +513,10 @@ const CustomerOrders: React.FC = () => {
         onCancel={() => setEditModal(false)}
         onOk={handleSaveEdit}
         okText="Chỉnh sửa"
+        okButtonProps={{
+          disabled:
+            selectedAppointment?.status !== appointmentStatusEnum.Pending,
+        }}
         cancelText="Huỷ"
       >
         <div className={styles.selectedList}>

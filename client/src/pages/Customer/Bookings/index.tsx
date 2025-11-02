@@ -7,6 +7,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import styles from "./Booking.module.scss";
 import { configRoutes } from "@/constants/route";
 import BookingCalendarCore from "@/components/BookingCalendarCore";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import {
   useCreateAppointmentMutation,
   useGetAppointmentsBookedByDoctorMutation,
@@ -273,9 +274,23 @@ const BookingCalendar: React.FC = () => {
     }
   };
 
+  const handleBack = () => {
+    navigate(configRoutes.customerOrders);
+  };
+
   return (
     <Container className={styles.bookingPage}>
       <Card className={styles.bookingCard}>
+        <div className={styles.backWrapper}>
+          <Button
+            type="link"
+            icon={<ArrowLeftOutlined />}
+            onClick={handleBack}
+            className={styles.backButton}
+          >
+            Quay lại danh sách lịch hẹn
+          </Button>
+        </div>
         <h2 className={styles.title}>Chọn lịch hẹn của bạn</h2>
 
         <div className={styles.calendarWrapper}>
