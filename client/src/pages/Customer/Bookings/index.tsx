@@ -18,6 +18,7 @@ import { showError, showSuccess } from "@/libs/toast";
 import { useAuthStore } from "@/hooks/UseAuth";
 
 import NoImage from "@/assets/img/NoImage/NoImage.jpg";
+import { appointmentStatusEnum } from "@/common/types/auth";
 
 interface ServiceImage {
   url: string;
@@ -86,8 +87,6 @@ const BookingCalendar: React.FC = () => {
   const full_name = state.full_name;
   const phone = state.phone;
   const note = state.note;
-
-  console.log("BookingCalendar state:", state);
 
   const hasFetched = useRef(false);
 
@@ -224,12 +223,21 @@ const BookingCalendar: React.FC = () => {
 
         // setAppointmentsBooked(booked);
 
-        const bookedEvents: RBCEvent[] = booked.map((a) => ({
-          title: "Booked",
-          start: new Date(a.startTime),
-          end: new Date(a.endTime),
-          allDay: false,
-        }));
+        const bookedEvents: RBCEvent[] = booked
+          .filter((a) => {
+            if (
+              a.status !== appointmentStatusEnum.Cancelled &&
+              a.status !== appointmentStatusEnum.Rejected
+            )
+              return true;
+            return false;
+          })
+          .map((a) => ({
+            title: "Booked",
+            start: new Date(a.startTime),
+            end: new Date(a.endTime),
+            allDay: false,
+          }));
 
         setEvents((prev) => [...bookedEvents, ...prev]);
 
