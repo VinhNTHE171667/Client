@@ -143,6 +143,7 @@ export const appointmentApi = createApi({
         id: string;
         startTime: string;
         endTime: string;
+        status: string;
       }[],
       { doctorId: string }
     >({

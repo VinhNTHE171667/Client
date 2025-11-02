@@ -53,7 +53,7 @@ export class AppointmentService {
         status: Not(AppointmentStatus.Cancelled),
         appointment_date: MoreThan(now),
       },
-      select: ['id', 'startTime', 'endTime'],
+      select: ['id', 'startTime', 'endTime', 'status'],
     });
   }
 

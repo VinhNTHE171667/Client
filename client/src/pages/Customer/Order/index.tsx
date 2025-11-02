@@ -86,7 +86,13 @@ const CustomerOrders: React.FC = () => {
   const events: RBCEvent[] = useMemo(
     () =>
       appointments
-        .filter((a) => a.status !== "CANCELLED" && a.status !== "cancelled")
+        .filter((a) => {
+          return (
+            a.status !== appointmentStatusEnum.Cancelled &&
+            a.status !== appointmentStatusEnum.Rejected &&
+            a.status !== appointmentStatusEnum.Paid
+          );
+        })
         .map((a) => ({
           id: a.id,
           title: a.details?.[0]?.service?.name ?? "Lịch hẹn",
@@ -124,6 +130,7 @@ const CustomerOrders: React.FC = () => {
   const handleSelectEvent = (event: RBCEvent) => {
     const appointment = event.resource as AppointmentProps;
     setSelectedAppointment(appointment);
+
     // form.setFieldsValue({
     //   note: appointment.note,
     //   date: dayjs(appointment.startTime),
