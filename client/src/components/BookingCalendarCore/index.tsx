@@ -66,6 +66,33 @@ const BookingCalendarCore: React.FC<BookingCalendarCoreProps> = ({
             },
           };
         }}
+        eventPropGetter={(event) => {
+          if (event.title === "Booked") {
+            return {
+              style: {
+                backgroundColor: "#514f4fff",
+                color: "#fff",
+                borderRadius: "6px",
+                border: "none",
+                cursor: "not-allowed",
+                opacity: 0.9,
+              },
+            };
+          }
+
+          if (event.title === "Đang chọn") {
+            return {
+              style: {
+                backgroundColor: "#3ddab4",
+                color: "#fff",
+                borderRadius: "6px",
+                border: "none",
+              },
+            };
+          }
+
+          return {};
+        }}
         view={currentView}
         date={currentDate}
         onView={(view) => setCurrentView(view)}

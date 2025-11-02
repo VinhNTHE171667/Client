@@ -8,10 +8,11 @@ import {
   Empty,
   Button,
   Modal,
-  Form,
-  Input,
-  DatePicker,
   message,
+  DatePicker,
+  Select,
+  Input,
+  Form,
 } from "antd";
 import {
   Calendar,
@@ -28,17 +29,17 @@ import styles from "./Order.module.scss";
 import {
   useCreateLinkPaymentMutation,
   useGetAppointmentsByCustomerMutation,
+  useUpdateAppointmentMutationCancelMutation,
   type AppointmentProps,
 } from "@/services/appointment";
 import { useAuthStore } from "@/hooks/UseAuth";
-import {
-  EditOutlined,
-  DeleteOutlined,
-  ExclamationCircleOutlined,
-} from "@ant-design/icons";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { configRoutes } from "@/constants/route";
-
-const { confirm } = Modal;
+import NoImage from "@/assets/img/NoImage/NoImage.jpg";
+import { useNavigate } from "react-router-dom";
+import { appointmentStatusEnum } from "@/common/types/auth";
+import { showError, showSuccess } from "@/libs/toast";
+import { statusTagColor, translateStatus } from "@/utils/format";
 
 const locales = { vi };
 const localizer = dateFnsLocalizer({
@@ -57,9 +58,16 @@ const CustomerOrders: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [currentView, setCurrentView] = useState<View>("week");
   const [editModal, setEditModal] = useState(false);
+  const [cancelModal, setCancelModal] = useState(false);
+  const [detailModal, setDetailModal] = useState(false);
+
+  const [rejectModal, setRejectModal] = useState(false);
+  const [rejectReason, setRejectReason] = useState<string | null>(null);
+
   const [selectedAppointment, setSelectedAppointment] =
-    useState<AppointmentProps | null>(null);
-  const [form] = Form.useForm();
+    useState<AppointmentProps>();
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (auth?.accountId) {
@@ -70,17 +78,44 @@ const CustomerOrders: React.FC = () => {
     }
   }, [auth]);
 
+  const [statusFilter, setStatusFilter] = useState<string[] | null>(null);
+  const [dateRange, setDateRange] = useState<
+    [dayjs.Dayjs | null, dayjs.Dayjs | null] | null
+  >(null);
+
   const events: RBCEvent[] = useMemo(
     () =>
-      appointments.map((a) => ({
-        id: a.id,
-        title: a.details?.[0]?.service?.[0]?.name ?? "Lịch hẹn",
-        start: new Date(a.startTime ?? new Date()),
-        end: new Date(a.endTime ?? a.startTime ?? new Date()),
-        resource: a,
-      })),
+      appointments
+        .filter((a) => a.status !== "CANCELLED" && a.status !== "cancelled")
+        .map((a) => ({
+          id: a.id,
+          title: a.details?.[0]?.service?.name ?? "Lịch hẹn",
+          start: new Date(a.startTime ?? new Date()),
+          end: new Date(a.endTime ?? a.startTime ?? new Date()),
+          resource: a,
+        })),
     [appointments]
   );
+
+  const filteredAppointments = useMemo(() => {
+    if (!statusFilter?.length && !dateRange) {
+      return appointments;
+    }
+
+    return appointments.filter((item) => {
+      const matchStatus =
+        !statusFilter?.length || statusFilter.includes(item.status || "");
+
+      const matchDate =
+        !dateRange ||
+        (dayjs(item.startTime).isAfter(dateRange[0], "day") &&
+          dayjs(item.startTime).isBefore(dateRange[1], "day")) ||
+        dayjs(item.startTime).isSame(dateRange[0], "day") ||
+        dayjs(item.startTime).isSame(dateRange[1], "day");
+
+      return matchStatus && matchDate;
+    });
+  }, [appointments, statusFilter, dateRange]);
 
   const handleSelectSlot = (slotInfo: SlotInfo) => {
     console.log("Slot selected:", slotInfo);
@@ -89,32 +124,52 @@ const CustomerOrders: React.FC = () => {
   const handleSelectEvent = (event: RBCEvent) => {
     const appointment = event.resource as AppointmentProps;
     setSelectedAppointment(appointment);
-    form.setFieldsValue({
-      note: appointment.note,
-      date: dayjs(appointment.startTime),
-    });
+    // form.setFieldsValue({
+    //   note: appointment.note,
+    //   date: dayjs(appointment.startTime),
+    // });
     setEditModal(true);
   };
 
-  const handleCancelAppointment = (item: AppointmentProps) => {
-    confirm({
-      title: "Xác nhận huỷ lịch hẹn?",
-      icon: <ExclamationCircleOutlined />,
-      content:
-        "Bạn có chắc muốn huỷ lịch hẹn này? Hành động này không thể hoàn tác.",
-      okText: "Huỷ lịch",
-      cancelText: "Đóng",
-      okButtonProps: { danger: true },
-      onOk() {
-        message.success("Đã huỷ lịch hẹn!");
-      },
-    });
+  const [updateCancelAppointment] =
+    useUpdateAppointmentMutationCancelMutation();
+
+  const handleCancelAppointment = async (values: { cancelReason: string }) => {
+    try {
+      const res = await updateCancelAppointment({
+        appointmentId: selectedAppointment?.id || "",
+        reason: values.cancelReason || "Khách hàng huỷ lịch hẹn",
+      });
+
+      if (res) {
+        showSuccess("Huỷ lịch hẹn thành công.");
+      } else {
+        showError("Huỷ lịch hẹn thất bại.");
+      }
+
+      setCancelModal(false);
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : "Đã xảy ra lỗi khi huỷ lịch hẹn.";
+      showError(msg);
+    }
   };
 
   const handleSaveEdit = () => {
-    form.validateFields().then((values) => {
-      message.success("Cập nhật lịch hẹn thành công!");
-      setEditModal(false);
+    navigate(configRoutes.bookings, {
+      state: {
+        oldSlot: {
+          start: selectedAppointment?.startTime || null,
+          end: selectedAppointment?.endTime || null,
+        },
+        appointmentId: selectedAppointment?.id || null,
+        doctorId: selectedAppointment?.doctorId || null,
+        services: selectedAppointment?.details?.map((d) => d.service) || [],
+
+        full_name: selectedAppointment?.customer?.full_name || null,
+        phone: selectedAppointment?.customer?.phone || null,
+        note: selectedAppointment?.note || null,
+      },
     });
   };
   const [createPaymentLink] = useCreateLinkPaymentMutation();
@@ -156,15 +211,6 @@ const CustomerOrders: React.FC = () => {
       message.error(msg);
     }
   };
-
-  const statusTagColor = (status?: string) =>
-    status === "CANCELLED"
-      ? "red"
-      : status === "COMPLETED"
-      ? "green"
-      : status === "CONFIRMED" || status === "confirmed"
-      ? "blue"
-      : "cyan";
 
   return (
     <Container className={styles.ordersPage}>
@@ -257,6 +303,53 @@ const CustomerOrders: React.FC = () => {
               Danh sách lịch hẹn
             </h3>
 
+            <div className={styles.filterBar}>
+              <DatePicker.RangePicker
+                format="DD/MM/YYYY"
+                onChange={(range) => setDateRange(range)}
+                style={{ marginRight: 12 }}
+              />
+
+              <Select
+                allowClear
+                placeholder="Chọn trạng thái"
+                value={statusFilter ?? undefined}
+                onChange={(value) => setStatusFilter(value)}
+                style={{ width: 200 }}
+                mode="multiple"
+                options={[
+                  {
+                    label: "Chờ xác nhận",
+                    value: appointmentStatusEnum.Pending,
+                  },
+                  {
+                    label: "Đã xác nhận",
+                    value: appointmentStatusEnum.Confirmed,
+                  },
+                  {
+                    label: "Đã đặt cọc",
+                    value: appointmentStatusEnum.Deposited,
+                  },
+                  { label: "Đã duyệt", value: appointmentStatusEnum.Approved },
+                  {
+                    label: "Bị từ chối",
+                    value: appointmentStatusEnum.Rejected,
+                  },
+                  { label: "Đã thanh toán", value: appointmentStatusEnum.Paid },
+                  { label: "Đã huỷ", value: appointmentStatusEnum.Cancelled },
+                ]}
+              />
+
+              <Button
+                onClick={() => {
+                  setDateRange(null);
+                  setStatusFilter(null);
+                }}
+              >
+                Xoá bộ lọc
+              </Button>
+            </div>
+
             {isLoading ? (
               <Spin size="large" className="d-block mx-auto my-5" />
             ) : appointments.length === 0 ? (
@@ -264,15 +357,20 @@ const CustomerOrders: React.FC = () => {
             ) : (
               <List
                 itemLayout="vertical"
-                dataSource={appointments}
+                dataSource={filteredAppointments}
                 renderItem={(item) => {
                   const totalPrice = item.details
                     ?.reduce((sum, d) => sum + Number(d.price ?? 0), 0)
                     .toLocaleString("vi-VN");
+                  const isPending =
+                    item.status === appointmentStatusEnum.Pending;
                   const isConfirmed =
-                    item.status === "CONFIRMED" || item.status === "confirmed";
-                  const isImported =
-                    item.status === "IMPORTED" || item.status === "imported";
+                    item.status === appointmentStatusEnum.Confirmed;
+                  const isRejected =
+                    item.status === appointmentStatusEnum.Rejected;
+
+                  // const isCancelled =
+                  //   item.status === appointmentStatusEnum.Cancelled;
 
                   return (
                     <Card
@@ -286,20 +384,17 @@ const CustomerOrders: React.FC = () => {
                             <Avatar
                               shape="square"
                               size={72}
-                              src={
-                                item.details?.[0]?.service?.[0]?.images?.[0]
-                                  ?.url
-                              }
+                              src={item.customer?.avatar || NoImage}
                             />
                           }
                           title={
                             <div className={styles.header}>
-                              <h4>
-                                {item.details?.[0]?.service?.[0]?.name ||
-                                  "Dịch vụ"}
-                              </h4>
+                              <h5>
+                                {item.customer?.full_name || "Khách hàng"} -
+                                Lịch hẹn #{item.id}
+                              </h5>
                               <Tag color={statusTagColor(item.status)}>
-                                {item.status}
+                                {translateStatus(item.status)}
                               </Tag>
                             </div>
                           }
@@ -331,7 +426,16 @@ const CustomerOrders: React.FC = () => {
                             {totalPrice}₫
                           </div>
                           <div className={styles.actions}>
-                            {!isImported && (
+                            <Button
+                              onClick={() => {
+                                setSelectedAppointment(item);
+                                setDetailModal(true);
+                              }}
+                            >
+                              Xem chi tiết
+                            </Button>
+
+                            {isPending && (
                               <>
                                 <Button
                                   icon={<EditOutlined />}
@@ -352,7 +456,10 @@ const CustomerOrders: React.FC = () => {
                                 <Button
                                   icon={<DeleteOutlined />}
                                   danger
-                                  onClick={() => handleCancelAppointment(item)}
+                                  onClick={() => {
+                                    setSelectedAppointment(item);
+                                    setCancelModal(true);
+                                  }}
                                 >
                                   Huỷ
                                 </Button>
@@ -365,6 +472,20 @@ const CustomerOrders: React.FC = () => {
                                 style={{ marginLeft: 8 }}
                               >
                                 Đặt cọc 50%
+                              </Button>
+                            )}
+
+                            {isRejected && (
+                              <Button
+                                onClick={() => {
+                                  setRejectReason(
+                                    item.rejectionReason ??
+                                      "Không có lý do được cung cấp"
+                                  );
+                                  setRejectModal(true);
+                                }}
+                              >
+                                Xem lý do
                               </Button>
                             )}
                           </div>
@@ -380,28 +501,168 @@ const CustomerOrders: React.FC = () => {
       </Row>
 
       <Modal
-        title="Chỉnh sửa lịch hẹn"
+        title="Chi tiết lịch hẹn"
         open={editModal}
         onCancel={() => setEditModal(false)}
         onOk={handleSaveEdit}
-        okText="Lưu thay đổi"
+        okText="Chỉnh sửa"
+        cancelText="Huỷ"
       >
-        <Form layout="vertical" form={form}>
+        <div className={styles.selectedList}>
+          {selectedAppointment?.details.map((detail) => {
+            const svc = detail.service;
+            const imgSrc = svc?.images?.[0]?.url ? svc.images[0].url : NoImage;
+            const name = svc?.name ?? "Dịch vụ";
+            const doctorName =
+              selectedAppointment?.doctor?.full_name ?? "Chưa có";
+            const price = Number(
+              detail.price ?? svc?.price ?? 0
+            ).toLocaleString("vi-VN");
+            return (
+              <div key={detail.id} className={styles.serviceItem}>
+                <img src={imgSrc} alt={name} className={styles.serviceImage} />
+                <div className={styles.serviceInfo}>
+                  <h4>{name}</h4>
+                  <p className={styles.doctorName}>
+                    Bác sĩ: <span>{doctorName}</span>
+                  </p>
+                  <p className={styles.price}>{price}₫</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Modal>
+
+      <Modal
+        title="Huỷ lịch hẹn"
+        open={cancelModal}
+        onCancel={() => setCancelModal(false)}
+        footer={null}
+      >
+        <Form layout="vertical" onFinish={handleCancelAppointment}>
           <Form.Item
-            label="Ngày hẹn"
-            name="date"
-            rules={[{ required: true, message: "Vui lòng chọn ngày hẹn" }]}
+            label="Lý do huỷ"
+            name="cancelReason"
+            rules={[{ required: true, message: "Vui lòng nhập lý do huỷ" }]}
           >
-            <DatePicker
-              showTime
-              format="DD/MM/YYYY HH:mm"
-              style={{ width: "100%" }}
-            />
+            <Input.TextArea rows={4} placeholder="Nhập lý do huỷ lịch hẹn..." />
           </Form.Item>
-          <Form.Item label="Ghi chú" name="note">
-            <Input.TextArea rows={3} placeholder="Nhập ghi chú..." />
+
+          <Form.Item>
+            <div className="d-flex justify-content-center gap-4">
+              <Button onClick={() => setCancelModal(false)}>Huỷ</Button>
+              <Button type="primary" htmlType="submit">
+                Xác nhận huỷ
+              </Button>
+            </div>
           </Form.Item>
         </Form>
+      </Modal>
+
+      <Modal
+        title="Lý do từ chối lịch hẹn"
+        open={rejectModal}
+        onCancel={() => setRejectModal(false)}
+        footer={[
+          <Button
+            key="close"
+            type="primary"
+            onClick={() => setRejectModal(false)}
+          >
+            Đóng
+          </Button>,
+        ]}
+      >
+        <p style={{ whiteSpace: "pre-wrap", fontSize: 15 }}>{rejectReason}</p>
+      </Modal>
+
+      <Modal
+        title="Chi tiết lịch hẹn"
+        open={detailModal}
+        onCancel={() => setDetailModal(false)}
+        footer={[
+          <Button key="close" onClick={() => setDetailModal(false)}>
+            Đóng
+          </Button>,
+        ]}
+      >
+        {selectedAppointment ? (
+          <>
+            <p>
+              <strong>Trạng thái:</strong>{" "}
+              <Tag color={statusTagColor(selectedAppointment.status)}>
+                {translateStatus(selectedAppointment.status)}
+              </Tag>
+            </p>
+
+            <p>
+              <strong>Ngày:</strong>{" "}
+              {dayjs(selectedAppointment.startTime).format("DD/MM/YYYY HH:mm")}
+            </p>
+
+            <p>
+              <strong>Bác sĩ:</strong>{" "}
+              {selectedAppointment.doctor?.full_name || "Chưa có"}
+            </p>
+
+            <p>
+              <strong>Ghi chú:</strong> {selectedAppointment.note || "Không có"}
+            </p>
+
+            <div style={{ marginTop: 12 }}>
+              <strong>Dịch vụ:</strong>
+              {selectedAppointment.details?.map((detail) => {
+                console.log("detail.service", detail);
+                const svc = detail.service;
+                const img = svc?.images?.[0]?.url || NoImage;
+                return (
+                  <div
+                    key={detail.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      marginTop: 8,
+                      borderBottom: "1px solid #eee",
+                      paddingBottom: 8,
+                    }}
+                  >
+                    <img
+                      src={img}
+                      alt={svc?.name}
+                      style={{
+                        width: 60,
+                        height: 60,
+                        objectFit: "cover",
+                        borderRadius: 8,
+                      }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <p style={{ margin: 0, fontWeight: 600 }}>
+                        {svc?.name || "Dịch vụ"}
+                      </p>
+                      <p style={{ margin: 0 }}>
+                        Giá: {Number(detail.price ?? 0).toLocaleString("vi-VN")}
+                        ₫
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <p style={{ marginTop: 12, fontWeight: 600 }}>
+              Tổng tiền:{" "}
+              {selectedAppointment.details
+                ?.reduce((sum, d) => sum + Number(d.price ?? 0), 0)
+                .toLocaleString("vi-VN")}
+              ₫
+            </p>
+          </>
+        ) : (
+          <p>Không có thông tin lịch hẹn.</p>
+        )}
       </Modal>
     </Container>
   );

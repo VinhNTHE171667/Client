@@ -51,6 +51,12 @@
         }
     }
 
+    :global {
+        .rbc-day-slot .rbc-events-container {
+            margin-right: 0 !important;
+        }
+    }
+
     .rbc-month-view,
     .rbc-time-view {
         border-radius: 12px;

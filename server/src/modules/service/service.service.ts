@@ -136,11 +136,9 @@ export class ServiceService {
 
     const doctorsIds = Array.isArray(dto.doctorsIds) ? dto.doctorsIds : [];
 
-    console.log('doctorsIds', doctorsIds);
     if (doctorsIds.length > 0) {
       const doctors = await this.doctorRepo.findByIds(doctorsIds);
 
-      console.log('doctors', doctors);
       service.doctors = doctors;
     } else {
       service.doctors = [];
@@ -305,5 +303,22 @@ export class ServiceService {
     }
 
     return doctors;
+  }
+
+  async findServicesByDoctor(doctorId: string): Promise<Service[]> {
+    const doctor = await this.doctorRepo.findOne({
+      where: { id: doctorId, deletedAt: IsNull(), isActive: true },
+      relations: ['services'],
+    });
+
+    if (!doctor) {
+      throw new NotFoundException(`Không tìm thấy bác sĩ với id ${doctorId}`);
+    }
+
+    if (!doctor.services || doctor.services.length === 0) {
+      throw new NotFoundException('Bác sĩ này chưa có dịch vụ nào');
+    }
+
+    return doctor.services;
   }
 }

@@ -29,6 +29,11 @@ export class ServiceController {
     return this.servicesService.findOnePublicService(id);
   }
 
+  @Get('public/doctor/:id')
+  getPublicServiceByDoctor(@Param('id') doctorId: string) {
+    return this.servicesService.findServicesByDoctor(doctorId);
+  }
+
   @Post('')
   @UseInterceptors(FilesInterceptor('images', 10, { storage: memoryStorage() }))
   @ApiConsumes('multipart/form-data')

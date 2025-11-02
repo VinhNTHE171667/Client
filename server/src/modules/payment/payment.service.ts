@@ -1,4 +1,5 @@
 import { Appointment } from '@/entities/appointment.entity';
+import { AppointmentStatus } from '@/entities/enums/appointment-status';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm/dist/common/typeorm.decorators';
@@ -53,10 +54,7 @@ export class PaymentService {
     return paymentLinkRes;
   }
 
-  async updatePaymentStatus(body: {
-    orderCode: string;
-    status: 'PAID' | 'CANCELLED';
-  }) {
+  async updatePaymentStatus(body: { orderCode: string }) {
     const appointment = await this.appointmentRepo.findOne({
       where: { orderCode: parseInt(body.orderCode, 10) },
     });
@@ -64,13 +62,13 @@ export class PaymentService {
       throw new Error('Không tìm thấy lịch hẹn');
     }
 
-    if (body.status === 'PAID') {
-      appointment.status = 'confirmed';
+    if (appointment.status === AppointmentStatus.Confirmed) {
+      appointment.status = AppointmentStatus.Deposited;
       await this.appointmentRepo.save(appointment);
-    } else if (body.status === 'CANCELLED') {
-      appointment.status = 'cancelled';
-      appointment.cancelledAt = new Date();
-      await this.appointmentRepo.save(appointment);
+    } else {
+      throw new Error(
+        'Trạng thái lịch hẹn không hợp lệ để cập nhật thanh toán',
+      );
     }
     // const invoice = await this.invoiceRepo.findOne({
     //   where: { orderCode: body.orderCode },

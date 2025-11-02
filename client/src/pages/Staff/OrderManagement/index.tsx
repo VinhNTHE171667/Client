@@ -1,7 +1,18 @@
-import { Card, Col, DatePicker, Input, Row, Space, Table, Divider } from "antd";
+import {
+  Card,
+  Col,
+  DatePicker,
+  Input,
+  Row,
+  Space,
+  Table,
+  Divider,
+  Modal,
+  Form,
+  Button,
+} from "antd";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
-import AddSpa from "./add";
 import UpdateSpa from "./update";
 import { showError, showSuccess } from "@/libs/toast";
 import { AppointmentColumn } from "./_components/columnTypes";
@@ -12,9 +23,11 @@ import FancyBreadcrumb from "@/components/FancyBreadcrumb";
 import {
   useGetAppointmentsForManagementMutation,
   useUpdateAppointmentStatusConfirmedMutation,
-  useUpdateAppointmentStatusImportedMutation,
+  useUpdateAppointmentStatusRejectedMutation,
+  type AppointmentProps,
 } from "@/services/appointment";
 import type { AppointmentTableProps } from "./_components/type";
+import CreateAppointment from "./add";
 
 const { RangePicker } = DatePicker;
 
@@ -34,7 +47,11 @@ export default function OrderManagementStaff() {
     useGetAppointmentsForManagementMutation();
 
   const [updateConfirmed] = useUpdateAppointmentStatusConfirmedMutation();
-  const [updateImported] = useUpdateAppointmentStatusImportedMutation();
+  const [updateRejected] = useUpdateAppointmentStatusRejectedMutation();
+
+  const [rejectModal, setRejectModal] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] =
+    useState<AppointmentProps>();
 
   const handleUpdate = (id: string) => {
     setUpdateId(id);
@@ -51,7 +68,10 @@ export default function OrderManagementStaff() {
         tempRes.map((appointment: any) => ({
           ...appointment,
           onConfirm: () => handleUpdateStatus(appointment.id, "confirmed"),
-          onImport: () => handleUpdateStatus(appointment.id, "imported"),
+          onReject: () => {
+            setSelectedAppointment(appointment);
+            setRejectModal(true);
+          },
           onUpdate: () => handleUpdate(appointment.id),
           onRemove: () => console.log("Xóa:", appointment.id),
         }))
@@ -78,19 +98,40 @@ export default function OrderManagementStaff() {
         case "confirmed":
           updateMutation = updateConfirmed;
           break;
-        case "imported":
-          updateMutation = updateImported;
-          break;
         default:
           throw new Error("Unknown status");
       }
       await updateMutation({ appointmentId: id });
       showSuccess("Cập nhật trạng thái thành công");
-      handleGetAppointments();
+      handleEvent();
     } catch (error) {
       showError("Error", error instanceof Error ? error.message : "Unknown");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleRejectAppointment = async (values: { cancelReason: string }) => {
+    try {
+      const res = await updateRejected({
+        appointmentId: selectedAppointment?.id || "",
+        reason: values.cancelReason || "Nhân viên từ chối lịch hẹn",
+      });
+
+      if (res) {
+        showSuccess("Từ chối lịch hẹn thành công.");
+        handleEvent();
+      } else {
+        showError("Từ chối lịch hẹn thất bại.");
+      }
+
+      setRejectModal(false);
+    } catch (err) {
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Đã xảy ra lỗi khi từ chối lịch hẹn.";
+      showError(msg);
     }
   };
 
@@ -107,6 +148,10 @@ export default function OrderManagementStaff() {
 
     return matchSearch && matchDate;
   });
+
+  const handleEvent = () => {
+    handleGetAppointments();
+  };
 
   return (
     <>
@@ -160,9 +205,9 @@ export default function OrderManagementStaff() {
                 label="Thêm lịch hẹn"
                 size="middle"
                 onClick={() => setCreateState(true)}
-                disabled={true}
+                // disabled={true}
               />
-              <AddSpa
+              <CreateAppointment
                 isOpen={createState}
                 onClose={() => setCreateState(false)}
                 onReload={handleGetAppointments}
@@ -194,6 +239,35 @@ export default function OrderManagementStaff() {
           onReload={handleGetAppointments}
         />
       </Card>
+
+      <Modal
+        title="Từ chối lịch hẹn"
+        open={rejectModal}
+        onCancel={() => setRejectModal(false)}
+        footer={null}
+      >
+        <Form layout="vertical" onFinish={handleRejectAppointment}>
+          <Form.Item
+            label="Lý do từ chối"
+            name="cancelReason"
+            rules={[{ required: true, message: "Vui lòng nhập lý do từ chối" }]}
+          >
+            <Input.TextArea
+              rows={4}
+              placeholder="Nhập lý do từ chối lịch hẹn..."
+            />
+          </Form.Item>
+
+          <Form.Item>
+            <div className="d-flex justify-content-center gap-4">
+              <Button onClick={() => setRejectModal(false)}>Huỷ</Button>
+              <Button type="primary" htmlType="submit">
+                Xác nhận từ chối
+              </Button>
+            </div>
+          </Form.Item>
+        </Form>
+      </Modal>
     </>
   );
 }

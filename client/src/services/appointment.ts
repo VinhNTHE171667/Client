@@ -16,6 +16,7 @@ export type AppointmentProps = {
   voucherId: string | null;
   cancelledAt: string | null;
   cancelReason: string | null;
+  rejectionReason: string | null;
   startTime: string;
   endTime: string;
   note: string;
@@ -54,7 +55,7 @@ export type AppointmentProps = {
       updatedAt: string;
       deletedAt: string | null;
       isActive: boolean;
-    }[];
+    };
   }[];
   customer: {
     id: string;
@@ -113,6 +114,17 @@ export const appointmentApi = createApi({
       }),
     }),
 
+    updateAppointment: build.mutation<
+      { id: string },
+      { appointmentId: string; data: Partial<CreateAppointmentProps> }
+    >({
+      query: ({ appointmentId, data }) => ({
+        url: `/appointment/${appointmentId}`,
+        method: "PUT",
+        body: data,
+      }),
+    }),
+
     getAppointmentsByCustomer: build.mutation<
       AppointmentProps[],
       { customerId: string }
@@ -122,6 +134,23 @@ export const appointmentApi = createApi({
         method: "GET",
         params: {
           customerId,
+        },
+      }),
+    }),
+
+    getAppointmentsBookedByDoctor: build.mutation<
+      {
+        id: string;
+        startTime: string;
+        endTime: string;
+      }[],
+      { doctorId: string }
+    >({
+      query: ({ doctorId }) => ({
+        url: `/appointment/doctor-schedule-booked`,
+        method: "GET",
+        params: {
+          doctorId,
         },
       }),
     }),
@@ -165,11 +194,23 @@ export const appointmentApi = createApi({
 
     updateAppointmentStatusRejected: build.mutation<
       AppointmentProps,
-      { appointmentId: string }
+      { appointmentId: string; reason: string }
     >({
-      query: ({ appointmentId }) => ({
+      query: ({ appointmentId, reason }) => ({
         url: `/appointment/${appointmentId}/reject`,
         method: "PATCH",
+        body: { reason },
+      }),
+    }),
+
+    updateAppointmentMutationCancel: build.mutation<
+      AppointmentProps,
+      { appointmentId: string; reason: string }
+    >({
+      query: ({ appointmentId, reason }) => ({
+        url: `/appointment/${appointmentId}/cancel`,
+        method: "PATCH",
+        body: { reason },
       }),
     }),
 
@@ -193,7 +234,9 @@ export const appointmentApi = createApi({
 
     updatePaymentStatus: build.mutation<
       void,
-      { orderCode: string; status: "PAID" | "CANCELLED" }
+      {
+        orderCode: string;
+      }
     >({
       query: (data) => ({
         url: `/payment/update-status`,
@@ -206,14 +249,16 @@ export const appointmentApi = createApi({
 
 export const {
   useCreateAppointmentMutation,
+  useUpdateAppointmentMutation,
   useGetAppointmentsByCustomerMutation,
   useCreateLinkPaymentMutation,
   useUpdatePaymentStatusMutation,
 
   useUpdateAppointmentStatusConfirmedMutation,
-  useUpdateAppointmentStatusImportedMutation,
+  useUpdateAppointmentMutationCancelMutation,
   useUpdateAppointmentStatusApprovedMutation,
   useUpdateAppointmentStatusRejectedMutation,
 
+  useGetAppointmentsBookedByDoctorMutation,
   useGetAppointmentsForManagementMutation,
 } = appointmentApi;

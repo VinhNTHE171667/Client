@@ -124,6 +124,12 @@
         }
     }
 
+    :global {
+        .rbc-day-slot .rbc-events-container {
+            margin-right: 0 !important;
+        }
+    }
+
     .rbc-calendar {
         font-family: "Inter", sans-serif;
         border-radius: 12px;
@@ -142,7 +148,7 @@
                 padding: 6px 12px;
 
                 &:hover {
-                    background: darken(#e7b83d, 8%);
+                    background: #d0a335;
                 }
             }
         }
@@ -152,5 +158,92 @@
             font-size: 13px;
             padding: 2px 6px;
         }
+    }
+}
+
+.selectedList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.serviceItem {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    background: #f0f6ff;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #d6e4ff;
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: scale(1.02);
+        background: #e3efff;
+    }
+}
+
+.serviceImage {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.serviceInfo {
+    flex: 1;
+
+    h4 {
+        font-size: 18px;
+        margin: 0;
+        font-weight: 500;
+    }
+
+    .doctorName {
+        font-size: 14px;
+        color: #555;
+        margin-top: 4px;
+
+        span {
+            color: #1677ff;
+            font-weight: 500;
+        }
+    }
+
+    .price {
+        margin-top: 6px;
+        font-weight: 600;
+        color: #003366;
+    }
+}
+
+.filterBar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 16px;
+    background: #f8fafc;
+    padding: 16px 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+    .ant-picker,
+    .ant-select {
+        height: 40px;
+        border-radius: 8px;
+    }
+
+    .ant-select-selector {
+        border-radius: 8px !important;
+    }
+}
+
+.reasonModal {
+    p {
+        font-size: 15px;
+        line-height: 1.6;
+        color: #333;
     }
 }

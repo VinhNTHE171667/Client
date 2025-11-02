@@ -30,7 +30,7 @@ const StaffDashboard: React.FC = () => {
   return (
     <div className={styles.dashboard}>
       <div className={styles.header}>
-        <h2>Xin chào, Nhân viên Lợi!</h2>
+        <h2>Xin chào, Nhân viên</h2>
         <p>Chúc bạn một ngày làm việc hiệu quả và vui vẻ</p>
       </div>
 
