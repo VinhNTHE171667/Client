@@ -96,6 +96,30 @@ export const getSidebarItemsByRole = (role: string): SiderItem[] => {
     // },
   ];
 
+  const DoctorSidebar = (): SiderItem[] => [
+    {
+      name: "Dashboard",
+      link: configRoutes.doctorDashboard,
+      icon: <MdDashboard />,
+      activeLink: [configRoutes.doctorDashboard],
+    },
+    {
+      name: "Đơn hàng",
+      link: configRoutes.doctorOrderManagement,
+      icon: <MdPeopleAlt className="ml-3" />,
+      activeLink: [configRoutes.doctorOrderManagement],
+    },
+  ];
+
+  const CashierSidebar = (): SiderItem[] => [
+    {
+      name: "Quản lý đơn hàng",
+      link: configRoutes.casherOrderManagement,
+      icon: <MdDashboard />,
+      activeLink: [configRoutes.casherOrderManagement],
+    },
+  ];
+
   // const SpaAdminSidebar = (): SiderItem[] => [
   //   {
   //     name: "Dashboard",
@@ -167,6 +191,10 @@ export const getSidebarItemsByRole = (role: string): SiderItem[] => {
       return AdminSidebar();
     case RoleEnum.Staff:
       return StaffSidebar();
+    case RoleEnum.Doctor:
+      return DoctorSidebar();
+    case RoleEnum.Casher:
+      return CashierSidebar();
     default:
       return [];
   }

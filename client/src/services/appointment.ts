@@ -78,6 +78,10 @@ export type AppointmentProps = {
     isVerified: false;
   };
   staff: null;
+  appointmentType: "online" | "offline";
+  totalAmount: number | 0;
+  depositAmount: number | 0;
+  orderCode: string | null;
 };
 
 export type CreateAppointmentProps = {
@@ -156,9 +160,32 @@ export const appointmentApi = createApi({
       }),
     }),
 
+    getAppointmentsManagedByDoctor: build.mutation<
+      AppointmentProps[],
+      { doctorId: string }
+    >({
+      query: ({ doctorId }) => ({
+        url: `/appointment/doctor-schedule-managed`,
+        method: "GET",
+        params: {
+          doctorId,
+        },
+      }),
+    }),
+
     getAppointmentsForManagement: build.mutation<AppointmentProps[], void>({
       query: () => ({
         url: `/appointment/management`,
+        method: "GET",
+      }),
+    }),
+
+    getAppointmentById: build.mutation<
+      AppointmentProps,
+      { appointmentId: string }
+    >({
+      query: ({ appointmentId }) => ({
+        url: `/appointment/${appointmentId}`,
         method: "GET",
       }),
     }),
@@ -215,6 +242,16 @@ export const appointmentApi = createApi({
       }),
     }),
 
+    updateAppointmentMutationComplete: build.mutation<
+      AppointmentProps,
+      { appointmentId: string }
+    >({
+      query: ({ appointmentId }) => ({
+        url: `/appointment/${appointmentId}/completed`,
+        method: "PATCH",
+      }),
+    }),
+
     createLinkPayment: build.mutation<
       { checkoutUrl: string },
       {
@@ -233,14 +270,27 @@ export const appointmentApi = createApi({
       }),
     }),
 
-    updatePaymentStatus: build.mutation<
+    updatePaymentStatusDeposited: build.mutation<
       void,
       {
         orderCode: string;
       }
     >({
       query: (data) => ({
-        url: `/payment/update-status`,
+        url: `/payment/update-status-deposited`,
+        method: "POST",
+        body: data,
+      }),
+    }),
+
+    updatePaymentStatusPaid: build.mutation<
+      void,
+      {
+        orderCode: string;
+      }
+    >({
+      query: (data) => ({
+        url: `/payment/update-status-paid`,
         method: "POST",
         body: data,
       }),
@@ -252,14 +302,19 @@ export const {
   useCreateAppointmentMutation,
   useUpdateAppointmentMutation,
   useGetAppointmentsByCustomerMutation,
+  useGetAppointmentByIdMutation,
   useCreateLinkPaymentMutation,
-  useUpdatePaymentStatusMutation,
+
+  useUpdatePaymentStatusDepositedMutation,
+  useUpdatePaymentStatusPaidMutation,
 
   useUpdateAppointmentStatusConfirmedMutation,
   useUpdateAppointmentMutationCancelMutation,
   useUpdateAppointmentStatusApprovedMutation,
   useUpdateAppointmentStatusRejectedMutation,
+  useUpdateAppointmentMutationCompleteMutation,
 
+  useGetAppointmentsManagedByDoctorMutation,
   useGetAppointmentsBookedByDoctorMutation,
   useGetAppointmentsForManagementMutation,
 } = appointmentApi;

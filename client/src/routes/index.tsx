@@ -21,12 +21,15 @@ import Booking from "@/pages/Customer/Bookings";
 import Profile from "@/pages/Customer/Profile";
 import DoctorPublicProfile from "@/pages/Services/DoctorProfile";
 import CustomerOrders from "@/pages/Customer/Order";
-import SuccessPayment from "@/pages/Customer/Payment/success";
-import FailPayment from "@/pages/Customer/Payment/fail";
 import StaffDashboard from "@/pages/Staff/Dashboard";
 import OrderManagementStaff from "@/pages/Staff/OrderManagement";
 import OrderManagementDoctor from "@/pages/Doctor/OrderManagement";
 import DoctorDashboard from "@/pages/Doctor/Dashboard";
+import OrderManagementCasher from "@/pages/Casher/OrderManagement";
+import SuccessPaymentDeposited from "@/pages/Customer/Payment/Deposited/success";
+import FailPaymentDeposited from "@/pages/Customer/Payment/Deposited/fail";
+import SuccessPaymentPaid from "@/pages/Customer/Payment/Paid/success";
+import FailPaymentPaid from "@/pages/Customer/Payment/Paid/fail";
 
 const router = createBrowserRouter([
   {
@@ -222,13 +225,23 @@ const router = createBrowserRouter([
   },
 
   {
-    path: configRoutes.paymentSuccess,
-    element: <SuccessPayment />,
+    path: configRoutes.paymentSuccessDeposit,
+    element: <SuccessPaymentDeposited />,
   },
 
   {
-    path: configRoutes.paymentFail,
-    element: <FailPayment />,
+    path: configRoutes.paymentFailDeposit,
+    element: <FailPaymentDeposited />,
+  },
+
+  {
+    path: configRoutes.paymentSuccessPaid,
+    element: <SuccessPaymentPaid />,
+  },
+
+  {
+    path: configRoutes.paymentFailPaid,
+    element: <FailPaymentPaid />,
   },
 
   {
@@ -279,21 +292,37 @@ const router = createBrowserRouter([
     ],
   },
 
-  // {
-  //   path: configRoutes.doctorOrderManagement,
-  //   element: <ProtectedRoute allowedRoles={[RoleEnum.Doctor]} />,
-  //   children: [
-  //     {
-  //       element: <SystemLayoutReposive />,
-  //       children: [
-  //         {
-  //           index: true,
-  //           element: <OrderManagementDoctor />,
-  //         },
-  //       ],
-  //     },
-  //   ],
-  // },
+  {
+    path: configRoutes.doctorOrderManagement,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Doctor]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <OrderManagementDoctor />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.casherOrderManagement,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Casher]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <OrderManagementCasher />,
+          },
+        ],
+      },
+    ],
+  },
 ]);
 
 export default router;

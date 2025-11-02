@@ -1,19 +1,20 @@
 import { configRoutes } from "@/constants/route";
-import { useUpdatePaymentStatusMutation } from "@/services/appointment";
+import { useUpdatePaymentStatusDepositedMutation } from "@/services/appointment";
 import { Button, Result } from "antd";
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 
-const SuccessPayment: React.FC = () => {
+const SuccessPaymentDeposited: React.FC = () => {
   const [searchParams] = useSearchParams();
 
-  const [updatePaymentStatus] = useUpdatePaymentStatusMutation();
+  const [updatePaymentStatusDeposited] =
+    useUpdatePaymentStatusDepositedMutation();
   useEffect(() => {
     handleUpdatePaymentStatus();
   }, []);
 
   const handleUpdatePaymentStatus = async () => {
-    await updatePaymentStatus({
+    await updatePaymentStatusDeposited({
       orderCode: searchParams.get("orderCode") || "",
     })
       .unwrap()
@@ -44,4 +45,4 @@ const SuccessPayment: React.FC = () => {
     />
   );
 };
-export default SuccessPayment;
+export default SuccessPaymentDeposited;

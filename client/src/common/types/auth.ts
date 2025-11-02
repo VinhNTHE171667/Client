@@ -1,6 +1,12 @@
-export type Role = "Admin" | "Customer" | "Staff" | "Casher" | "Doctor";
+export type Role = "Admin" | "Customer" | "Staff" | "Cashier" | "Doctor";
 
-export const ROLE = ["Admin", "Customer", "Casher", "Staff", "Doctor"] as const;
+export const ROLE = [
+  "Admin",
+  "Customer",
+  "Cashier",
+  "Staff",
+  "Doctor",
+] as const;
 
 export type Roles = Role[];
 
@@ -8,7 +14,7 @@ export const RoleEnum = {
   Admin: "Admin",
   Customer: "Customer",
   Staff: "Staff",
-  Casher: "Casher",
+  Casher: "Cashier",
   Doctor: "Doctor",
 } as const;
 

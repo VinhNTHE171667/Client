@@ -10,10 +10,10 @@ import {
   Modal,
   Form,
   Button,
+  Select,
 } from "antd";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
-import UpdateSpa from "./update";
 import { showError, showSuccess } from "@/libs/toast";
 import { AppointmentColumn } from "./_components/columnTypes";
 import FancyButton from "@/components/FancyButton";
@@ -28,14 +28,13 @@ import {
 } from "@/services/appointment";
 import type { AppointmentTableProps } from "./_components/type";
 import CreateAppointment from "./add";
+import { appointmentStatusEnum } from "@/common/types/auth";
 
 const { RangePicker } = DatePicker;
 
 export default function OrderManagementStaff() {
   const [isLoading, setIsLoading] = useState(false);
   const [createState, setCreateState] = useState(false);
-  const [updateState, setUpdateState] = useState(false);
-  const [updateId, setUpdateId] = useState("");
   const [appointments, setAppointments] = useState<AppointmentTableProps[]>([]);
 
   const [search, setSearch] = useState("");
@@ -53,10 +52,7 @@ export default function OrderManagementStaff() {
   const [selectedAppointment, setSelectedAppointment] =
     useState<AppointmentProps>();
 
-  const handleUpdate = (id: string) => {
-    setUpdateId(id);
-    setUpdateState(true);
-  };
+  const [statusFilter, setStatusFilter] = useState<string[] | null>(null);
 
   const handleGetAppointments = async () => {
     setIsLoading(true);
@@ -72,7 +68,7 @@ export default function OrderManagementStaff() {
             setSelectedAppointment(appointment);
             setRejectModal(true);
           },
-          onUpdate: () => handleUpdate(appointment.id),
+          onUpdate: () => {},
           onRemove: () => console.log("Xóa:", appointment.id),
         }))
       );
@@ -139,6 +135,8 @@ export default function OrderManagementStaff() {
     const matchSearch =
       search === "" || a.id.toLowerCase().includes(search.toLowerCase());
 
+    const matchStatus = !statusFilter || statusFilter.includes(a.status);
+
     const matchDate =
       !dateRange ||
       dayjs(a.appointment_date).isSame(dateRange[0], "day") ||
@@ -146,7 +144,7 @@ export default function OrderManagementStaff() {
       (dayjs(a.appointment_date).isAfter(dateRange[0], "day") &&
         dayjs(a.appointment_date).isBefore(dateRange[1], "day"));
 
-    return matchSearch && matchDate;
+    return matchSearch && matchDate && matchStatus;
   });
 
   const handleEvent = () => {
@@ -199,6 +197,38 @@ export default function OrderManagementStaff() {
           </Col>
           <Col>
             <Space>
+              <Select
+                allowClear
+                placeholder="Chọn trạng thái"
+                value={statusFilter ?? undefined}
+                onChange={(value) => setStatusFilter(value)}
+                style={{ width: 200 }}
+                options={[
+                  {
+                    label: "Chờ xác nhận",
+                    value: appointmentStatusEnum.Pending,
+                  },
+                  {
+                    label: "Đã xác nhận",
+                    value: appointmentStatusEnum.Confirmed,
+                  },
+                  {
+                    label: "Đã đặt cọc",
+                    value: appointmentStatusEnum.Deposited,
+                  },
+                  { label: "Đã duyệt", value: appointmentStatusEnum.Approved },
+                  {
+                    label: "Bị từ chối",
+                    value: appointmentStatusEnum.Rejected,
+                  },
+                  { label: "Đã thanh toán", value: appointmentStatusEnum.Paid },
+                  {
+                    label: "Hoàn thành",
+                    value: appointmentStatusEnum.Completed,
+                  },
+                  { label: "Đã huỷ", value: appointmentStatusEnum.Cancelled },
+                ]}
+              />
               <Divider type="vertical" />
               <FancyButton
                 variant="primary"
@@ -231,12 +261,6 @@ export default function OrderManagementStaff() {
             showTotal: (total, range) =>
               `Hiển thị ${range[0]}-${range[1]} trong ${total} lịch hẹn`,
           }}
-        />
-        <UpdateSpa
-          id={updateId}
-          isOpen={updateState}
-          onClose={() => setUpdateState(false)}
-          onReload={handleGetAppointments}
         />
       </Card>
 
