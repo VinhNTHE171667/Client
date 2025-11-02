@@ -18,7 +18,7 @@ import {
 import dayjs from "dayjs";
 import styles from "./StaffDashboard.module.scss";
 
-const StaffDashboard: React.FC = () => {
+const DoctorDashboard: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(dayjs());
 
   const tasks = [
@@ -122,4 +122,4 @@ const StaffDashboard: React.FC = () => {
   );
 };
 
-export default StaffDashboard;
+export default DoctorDashboard;

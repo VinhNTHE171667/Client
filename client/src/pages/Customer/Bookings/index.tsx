@@ -227,7 +227,8 @@ const BookingCalendar: React.FC = () => {
           .filter((a) => {
             if (
               a.status !== appointmentStatusEnum.Cancelled &&
-              a.status !== appointmentStatusEnum.Rejected
+              a.status !== appointmentStatusEnum.Rejected &&
+              a.status !== appointmentStatusEnum.Completed
             )
               return true;
             return false;

@@ -3,7 +3,8 @@ export enum AppointmentStatus {
   Confirmed = 'confirmed',
   Deposited = 'deposited',
   Approved = 'approved',
-  Rejected = 'rejected', 
+  Rejected = 'rejected',
   Paid = 'paid',
+  Completed = 'completed',
   Cancelled = 'cancelled',
 }

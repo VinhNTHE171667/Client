@@ -23,6 +23,8 @@ export const translateStatus = (status?: string) => {
       return "Bị từ chối";
     case appointmentStatusEnum.Paid:
       return "Đã thanh toán";
+    case appointmentStatusEnum.Completed:
+      return "Đã hoàn thành";
     case appointmentStatusEnum.Cancelled:
       return "Đã huỷ";
     default:
@@ -46,6 +48,8 @@ export const statusTagColor = (status?: string) => {
       return "green";
     case appointmentStatusEnum.Cancelled:
       return "red";
+    case appointmentStatusEnum.Completed:
+      return "purple";
     default:
       return "default";
   }

@@ -90,7 +90,7 @@ const CustomerOrders: React.FC = () => {
           return (
             a.status !== appointmentStatusEnum.Cancelled &&
             a.status !== appointmentStatusEnum.Rejected &&
-            a.status !== appointmentStatusEnum.Paid
+            a.status !== appointmentStatusEnum.Completed
           );
         })
         .map((a) => ({
