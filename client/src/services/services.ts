@@ -224,6 +224,13 @@ export const serviceApi = createApi({
         method: "Get",
       }),
     }),
+
+    getPublicServiceByDoctor: build.mutation<ServiceData[], string>({
+      query: (doctorId) => ({
+        url: `/service/public/doctor/${doctorId}`,
+        method: "Get",
+      }),
+    }),
   }),
 });
 
@@ -242,4 +249,5 @@ export const {
 
   useGetPublicServicesMutation,
   useGetPublicServiceByIdQuery,
+  useGetPublicServiceByDoctorMutation,
 } = serviceApi;

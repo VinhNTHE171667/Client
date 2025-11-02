@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import { AppointmentService } from './appointment.service';
@@ -14,6 +15,7 @@ import {
   CreateAppointmentDto,
   UpdateAppointmentDto,
 } from './appointment/appointment.dto';
+import { AppointmentStatus } from '@/entities/enums/appointment-status';
 // import { get } from 'http';
 
 @Controller('appointment')
@@ -23,6 +25,11 @@ export class AppointmentController {
   @Get('/customer')
   findAll(@Query('customerId') customerId: string) {
     return this.appointmentService.findByCustomer(customerId);
+  }
+
+  @Get('/doctor-schedule-booked')
+  findAllForDoctor(@Query('doctorId') doctorId: string) {
+    return this.appointmentService.findAllAppointmentsBooked(doctorId);
   }
 
   @Get('/management')
@@ -43,29 +50,27 @@ export class AppointmentController {
     return this.appointmentService.create(dto);
   }
 
-  @Patch(':id/confirm')
-  confirm(@Param('id') id: string) {
-    return this.appointmentService.updateStatus(id, 'confirmed');
+  @Put(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateAppointmentDto) {
+    return this.appointmentService.update(id, dto);
   }
 
-  @Patch(':id/imported')
-  complete(@Param('id') id: string) {
-    return this.appointmentService.updateStatus(id, 'imported');
+  @Patch(':id/confirm')
+  confirm(@Param('id') id: string) {
+    return this.appointmentService.updateStatus(
+      id,
+      AppointmentStatus.Confirmed,
+    );
   }
 
   @Patch(':id/approve')
   approve(@Param('id') id: string) {
-    return this.appointmentService.updateStatus(id, 'approved');
+    return this.appointmentService.updateStatus(id, AppointmentStatus.Approved);
   }
 
   @Patch(':id/reject')
-  reject(@Param('id') id: string) {
-    return this.appointmentService.updateStatus(id, 'rejected');
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateAppointmentDto) {
-    return this.appointmentService.update(id, dto);
+  reject(@Param('id') id: string, @Body('reason') reason: string) {
+    return this.appointmentService.reject(id, reason);
   }
 
   @Patch(':id/cancel')

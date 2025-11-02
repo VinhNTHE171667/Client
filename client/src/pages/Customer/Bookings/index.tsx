@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { type SlotInfo, type Event as RBCEvent } from "react-big-calendar";
 import dayjs from "dayjs";
 import { Modal, Form, Input, Button, message, Card } from "antd";
@@ -9,11 +9,15 @@ import { configRoutes } from "@/constants/route";
 import BookingCalendarCore from "@/components/BookingCalendarCore";
 import {
   useCreateAppointmentMutation,
+  useGetAppointmentsBookedByDoctorMutation,
+  useUpdateAppointmentMutation,
   // useCreateLinkPaymentMutation,
   type CreateAppointmentProps,
 } from "@/services/appointment";
 import { showError, showSuccess } from "@/libs/toast";
 import { useAuthStore } from "@/hooks/UseAuth";
+
+import NoImage from "@/assets/img/NoImage/NoImage.jpg";
 
 interface ServiceImage {
   url: string;
@@ -36,6 +40,14 @@ interface Service {
 interface LocationState {
   services: Service[];
   doctorId?: string;
+  appointmentId?: string;
+  oldSlot?: {
+    start: Date;
+    end: Date;
+  };
+  full_name?: string;
+  phone?: string;
+  note?: string;
 }
 
 interface BookingFormValues {
@@ -53,6 +65,14 @@ const BookingCalendar: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   const [createAppointment] = useCreateAppointmentMutation();
+  const [updateAppointment] = useUpdateAppointmentMutation();
+  const [getAppointmentsBookedByDoctor] =
+    useGetAppointmentsBookedByDoctorMutation();
+
+  // const [appointmentsBooked, setAppointmentsBooked] = useState<
+  //   AppointmentProps[]
+  // >([]);
+
   const { auth } = useAuthStore();
 
   const location = useLocation();
@@ -60,11 +80,25 @@ const BookingCalendar: React.FC = () => {
 
   const state = (location.state || {}) as LocationState;
   const services = state.services ?? [];
+  const doctorId = state.doctorId;
+  const appointmentId = state.appointmentId;
+  const oldSlot = state.oldSlot;
+  const full_name = state.full_name;
+  const phone = state.phone;
+  const note = state.note;
+
+  console.log("BookingCalendar state:", state);
+
+  const hasFetched = useRef(false);
 
   useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
     setTimeout(() => {
       window.dispatchEvent(new Event("loading"));
     }, 300);
+
+    handleGetBookedAppointments();
   }, []);
 
   // const [createLinkPayment] = useCreateLinkPaymentMutation();
@@ -86,7 +120,7 @@ const BookingCalendar: React.FC = () => {
     const now = new Date();
 
     if (new Date(slotInfo.start) < now) {
-      message.warning("Không thể đặt lịch ở thời gian đã qua!");
+      showError("Không thể chọn khung giờ trong quá khứ.");
       return;
     }
 
@@ -97,8 +131,20 @@ const BookingCalendar: React.FC = () => {
       allDay: false,
     };
 
-    setEvents([highlightEvent]);
+    setEvents((prev) => [
+      ...prev.filter((event) => event.title !== "Đang chọn"),
+      highlightEvent,
+    ]);
     setSelectedSlot(slotInfo);
+
+    if (full_name || phone || note) {
+      form.setFieldsValue({
+        name: full_name || "",
+        phone: phone || "",
+        note: note || "",
+      });
+    }
+
     setOpen(true);
   };
 
@@ -113,20 +159,30 @@ const BookingCalendar: React.FC = () => {
 
       const payload: CreateAppointmentProps = {
         customerId: auth.accountId!,
-        doctorId: state.doctorId || null,
+        doctorId: doctorId || null,
         staffId: null,
         appointment_date: dayjs(selectedSlot.start).toISOString(),
         startTime: dayjs(selectedSlot.start).toISOString(),
         endTime: dayjs(selectedSlot.end).toISOString(),
         details: services.map((service) => ({
           serviceId: service.id,
-          price: service.price,
+          price: Number(service.price),
         })),
         note: values.note || "",
         voucherId: null,
       };
 
-      await createAppointment(payload).unwrap();
+      if (appointmentId) {
+        await updateAppointment({
+          appointmentId: appointmentId,
+          data: payload,
+        });
+
+        navigate(configRoutes.customerOrders);
+      } else {
+        await createAppointment(payload).unwrap();
+        navigate(configRoutes.customerOrders);
+      }
 
       // console.log("Created appointment:", res);
 
@@ -156,6 +212,58 @@ const BookingCalendar: React.FC = () => {
     }
   };
 
+  const handleGetBookedAppointments = async () => {
+    if (!state.doctorId) return;
+    try {
+      const res = await getAppointmentsBookedByDoctor({
+        doctorId: state.doctorId,
+      });
+
+      if ("data" in res && res.data) {
+        const booked = res.data;
+
+        // setAppointmentsBooked(booked);
+
+        const bookedEvents: RBCEvent[] = booked.map((a) => ({
+          title: "Booked",
+          start: new Date(a.startTime),
+          end: new Date(a.endTime),
+          allDay: false,
+        }));
+
+        setEvents((prev) => [...bookedEvents, ...prev]);
+
+        if (appointmentId && oldSlot?.start && oldSlot?.end) {
+          const highlightEvent: RBCEvent = {
+            title: "Lịch cũ",
+            start: new Date(oldSlot.start),
+            end: new Date(oldSlot.end),
+            allDay: false,
+          };
+
+          setEvents((prev) => [
+            ...prev.filter((event) => {
+              if (!event.start || !event.end) return true;
+              const sameTime =
+                event.start.getTime() === new Date(oldSlot.start).getTime() &&
+                event.end.getTime() === new Date(oldSlot.end).getTime();
+
+              return !(event.title === "Lịch cũ" || sameTime);
+            }),
+            highlightEvent,
+          ]);
+
+          // setOpen(true);
+        }
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        console.error("Failed to fetch appointments:", (res as any).error);
+      }
+    } catch (error) {
+      console.error("Error fetching booked appointments:", error);
+    }
+  };
+
   return (
     <Container className={styles.bookingPage}>
       <Card className={styles.bookingCard}>
@@ -172,7 +280,7 @@ const BookingCalendar: React.FC = () => {
           {services.map((service) => (
             <div key={service.id} className={styles.serviceItem}>
               <img
-                src={service.images?.[0]?.url || "/no-image.jpg"}
+                src={service.images?.[0]?.url || NoImage}
                 alt={service.name}
                 className={styles.serviceImage}
               />
@@ -193,7 +301,12 @@ const BookingCalendar: React.FC = () => {
       <Modal
         title="Xác nhận đặt lịch"
         open={open}
-        onCancel={() => setOpen(false)}
+        onCancel={() => {
+          setOpen(false);
+          setEvents((prev) =>
+            prev.filter((event) => event.title !== "Đang chọn")
+          );
+        }}
         footer={null}
         centered
       >

@@ -11,6 +11,7 @@ import type { AppointmentTableProps } from "./type";
 import dayjs from "dayjs";
 import AvatarTable from "@/components/AvatarTable";
 import NoAvatarImage from "@/assets/img/defaultAvatar.jpg";
+import { statusTagColor, translateStatus } from "@/utils/format";
 
 export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => [
   {
@@ -98,22 +99,12 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => [
     dataIndex: "status",
     align: "center",
     width: 130,
-    render: (text: string) => {
-      const statusMap: Record<string, { label: string; color: string }> = {
-        pending: { label: "Chờ xác nhận", color: "orange" },
-        confirmed: { label: "Đã xác nhận", color: "blue" },
-        imported: { label: "Đã nhập liệu", color: "purple" },
-        approved: { label: "Đã duyệt", color: "cyan" },
-        rejected: { label: "Đã từ chối", color: "volcano" },
-        paid: { label: "Đã thanh toán", color: "geekblue" },
-        completed: { label: "Hoàn thành", color: "green" },
-        cancelled: { label: "Đã hủy", color: "red" },
-      };
-      const { label, color } = statusMap[text] || {
-        label: "Không xác định",
-        color: "default",
-      };
-      return <Tag color={color}>{label}</Tag>;
+    render: (_, record) => {
+      return (
+        <Tag color={statusTagColor(record.status)}>
+          {translateStatus(record.status)}
+        </Tag>
+      );
     },
   },
   {
@@ -125,33 +116,42 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => [
     width: 80,
     render: (_, record) => {
       const renderItems = (
+        record: AppointmentTableProps,
         onConfirm: () => void,
-        onImport: () => void,
+        onReject: () => void,
         onUpdate: () => void,
         onRemove: () => void
-      ): MenuProps["items"] => [
-        {
-          key: "0",
-          label: (
-            <a onClick={onConfirm}>
-              <Space>
-                <CheckOutlined /> Xác nhận
-              </Space>
-            </a>
-          ),
-        },
-        {
-          key: "1",
-          label: (
-            <a onClick={onImport}>
-              <Space>
-                <EditOutlined /> Hủy hẹn
-              </Space>
-            </a>
-          ),
-        },
-        // { type: "divider" },
-        // {
+      ): MenuProps["items"] => {
+        const items: MenuProps["items"] = [];
+
+        if (record.status === "pending") {
+          items.push({
+            key: "0",
+            label: (
+              <a onClick={onConfirm}>
+                <Space>
+                  <CheckOutlined /> Xác nhận
+                </Space>
+              </a>
+            ),
+          });
+        }
+
+        if (record.status === "pending") {
+          items.push({
+            key: "1",
+            label: (
+              <a onClick={onReject}>
+                <Space>
+                  <EditOutlined /> Hủy hẹn
+                </Space>
+              </a>
+            ),
+          });
+        }
+
+        // Nếu cần thêm hành động xoá:
+        // items.push({
         //   key: "2",
         //   label: (
         //     <div onClick={onRemove}>
@@ -160,15 +160,18 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => [
         //       </Space>
         //     </div>
         //   ),
-        // },
-      ];
+        // });
+
+        return items;
+      };
 
       return (
         <Dropdown
           menu={{
             items: renderItems(
+              record,
               record.onConfirm!,
-              record.onImport!,
+              record.onReject!,
               record.onUpdate!,
               record.onRemove!
             ),
@@ -179,6 +182,12 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => [
           <Button
             type="text"
             icon={<EllipsisOutlined style={{ fontSize: 18 }} />}
+            disabled={
+              !(
+                (record.status === "pending")
+                // || record.onRemove
+              )
+            }
           />
         </Dropdown>
       );

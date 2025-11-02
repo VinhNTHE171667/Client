@@ -1,3 +1,4 @@
+import { configRoutes } from "@/constants/route";
 import { useUpdatePaymentStatusMutation } from "@/services/appointment";
 import { Button, Result } from "antd";
 import { useEffect } from "react";
@@ -12,12 +13,8 @@ const SuccessPayment: React.FC = () => {
   }, []);
 
   const handleUpdatePaymentStatus = async () => {
-    const statusParam = searchParams.get("status");
-    const status: "PAID" | "CANCELLED" =
-      statusParam === "PAID" ? "PAID" : "CANCELLED";
     await updatePaymentStatus({
       orderCode: searchParams.get("orderCode") || "",
-      status,
     })
       .unwrap()
       .then(() => {
@@ -35,7 +32,11 @@ const SuccessPayment: React.FC = () => {
       title="Thanh toán thành công!"
       subTitle="Mã đơn hàng: 2017182818828182881. Cấu hình máy chủ đám mây mất 1-5 phút, vui lòng chờ."
       extra={[
-        <Button type="primary" key="console">
+        <Button
+          type="primary"
+          key="console"
+          onClick={() => window.location.replace(configRoutes.customerOrders)}
+        >
           Về home
         </Button>,
         <Button key="buy">Mua lại</Button>,

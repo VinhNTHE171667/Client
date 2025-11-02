@@ -57,7 +57,6 @@ export class PaymentController {
     @Body()
     body: {
       orderCode: string;
-      status: 'PAID' | 'CANCELLED';
     },
   ) {
     return this.payosService.updatePaymentStatus(body);
