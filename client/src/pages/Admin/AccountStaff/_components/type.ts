@@ -8,6 +8,11 @@ export type StaffData = {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  role: {
+    id: string;
+    name: "staff" | "cashier" | "admin";
+    description: string;
+  };
 
   onUpdate: () => void;
   onRemove: () => void;
