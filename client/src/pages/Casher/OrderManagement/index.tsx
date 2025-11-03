@@ -85,9 +85,9 @@ export default function OrderManagementCasher() {
   const [createPaymentLink] = useCreateLinkPaymentMutation();
   const [paymentCash] = useUpdatePaymentStatusPaidMutation();
 
-  const handlePaymentByCash = (item: AppointmentProps) => {
+  const handlePaymentByCash = async (item: AppointmentProps) => {
     try {
-      paymentCash({
+      await paymentCash({
         orderCode: item.orderCode || "",
       }).unwrap();
 
@@ -116,9 +116,6 @@ export default function OrderManagementCasher() {
         cancelUrl: `${window.location.origin}${configRoutes.paymentFailPaid}`,
         customerName: item.customer?.full_name || "Khách hàng",
       };
-
-      console.log(payload);
-
       const res = await createPaymentLink(payload).unwrap();
 
       if (res?.checkoutUrl) {

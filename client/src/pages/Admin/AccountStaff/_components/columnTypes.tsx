@@ -62,6 +62,21 @@ export const staffColumn = (): ColumnsType<StaffData> => [
     dataIndex: "phone",
   },
   {
+    title: "Chức vụ",
+    dataIndex: "role",
+    render: (text) => {
+      return (
+        <Tag color="cyan">
+          {text.name === "admin"
+            ? "Quản trị viên"
+            : text.name === "staff"
+            ? "Nhân viên"
+            : "Thu ngân"}
+        </Tag>
+      );
+    },
+  },
+  {
     title: "Trạng thái",
     dataIndex: "isActive",
     render: (_, record) => {

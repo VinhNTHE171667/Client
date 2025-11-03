@@ -121,7 +121,7 @@ export class PaymentService {
     if (appointment.status === AppointmentStatus.Completed) {
       appointment.status = AppointmentStatus.Paid;
       appointment.paymentMethod = 'qr';
-      await this.appointmentRepo.save(appointment);
+      return await this.appointmentRepo.save(appointment);
     } else {
       throw new Error(
         'Trạng thái lịch hẹn không hợp lệ để cập nhật thanh toán',
