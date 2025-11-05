@@ -11,6 +11,7 @@ import { ServiceModule } from './modules/service/service.module';
 import { CartModule } from './modules/cart/cart.module';
 import { AppointmentModule } from './modules/appointment/appointment.module';
 import { PaymentModule } from './modules/payment/payment.module';
+import { VoucherModule } from './modules/voucher/voucher.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { PaymentModule } from './modules/payment/payment.module';
     CartModule,
     AppointmentModule,
     PaymentModule,
+    VoucherModule,
   ],
   controllers: [AppController],
   providers: [AppService],

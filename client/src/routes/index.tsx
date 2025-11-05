@@ -30,6 +30,7 @@ import SuccessPaymentDeposited from "@/pages/Customer/Payment/Deposited/success"
 import FailPaymentDeposited from "@/pages/Customer/Payment/Deposited/fail";
 import SuccessPaymentPaid from "@/pages/Customer/Payment/Paid/success";
 import FailPaymentPaid from "@/pages/Customer/Payment/Paid/fail";
+import Vouchers from "@/pages/Admin/Voucher";
 
 const router = createBrowserRouter([
   {
@@ -318,6 +319,22 @@ const router = createBrowserRouter([
           {
             index: true,
             element: <OrderManagementCasher />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.adminVouchers,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Admin]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <Vouchers />,
           },
         ],
       },
