@@ -1,0 +1,49 @@
+<table style="width: 100%; max-width: 600px; margin: auto; font-family: Arial, sans-serif;">
+  <tr>
+    <td style="background-color: #f5f5f5; padding: 20px; text-align: center;">
+      <h2 style="margin: 0; color: #333;">HÓA ĐƠN THANH TOÁN</h2>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="padding: 20px;">
+      <p>Xin chào <strong>{{customerName}}</strong>,</p>
+      <p>Bạn đã hoàn tất dịch vụ tại <strong>{{spaName}}</strong>. Dưới đây là thông tin hóa đơn:</p>
+
+      <table width="100%" cellpadding="8" cellspacing="0" border="1" style="border-collapse: collapse; margin-top: 10px;">
+        <tr style="background-color: #f0f0f0;">
+          <th align="left">Dịch vụ</th>
+          <th align="center">Số lượng</th>
+          <th align="right">Đơn giá</th>
+          <th align="right">Thành tiền</th>
+        </tr>
+        {{#each details}}
+        <tr>
+          <td>{{this.serviceName}}</td>
+          <td align="center">{{this.quantity}}</td>
+          <td align="right">{{this.priceFormatted}}</td>
+          <td align="right">{{this.totalFormatted}}</td>
+        </tr>
+        {{/each}}
+      </table>
+
+      <div style="margin-top: 20px;">
+        <p><strong>Tổng cộng:</strong> {{totalAmountFormatted}}</p>
+        {{#if discountAmountFormatted}}
+        <p><strong>Giảm giá:</strong> -{{discountAmountFormatted}}</p>
+        {{/if}}
+        <p><strong>Thành tiền:</strong> <span style="font-size: 16px; color: #007bff;">{{finalAmountFormatted}}</span></p>
+      </div>
+
+      <p style="margin-top: 20px;">
+        Cảm ơn bạn đã tin tưởng sử dụng dịch vụ của <strong>{{spaName}}</strong>.
+      </p>
+
+      <p>
+        Vui lòng <strong>truy cập website</strong> để xác nhận hóa đơn và hoàn tất thanh toán.
+      </p>
+
+      <p>-- Đội ngũ {{spaName}}</p>
+    </td>
+  </tr>
+</table>
