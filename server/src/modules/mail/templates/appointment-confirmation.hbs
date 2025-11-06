@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    .container {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: auto;
+      padding: 16px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+    }
+    h2 {
+      color: #008080;
+    }
+    .info {
+      background-color: #f9f9f9;
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Xác nhận lịch hẹn của bạn</h2>
+    <p>Chào <strong>{{customerName}}</strong>,</p>
+    <p>Cảm ơn bạn đã đặt lịch tại <strong>{{spaName}}</strong>. Dưới đây là thông tin cuộc hẹn của bạn:</p>
+
+    <div class="info">
+      <p><strong>Thời gian:</strong> {{startTime}}</p>
+      <p><strong>Dịch vụ:</strong> {{serviceName}}</p>
+      <p><strong>Nhân viên:</strong> {{staffName}}</p>
+      <p><strong>Địa điểm:</strong> {{spaAddress}}</p>
+    </div>
+
+    <p>Vui lòng đến đúng giờ để trải nghiệm dịch vụ tốt nhất. Nếu có thay đổi, hãy liên hệ với chúng tôi sớm nhất có thể.</p>
+
+    <p>Trân trọng,<br />
+    <strong>{{spaName}}</strong></p>
+  </div>
+</body>
+</html>

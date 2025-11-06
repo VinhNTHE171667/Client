@@ -1,5 +1,9 @@
 import { Voucher } from '@/entities/voucher.entity';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { CreateVoucherDto, UpdateVoucherDto } from './dto/voucher.dto';
@@ -12,8 +16,24 @@ export class VoucherService {
   ) {}
 
   async create(createVoucherDto: CreateVoucherDto): Promise<Voucher> {
+    const voucherExists = await this.voucherRepo.findOne({
+      where: { code: createVoucherDto.code, deletedAt: IsNull() },
+    });
+
+    if (voucherExists) {
+      throw new BadRequestException('Mã voucher đã tồn tại');
+    }
+
     const voucher = this.voucherRepo.create(createVoucherDto);
-    return this.voucherRepo.save(voucher);
+
+    try {
+      return await this.voucherRepo.save(voucher);
+    } catch (error) {
+      if (error.code === 'ER_DUP_ENTRY') {
+        throw new BadRequestException('Mã voucher đã tồn tại');
+      }
+      throw error;
+    }
   }
 
   async findAll(): Promise<Voucher[]> {
