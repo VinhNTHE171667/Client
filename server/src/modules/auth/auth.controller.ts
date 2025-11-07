@@ -14,7 +14,12 @@ import { AuthService } from './auth.service';
 import { LoginDto, RefreshTokenDto } from './dto/login.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiParam, ApiConsumes, ApiBody } from '@nestjs/swagger';
-import { ChangePasswordDto, UpdateCustomerProfileDto } from './dto/customer.dto';
+import {
+  ChangePasswordDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+  UpdateCustomerProfileDto,
+} from './dto/customer.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -83,5 +88,15 @@ export class AuthController {
   refreshToken(@Body() body: RefreshTokenDto): Promise<any> {
     const { refresh_token } = body;
     return this.authService.refreshToken(refresh_token);
+  }
+
+  @Post('forgot-password')
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto.email);
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto.token, dto.newPassword);
   }
 }
