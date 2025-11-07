@@ -14,6 +14,9 @@ export class Spa {
   @Column()
   name: string;
 
+  @Column({ nullable: true })
+  logo: string;
+
   @Column()
   address: string;
 

@@ -41,25 +41,27 @@ export class MailService implements OnModuleInit {
     to: string;
     text: string;
     appointment: {
-      customer: { name: string };
-      spa: { name: string; address: string };
+      customer: { full_name: string };
       startTime: Date;
-      service: { name: string };
+      services: {
+        name: string;
+        price: number;
+      }[];
       staff?: { name: string } | null;
+      address: string;
     };
   }) {
     await this.transporter.sendMail({
       from: this.configService.get<string>('EMAIL_USER'),
       to,
-      subject: `Xác nhận lịch hẹn tại ${appointment.spa.name}`,
+      subject: `Xác nhận lịch hẹn tại GenSpa`,
       template: 'appointment-confirmation',
       context: {
-        customerName: appointment.customer.name,
-        spaName: appointment.spa.name,
+        customerName: appointment.customer.full_name,
         startTime: appointment.startTime.toLocaleString(),
-        serviceName: appointment.service.name,
+        serviceName: appointment.services,
         staffName: appointment.staff?.name || 'Đang cập nhật',
-        spaAddress: appointment.spa.address,
+        spaAddress: appointment.address,
       },
       text,
     });
