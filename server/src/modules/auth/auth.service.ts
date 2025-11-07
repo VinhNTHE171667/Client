@@ -18,10 +18,12 @@ import { ConfigService } from '@nestjs/config';
 import { Internal } from '@/entities/internal.entity';
 import { Role } from '@/entities/role.entity';
 import { Doctor } from '@/entities/doctor.entity';
+import nodemailer from 'nodemailer';
 import {
   ChangePasswordDto,
   UpdateCustomerProfileDto,
 } from './dto/customer.dto';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -41,6 +43,7 @@ export class AuthService {
     private dataSource: DataSource,
     private configService: ConfigService,
     private jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
   async checkDuplicateEmailWithRole(email: string): Promise<RoleType | null> {
@@ -393,5 +396,88 @@ export class AuthService {
 
     await this.customerRepository.save(user);
     return { message: 'Đổi mật khẩu thành công' };
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.customerRepository.findOne({ where: { email } });
+    if (!user)
+      throw new NotFoundException('Email không tồn tại trong hệ thống');
+
+    const token = await this.jwtService.signAsync(
+      { email },
+      {
+        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: '15m',
+      },
+    );
+
+    user.resetToken = token;
+    user.resetTokenExpire = new Date(Date.now() + 15 * 60 * 1000);
+    await this.customerRepository.save(user);
+
+    const resetLink = `http://localhost:3000/reset-password?token=${token}`;
+
+    await this.mailService.sendResetPasswordEmail({
+      to: email,
+      user: {
+        full_name: user.full_name,
+        email: user.email,
+      },
+      token,
+      resetUrl: resetLink,
+    });
+
+    return { message: 'Đã gửi link đặt lại mật khẩu đến email của bạn.' };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    try {
+      const decoded = await this.jwtService.verifyAsync(token, {
+        secret: this.configService.get('JWT_SECRET'),
+      });
+
+      const user = await this.customerRepository.findOne({
+        where: { email: decoded.email },
+      });
+
+      if (!user || user.resetToken !== token) {
+        throw new BadRequestException('Token không hợp lệ');
+      }
+
+      if (user.resetTokenExpire && user.resetTokenExpire < new Date()) {
+        throw new BadRequestException('Token đã hết hạn');
+      }
+
+      user.password = await hashPassword(newPassword);
+      user.resetToken = null;
+      user.resetTokenExpire = null;
+      await this.customerRepository.save(user);
+
+      return { message: 'Đặt lại mật khẩu thành công' };
+    } catch {
+      throw new BadRequestException('Token không hợp lệ hoặc đã hết hạn');
+    }
+  }
+
+  private async sendResetEmail(email: string, link: string) {
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: this.configService.get('MAIL_USER'),
+        pass: this.configService.get('MAIL_PASS'),
+      },
+    });
+
+    await transporter.sendMail({
+      from: `"Spa Management" <${this.configService.get('MAIL_USER')}>`,
+      to: email,
+      subject: 'Đặt lại mật khẩu - Spa Management',
+      html: `
+        <p>Xin chào,</p>
+        <p>Bạn đã yêu cầu đặt lại mật khẩu. Vui lòng nhấn vào liên kết bên dưới để đặt lại mật khẩu:</p>
+        <a href="${link}">${link}</a>
+        <p>Liên kết này sẽ hết hạn sau 15 phút.</p>
+      `,
+    });
   }
 }

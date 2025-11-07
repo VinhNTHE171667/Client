@@ -133,6 +133,45 @@ export class MailService implements OnModuleInit {
     });
   }
 
+  async sendResetPasswordEmail(data: {
+    to: string;
+    user: { full_name?: string; email: string };
+    spaHotline?: string;
+    token: string;
+    resetUrl: string;
+  }) {
+    await this.transporter.sendMail({
+      to: data.user.email,
+      subject: 'Đặt lại mật khẩu - GenSpa',
+      template: 'forgot-password',
+      context: {
+        customerName: data.user.full_name || 'Khách hàng',
+        spaName: 'GenSpa',
+        spaHotline: data.spaHotline || '1900 1234',
+        resetUrl: `${data.resetUrl}`,
+        year: new Date().getFullYear(),
+      },
+    });
+  }
+
+  async sendSuccessResetPasswordEmail(data: {
+    to: string;
+    user: { full_name?: string; email: string };
+    spaHotline?: string;
+  }) {
+    await this.transporter.sendMail({
+      to: data.user.email,
+      subject: 'Đặt lại mật khẩu thành công - GenSpa',
+      template: 'forgot-password-success',
+      context: {
+        customerName: data.user.full_name || 'Khách hàng',
+        spaName: 'GenSpa',
+        spaHotline: data.spaHotline || '1900 1234',
+        year: new Date().getFullYear(),
+      },
+    });
+  }
+
   async confirmInvoice({
     to,
     text,

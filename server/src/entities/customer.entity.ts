@@ -94,4 +94,10 @@ export class Customer {
 
   @Column({ default: false })
   isVerified: boolean;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  resetToken?: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  resetTokenExpire?: Date | null;
 }

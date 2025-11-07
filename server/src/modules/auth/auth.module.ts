@@ -8,6 +8,7 @@ import { ConfigModule } from '@nestjs/config/dist/config.module';
 import { Internal } from '@/entities/internal.entity';
 import { Role } from '@/entities/role.entity';
 import { Doctor } from '@/entities/doctor.entity';
+import { MailModule } from '../mail/mail.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -17,6 +18,7 @@ import { Doctor } from '@/entities/doctor.entity';
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: process.env.EXPIRE_TIME_ACCESS },
     }),
+    MailModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

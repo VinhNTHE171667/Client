@@ -58,3 +58,18 @@ export class ChangePasswordDto {
   @MinLength(6, { message: 'Mật khẩu mới phải có ít nhất 6 ký tự' })
   newPassword: string;
 }
+
+export class ForgotPasswordDto {
+  @IsEmail()
+  email: string;
+}
+
+export class ResetPasswordDto {
+  @IsString()
+  @IsNotEmpty()
+  token: string;
+
+  @IsString()
+  @IsNotEmpty()
+  newPassword: string;
+}
