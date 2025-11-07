@@ -13,9 +13,12 @@ import {
 } from './appointment/appointment.dto';
 import { Service } from '@/entities/service.entity';
 import { AppointmentStatus } from '@/entities/enums/appointment-status';
+import { MailService } from '../mail/mail.service';
+import { Spa } from '@/entities/spa.entity';
 
 @Injectable()
 export class AppointmentService {
+  private spaInfo: Spa | null = null;
   constructor(
     @InjectRepository(Appointment)
     private readonly appointmentRepo: Repository<Appointment>,
@@ -26,8 +29,26 @@ export class AppointmentService {
     @InjectRepository(Service)
     private readonly serviceRepo: Repository<Service>,
 
+    @InjectRepository(Spa)
+    private readonly spaRepo: Repository<Spa>,
+
+    private readonly mailService: MailService,
     private readonly dataSource: DataSource,
-  ) {}
+  ) {
+    this.loadSpa();
+  }
+
+  private async loadSpa() {
+    this.spaInfo = await this.spaRepo.findOne({ where: {} });
+    // console.log('Spa info cached:', this.spaInfo?.name);
+  }
+
+  private async getSpa(): Promise<Spa | null> {
+    if (!this.spaInfo) {
+      this.spaInfo = await this.spaRepo.findOne({});
+    }
+    return this.spaInfo;
+  }
 
   async findAll() {
     const appointments = await this.appointmentRepo.find({
@@ -184,6 +205,29 @@ export class AppointmentService {
     const appointment = await this.findOne(id);
     appointment.status = status;
     await this.appointmentRepo.save(appointment);
+
+    if (status === AppointmentStatus.Confirmed) {
+      const spa = await this.getSpa();
+
+      const services = appointment.details.map((d) => ({
+        name: d.service.name,
+        price: d.price ?? d.service.price ?? 0,
+      }));
+
+      this.mailService.confirmAppointment({
+        to: appointment.customer.email,
+        text: `Xác nhận lịch hẹn tại GenSpa`,
+        appointment: {
+          customer: { full_name: appointment.customer.full_name },
+          startTime: appointment.startTime,
+          services,
+          staff: appointment.staff
+            ? { name: appointment.staff.full_name }
+            : null,
+          address: spa?.address || 'Đang cập nhật',
+        },
+      });
+    }
     return appointment;
   }
 

@@ -12,9 +12,13 @@ import { AppointmentService } from './appointment.service';
 import { AppointmentDetail } from '@/entities/appointmentDetails.entity';
 import { Appointment } from '@/entities/appointment.entity';
 import { AppointmentHistory } from '@/entities/appointmentHistory.entity';
+import { MailModule } from '../mail/mail.module';
+import { Spa } from '@/entities/spa.entity';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
+    CacheModule.register(),
     ConfigModule.forRoot(),
     TypeOrmModule.forFeature([
       Customer,
@@ -25,12 +29,14 @@ import { AppointmentHistory } from '@/entities/appointmentHistory.entity';
       AppointmentDetail,
       Appointment,
       AppointmentHistory,
+      Spa,
     ]),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: process.env.EXPIRE_TIME_ACCESS },
     }),
+    MailModule,
   ],
   controllers: [AppointmentController],
   providers: [AppointmentService],
