@@ -31,6 +31,7 @@ import FailPaymentDeposited from "@/pages/Customer/Payment/Deposited/fail";
 import SuccessPaymentPaid from "@/pages/Customer/Payment/Paid/success";
 import FailPaymentPaid from "@/pages/Customer/Payment/Paid/fail";
 import Vouchers from "@/pages/Admin/Voucher";
+import Membership from "@/pages/Admin/Membership";
 
 const router = createBrowserRouter([
   {
@@ -335,6 +336,22 @@ const router = createBrowserRouter([
           {
             index: true,
             element: <Vouchers />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.adminMemberships,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Admin]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <Membership />,
           },
         ],
       },

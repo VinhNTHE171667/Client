@@ -1,31 +1,33 @@
 import { configRoutes } from "@/constants/route";
+import { showError, showSuccess } from "@/libs/toast";
 import { useUpdatePaymentStatusDepositedMutation } from "@/services/appointment";
 import { Button, Result } from "antd";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 
 const SuccessPaymentDeposited: React.FC = () => {
   const [searchParams] = useSearchParams();
-
   const [updatePaymentStatusDeposited] =
     useUpdatePaymentStatusDepositedMutation();
-  useEffect(() => {
-    handleUpdatePaymentStatus();
-  }, []);
+  const called = useRef(false);
 
-  const handleUpdatePaymentStatus = async () => {
-    await updatePaymentStatusDeposited({
-      orderCode: searchParams.get("orderCode") || "",
-    })
-      .unwrap()
-      .then(() => {
-        console.log("Payment status updated successfully");
-      })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .catch((error: any) => {
-        console.error("Failed to update payment status:", error);
-      });
-  };
+  useEffect(() => {
+    if (called.current) return;
+    called.current = true;
+
+    const handleUpdatePaymentStatus = async () => {
+      try {
+        await updatePaymentStatusDeposited({
+          orderCode: searchParams.get("orderCode") || "",
+        }).unwrap();
+        showSuccess("Cập nhật trạng thái thanh toán thành công!");
+      } catch {
+        showError("Cập nhật trạng thái thanh toán thất bại!");
+      }
+    };
+
+    handleUpdatePaymentStatus();
+  }, [updatePaymentStatusDeposited, searchParams]);
 
   return (
     <Result

@@ -25,6 +25,7 @@ export const configRoutes = {
   adminDoctors: "/admin/doctors",
   adminServices: "/admin/services",
   adminVouchers: "/admin/vouchers",
+  adminMemberships: "/admin/memberships",
 
   staffDashboard: "/staff/dashboard",
   staffOrders: "/staff/orders",

@@ -19,10 +19,9 @@ export const RoleEnum = {
 } as const;
 
 export const CustomerTypeEnum = {
-  regular: "regular",
-  vip: "vip",
-  member: "member",
-  trial: "trial",
+  Regular: "regular",
+  Member: "member",
+  Vip: "vip",
 } as const;
 
 export const appointmentStatusEnum = {

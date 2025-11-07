@@ -29,6 +29,7 @@ import {
 import type { AppointmentTableProps } from "./_components/type";
 import CreateAppointment from "./add";
 import { appointmentStatusEnum } from "@/common/types/auth";
+import { useAuthStore } from "@/hooks/UseAuth";
 
 const { RangePicker } = DatePicker;
 
@@ -44,6 +45,8 @@ export default function OrderManagementStaff() {
 
   const [getAppointmentsForManagement] =
     useGetAppointmentsForManagementMutation();
+
+  const { auth } = useAuthStore();
 
   const [updateConfirmed] = useUpdateAppointmentStatusConfirmedMutation();
   const [updateRejected] = useUpdateAppointmentStatusRejectedMutation();
@@ -97,7 +100,10 @@ export default function OrderManagementStaff() {
         default:
           throw new Error("Unknown status");
       }
-      await updateMutation({ appointmentId: id });
+      await updateMutation({
+        appointmentId: id,
+        staff: { id: auth.accountId || "" },
+      });
       showSuccess("Cập nhật trạng thái thành công");
       handleEvent();
     } catch (error) {
@@ -133,7 +139,8 @@ export default function OrderManagementStaff() {
 
   const filteredAppointments = appointments.filter((a) => {
     const matchSearch =
-      search === "" || a.id.toLowerCase().includes(search.toLowerCase());
+      search === "" ||
+      a.customer.full_name.toLowerCase().includes(search.toLowerCase());
 
     const matchStatus = !statusFilter || statusFilter.includes(a.status);
 
@@ -181,7 +188,7 @@ export default function OrderManagementStaff() {
           <Col>
             <Space>
               <Input.Search
-                placeholder="Tìm theo mã lịch hẹn..."
+                placeholder="Tìm theo tên khách hàng..."
                 allowClear
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
