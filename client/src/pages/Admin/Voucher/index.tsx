@@ -1,6 +1,5 @@
-import { Card, Col, Divider, Input, Row, Space, Table } from "antd";
+import { Card, Col, Input, Row, Space, Table, Typography } from "antd";
 import { useEffect, useMemo, useState } from "react";
-import UpdateSpa from "./update";
 import { showError, showSuccess } from "@/libs/toast";
 import type { VoucherModelTable } from "./_components/type";
 import useDebounce from "@/hooks/UseDebounce";
@@ -14,6 +13,8 @@ import {
 } from "@/services/voucher";
 import { vouchersColumn } from "./_components/columnTypes";
 import AddVoucher from "./add";
+import FancyCounting from "@/components/FancyCounting";
+import UpdateVoucher from "./update";
 
 export default function Vouchers() {
   //   const navigate = useNavigate();
@@ -122,6 +123,17 @@ export default function Vouchers() {
     handleGetVouchers();
   };
 
+  // const totalVouchers = useMemo(() => vouchers.length, [vouchers]);
+
+  const avgVoucherValue = useMemo(() => {
+    if (!vouchers || vouchers.length === 0) return 0;
+    const sum = vouchers.reduce((sumAcc, v) => {
+      const val = Number(v.maxDiscount ?? 0);
+      return sumAcc + (isNaN(val) ? 0 : val);
+    }, 0);
+    return Math.round(sum / vouchers.length);
+  }, [vouchers]);
+
   return (
     <>
       <Row className="mx-2 my-2">
@@ -146,6 +158,69 @@ export default function Vouchers() {
           />
         </Col>
       </Row>
+
+      <Card className="mb-4 p-4" size="small">
+        <Row className="mb-3">
+          <Col className="d-flex align-items-center">
+            <Typography.Title level={4} className="m-0">
+              <strong>{"Tổng quan"}</strong>
+            </Typography.Title>
+          </Col>
+          <Col style={{ marginLeft: "auto" }}>
+            <Space>
+              <FancyButton
+                variant="primary"
+                label="Thêm voucher"
+                size="middle"
+                onClick={() => setCreateState(true)}
+              />
+              <AddVoucher
+                isOpen={createState}
+                onClose={() => setCreateState(false)}
+                onReload={handleEvent}
+              />
+            </Space>
+          </Col>
+        </Row>
+
+        <Row className="stats-card">
+          <Col className="metric">
+            <p className="metric-label">{"Tổng số voucher"}</p>
+            <FancyCounting
+              className="metric-value"
+              from={0}
+              to={vouchers.length}
+              duration={4}
+            />
+          </Col>
+          <Col className="metric">
+            <p className="metric-label">{"Số voucher đang được sử dụng"}</p>
+            <p className="metric-value">
+              <FancyCounting
+                from={0}
+                to={vouchers.reduce((sum, v) => {
+                  const now = new Date();
+                  if (v.validFrom && v.validTo) {
+                    const startDate = new Date(v.validFrom);
+                    const endDate = new Date(v.validTo);
+                    if (now >= startDate && now <= endDate) {
+                      return sum + 1;
+                    }
+                  }
+                  return sum;
+                }, 0)}
+                duration={4}
+              />
+            </p>
+          </Col>
+          <Col className="metric">
+            <p className="metric-label">{"Trung bình giá trị của voucher"}</p>
+            <p className="metric-value">
+              <FancyCounting from={0} to={avgVoucherValue} duration={4} />
+            </p>
+          </Col>
+        </Row>
+      </Card>
 
       <Card className="mt-2">
         <div>
@@ -178,18 +253,6 @@ export default function Vouchers() {
                   onChange={(e) => setSearch(e.target.value)}
                   style={{ width: 300 }}
                   size="large"
-                />
-                <Divider type="vertical" />
-                <FancyButton
-                  variant="primary"
-                  label="Thêm voucher"
-                  size="middle"
-                  onClick={() => setCreateState(true)}
-                />
-                <AddVoucher
-                  isOpen={createState}
-                  onClose={() => setCreateState(false)}
-                  onReload={handleEvent}
                 />
               </Space>
             </Col>
@@ -237,7 +300,7 @@ export default function Vouchers() {
                 `Hiển thị ${range[0]}-${range[1]} trong tổng số ${total} danh mục`,
             }}
           />
-          <UpdateSpa
+          <UpdateVoucher
             id={updateId}
             isOpen={updateState}
             onClose={() => setUpdateState(false)}

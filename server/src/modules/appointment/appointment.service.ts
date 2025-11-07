@@ -15,6 +15,7 @@ import { Service } from '@/entities/service.entity';
 import { AppointmentStatus } from '@/entities/enums/appointment-status';
 import { MailService } from '../mail/mail.service';
 import { Spa } from '@/entities/spa.entity';
+import { Internal } from '@/entities/internal.entity';
 
 @Injectable()
 export class AppointmentService {
@@ -31,6 +32,9 @@ export class AppointmentService {
 
     @InjectRepository(Spa)
     private readonly spaRepo: Repository<Spa>,
+
+    @InjectRepository(Internal)
+    private readonly internalRepo: Repository<Internal>,
 
     private readonly mailService: MailService,
     private readonly dataSource: DataSource,
@@ -72,6 +76,18 @@ export class AppointmentService {
       where: {
         doctorId,
         status: Not(AppointmentStatus.Cancelled),
+        appointment_date: MoreThan(now),
+      },
+      select: ['id', 'startTime', 'endTime', 'status'],
+    });
+  }
+
+  async findAllAppointmentsBookedByCustomer(customerId: string) {
+    const now = new Date();
+    return this.appointmentRepo.find({
+      where: {
+        customerId,
+        status: Not(AppointmentStatus.Cancelled || AppointmentStatus.Rejected),
         appointment_date: MoreThan(now),
       },
       select: ['id', 'startTime', 'endTime', 'status'],
@@ -201,33 +217,99 @@ export class AppointmentService {
     return appointment;
   }
 
+  async confirmAppointment(id: string, staffId: string) {
+    const appointment = await this.findOne(id);
+    appointment.status = AppointmentStatus.Confirmed;
+    const staff = await this.internalRepo.findOne({ where: { id: staffId } });
+
+    appointment.staff = staff as Internal;
+    appointment.staffId = staffId;
+
+    if (!staff) {
+      throw new NotFoundException('Nhân viên không tồn tại');
+    }
+
+    const spa = await this.getSpa();
+
+    const services = appointment.details.map((d) => ({
+      name: d.service.name,
+      price: d.price ?? d.service.price ?? 0,
+    }));
+
+    const servicesWithFormat = services.map((s) => ({
+      name: s.name,
+      price: new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+      }).format(Number(s.price)),
+    }));
+
+    this.mailService.confirmAppointment({
+      to: appointment.customer.email,
+      text: `Xác nhận lịch hẹn tại GenSpa`,
+      appointment: {
+        customer: { full_name: appointment.customer.full_name },
+        startTime: appointment.startTime,
+        services: servicesWithFormat,
+        staff: { name: staff.full_name },
+        address: spa?.address || 'Đang cập nhật',
+      },
+    });
+
+    await this.appointmentRepo.save(appointment);
+
+    return appointment;
+  }
+
+  // async DepositedAppointment(id: string) {
+  //   const appointment = await this.findOne(id);
+  //   appointment.status = AppointmentStatus.Deposited;
+  //   const staff = await this.internalRepo.findOne({
+  //     where: { id: appointment.staffId },
+  //   });
+
+  //   if (!staff) {
+  //     throw new NotFoundException('Nhân viên không tồn tại');
+  //   }
+
+  //   const services = appointment.details.map((d) => ({
+  //     name: d.service.name,
+  //     price: d.price ?? d.service.price ?? 0,
+  //   }));
+
+  //   const servicesWithFormat = services.map((s) => ({
+  //     name: s.name,
+  //     price: new Intl.NumberFormat('vi-VN', {
+  //       style: 'currency',
+  //       currency: 'VND',
+  //     }).format(Number(s.price)),
+  //   }));
+  //   const spa = await this.getSpa();
+
+  //   await this.mailService.confirmAppointmentDeposit({
+  //     to: appointment.customer.email,
+  //     text: 'Xác nhận đặt cọc lịch hẹn',
+  //     appointment: {
+  //       customer: { full_name: appointment.customer.full_name },
+  //       startTime: appointment.startTime,
+  //       services: servicesWithFormat,
+  //       staff: { full_name: staff.full_name },
+  //       address: spa?.address || 'Đang cập nhật',
+  //       depositAmount: new Intl.NumberFormat('vi-VN', {
+  //         style: 'currency',
+  //         currency: 'VND',
+  //       }).format(Number(appointment.depositAmount)),
+  //     },
+  //   });
+
+  //   await this.appointmentRepo.save(appointment);
+  //   return appointment;
+  // }
+
   async updateStatus(id: string, status: Appointment['status']) {
     const appointment = await this.findOne(id);
     appointment.status = status;
     await this.appointmentRepo.save(appointment);
-
-    if (status === AppointmentStatus.Confirmed) {
-      const spa = await this.getSpa();
-
-      const services = appointment.details.map((d) => ({
-        name: d.service.name,
-        price: d.price ?? d.service.price ?? 0,
-      }));
-
-      this.mailService.confirmAppointment({
-        to: appointment.customer.email,
-        text: `Xác nhận lịch hẹn tại GenSpa`,
-        appointment: {
-          customer: { full_name: appointment.customer.full_name },
-          startTime: appointment.startTime,
-          services,
-          staff: appointment.staff
-            ? { name: appointment.staff.full_name }
-            : null,
-          address: spa?.address || 'Đang cập nhật',
-        },
-      });
-    }
     return appointment;
   }
 

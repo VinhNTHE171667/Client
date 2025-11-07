@@ -8,17 +8,25 @@ import { Appointment } from '@/entities/appointment.entity';
 import { AppointmentDetail } from '@/entities/appointmentDetails.entity';
 import { Internal } from '@/entities/internal.entity';
 import { Service } from '@/entities/service.entity';
+import { CacheModule } from '@nestjs/cache-manager';
+import { MailModule } from '../mail/mail.module';
+import { Spa } from '@/entities/spa.entity';
+import { Doctor } from '@/entities/doctor.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
+    CacheModule.register(),
     TypeOrmModule.forFeature([
       Customer,
       Appointment,
       AppointmentDetail,
       Internal,
       Service,
+      Spa,
+      Doctor,
     ]),
+    MailModule,
   ],
   providers: [PaymentService],
   controllers: [PaymentController],

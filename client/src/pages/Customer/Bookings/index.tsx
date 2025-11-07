@@ -10,6 +10,7 @@ import BookingCalendarCore from "@/components/BookingCalendarCore";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import {
   useCreateAppointmentMutation,
+  useGetAppointmentsBookedByCustomerMutation,
   useGetAppointmentsBookedByDoctorMutation,
   useUpdateAppointmentMutation,
   // useCreateLinkPaymentMutation,
@@ -37,6 +38,13 @@ interface Service {
   price: number;
   images?: ServiceImage[];
   doctor?: Doctor;
+}
+
+interface Appointment {
+  id: string;
+  startTime: string;
+  endTime: string;
+  status: string;
 }
 
 interface LocationState {
@@ -70,6 +78,8 @@ const BookingCalendar: React.FC = () => {
   const [updateAppointment] = useUpdateAppointmentMutation();
   const [getAppointmentsBookedByDoctor] =
     useGetAppointmentsBookedByDoctorMutation();
+  const [getAppointmentsBookedByCustomer] =
+    useGetAppointmentsBookedByCustomerMutation();
 
   // const [appointmentsBooked, setAppointmentsBooked] = useState<
   //   AppointmentProps[]
@@ -214,34 +224,44 @@ const BookingCalendar: React.FC = () => {
 
   const handleGetBookedAppointments = async () => {
     if (!state.doctorId) return;
+
     try {
-      const res = await getAppointmentsBookedByDoctor({
-        doctorId: state.doctorId,
-      });
+      const [res, res1] = await Promise.all([
+        getAppointmentsBookedByDoctor({ doctorId: state.doctorId }),
+        getAppointmentsBookedByCustomer({ customerId: auth.accountId! }),
+      ]);
 
-      if ("data" in res && res.data) {
-        const booked = res.data;
+      if ("data" in res && res.data && "data" in res1 && res1.data) {
+        const booked: Appointment[] = res.data;
+        const booked1: Appointment[] = res1.data;
 
-        // setAppointmentsBooked(booked);
+        const filterValid = (list: Appointment[]): Appointment[] =>
+          list.filter(
+            (item) =>
+              item.status !== appointmentStatusEnum.Cancelled &&
+              item.status !== appointmentStatusEnum.Rejected
+          );
 
-        const bookedEvents: RBCEvent[] = booked
-          .filter((a) => {
-            if (
-              a.status !== appointmentStatusEnum.Cancelled &&
-              a.status !== appointmentStatusEnum.Rejected &&
-              a.status !== appointmentStatusEnum.Completed
-            )
-              return true;
-            return false;
-          })
-          .map((a) => ({
-            title: "Booked",
-            start: new Date(a.startTime),
-            end: new Date(a.endTime),
-            allDay: false,
-          }));
+        const toEvent = (a: Appointment): RBCEvent => ({
+          title: "Booked",
+          start: new Date(a.startTime),
+          end: new Date(a.endTime),
+          allDay: false,
+        });
 
-        setEvents((prev) => [...bookedEvents, ...prev]);
+        const merged = [...filterValid(booked), ...filterValid(booked1)].map(
+          toEvent
+        );
+
+        const uniqueEvents = merged.reduce<RBCEvent[]>((acc, current) => {
+          const exists = acc.some(
+            (ev) =>
+              ev.start?.getTime() === current.start?.getTime() &&
+              ev.end?.getTime() === current.end?.getTime()
+          );
+          if (!exists) acc.push(current);
+          return acc;
+        }, []);
 
         if (appointmentId && oldSlot?.start && oldSlot?.end) {
           const highlightEvent: RBCEvent = {
@@ -251,23 +271,19 @@ const BookingCalendar: React.FC = () => {
             allDay: false,
           };
 
-          setEvents((prev) => [
-            ...prev.filter((event) => {
-              if (!event.start || !event.end) return true;
-              const sameTime =
-                event.start.getTime() === new Date(oldSlot.start).getTime() &&
-                event.end.getTime() === new Date(oldSlot.end).getTime();
+          const filtered = uniqueEvents.filter((ev) => {
+            const sameTime =
+              ev.start?.getTime() === new Date(oldSlot.start).getTime() &&
+              ev.end?.getTime() === new Date(oldSlot.end).getTime();
+            return !(ev.title === "Lịch cũ" || sameTime);
+          });
 
-              return !(event.title === "Lịch cũ" || sameTime);
-            }),
-            highlightEvent,
-          ]);
-
-          // setOpen(true);
+          setEvents([...filtered, highlightEvent]);
+        } else {
+          setEvents(uniqueEvents);
         }
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        console.error("Failed to fetch appointments:", (res as any).error);
+        console.error("Failed to fetch appointments:", res.error);
       }
     } catch (error) {
       console.error("Error fetching booked appointments:", error);

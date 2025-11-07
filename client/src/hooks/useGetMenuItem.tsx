@@ -1,4 +1,5 @@
 import {
+  MdCardMembership,
   MdCategory,
   // MdCardMembership,
   // MdCategory,
@@ -66,6 +67,12 @@ export const getSidebarItemsByRole = (role: string): SiderItem[] => {
       link: configRoutes.adminVouchers,
       icon: <FaTags className="ml-3" />,
       activeLink: [configRoutes.adminVouchers],
+    },
+    {
+      name: "Hạng thành viên",
+      link: configRoutes.adminMemberships,
+      icon: <MdCardMembership className="ml-3" />,
+      activeLink: [configRoutes.adminMemberships],
     },
   ];
 

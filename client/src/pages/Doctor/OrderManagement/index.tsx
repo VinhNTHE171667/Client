@@ -105,7 +105,8 @@ export default function OrderManagementDoctor() {
 
   const filteredAppointments = appointments.filter((a) => {
     const matchSearch =
-      search === "" || a.id.toLowerCase().includes(search.toLowerCase());
+      search === "" ||
+      a.customer.full_name.toLowerCase().includes(search.toLowerCase());
 
     const matchStatus = !statusFilter || statusFilter.includes(a.status);
 
@@ -153,7 +154,7 @@ export default function OrderManagementDoctor() {
           <Col>
             <Space>
               <Input.Search
-                placeholder="Tìm theo mã lịch hẹn..."
+                placeholder="Tìm theo tên khách hàng..."
                 allowClear
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}

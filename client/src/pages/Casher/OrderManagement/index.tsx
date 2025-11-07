@@ -68,7 +68,8 @@ export default function OrderManagementCasher() {
 
   const filteredAppointments = appointments.filter((a) => {
     const matchSearch =
-      search === "" || a.id.toLowerCase().includes(search.toLowerCase());
+      search === "" ||
+      a.customer.full_name.toLowerCase().includes(search.toLowerCase());
 
     const matchStatus = !statusFilter || statusFilter.includes(a.status);
 
@@ -100,7 +101,7 @@ export default function OrderManagementCasher() {
     } catch (err) {
       const msg =
         err instanceof Error ? err.message : "Đã xảy ra lỗi khi tạo đặt cọc.";
-      message.error(msg);
+      showError("Thanh toán thất bại!", msg);
     }
   };
 
@@ -166,7 +167,7 @@ export default function OrderManagementCasher() {
           <Col>
             <Space>
               <Input.Search
-                placeholder="Tìm theo mã lịch hẹn..."
+                placeholder="Tìm theo tên khách hàng..."
                 allowClear
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}

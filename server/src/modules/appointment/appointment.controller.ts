@@ -37,6 +37,13 @@ export class AppointmentController {
     return this.appointmentService.findAllAppointmentsManaged(doctorId);
   }
 
+  @Get('/customer-schedule-booked')
+  findAllBookedForCustomer(@Query('customerId') customerId: string) {
+    return this.appointmentService.findAllAppointmentsBookedByCustomer(
+      customerId,
+    );
+  }
+
   @Get('/management')
   findAllForManagement() {
     return this.appointmentService.findAll();
@@ -61,11 +68,8 @@ export class AppointmentController {
   }
 
   @Patch(':id/confirm')
-  confirm(@Param('id') id: string) {
-    return this.appointmentService.updateStatus(
-      id,
-      AppointmentStatus.Confirmed,
-    );
+  confirm(@Param('id') id: string, @Body() staff: { id: string }) {
+    return this.appointmentService.confirmAppointment(id, staff.id);
   }
 
   @Patch(':id/completed')

@@ -160,6 +160,24 @@ export const appointmentApi = createApi({
       }),
     }),
 
+    getAppointmentsBookedByCustomer: build.mutation<
+      {
+        id: string;
+        startTime: string;
+        endTime: string;
+        status: string;
+      }[],
+      { customerId: string }
+    >({
+      query: ({ customerId }) => ({
+        url: `/appointment/customer-schedule-booked`,
+        method: "GET",
+        params: {
+          customerId,
+        },
+      }),
+    }),
+
     getAppointmentsManagedByDoctor: build.mutation<
       AppointmentProps[],
       { doctorId: string }
@@ -192,11 +210,12 @@ export const appointmentApi = createApi({
 
     updateAppointmentStatusConfirmed: build.mutation<
       AppointmentProps,
-      { appointmentId: string }
+      { appointmentId: string; staff: { id: string } }
     >({
-      query: ({ appointmentId }) => ({
+      query: ({ appointmentId, staff: { id } }) => ({
         url: `/appointment/${appointmentId}/confirm`,
         method: "PATCH",
+        body: { staff: { id } },
       }),
     }),
 
@@ -316,5 +335,6 @@ export const {
 
   useGetAppointmentsManagedByDoctorMutation,
   useGetAppointmentsBookedByDoctorMutation,
+  useGetAppointmentsBookedByCustomerMutation,
   useGetAppointmentsForManagementMutation,
 } = appointmentApi;
