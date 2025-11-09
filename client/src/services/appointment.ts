@@ -98,6 +98,7 @@ export type CreateAppointmentProps = {
   }[];
   note: string;
   voucherId: string | null;
+  totalAmount: number | 0;
 };
 
 export const appointmentApi = createApi({

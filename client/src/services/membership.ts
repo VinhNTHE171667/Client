@@ -52,6 +52,13 @@ export const membershipApi = createApi({
         data,
       }),
     }),
+
+    getMembershipByCustomer: build.mutation<membershipDatas, string>({
+      query: (customerId) => ({
+        url: `/membership/customer/${customerId}`,
+        method: "Get",
+      }),
+    }),
   }),
 });
 
@@ -59,4 +66,6 @@ export const {
   useGetMembershipsMutation,
   useGetMembershipByIdMutation,
   useUpdateMembershipMutation,
+
+  useGetMembershipByCustomerMutation,
 } = membershipApi;

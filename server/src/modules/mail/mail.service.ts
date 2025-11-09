@@ -181,6 +181,7 @@ export class MailService implements OnModuleInit {
     to: string;
     customerName: string;
     voucher: Voucher;
+    deadUseDate?: string;
     spaName?: string;
     spaHotline?: string;
   }) {
@@ -191,6 +192,7 @@ export class MailService implements OnModuleInit {
       template: 'new-voucher',
       context: {
         customerName: data.customerName,
+        usedDate: data.deadUseDate || 'Đang cập nhật',
         voucher: data.voucher,
         spaName: data.spaName || 'GenSpa',
         spaHotline: data.spaHotline || '1900 1234',

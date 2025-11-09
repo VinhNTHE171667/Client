@@ -30,4 +30,18 @@ export class MembershipService {
 
     return await this.membershipRepo.save(membership);
   }
+
+  async findByCustomer(customerId: string): Promise<Membership | null> {
+    const membership = await this.membershipRepo
+      .createQueryBuilder('membership')
+      .innerJoin(
+        'membership.customers',
+        'customer',
+        'customer.id = :customerId',
+        { customerId },
+      )
+      .getOne();
+
+    return membership || null;
+  }
 }

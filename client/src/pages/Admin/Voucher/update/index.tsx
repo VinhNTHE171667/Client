@@ -8,6 +8,7 @@ import {
   InputNumber,
   Modal,
   Row,
+  Select,
   Space,
   Spin,
   Switch,
@@ -24,6 +25,7 @@ import {
   type VoucherFormValues,
 } from "@/services/voucher";
 import FancyButton from "@/components/FancyButton";
+import { useGetCustomersMutation } from "@/services/account";
 
 const { RangePicker } = DatePicker;
 
@@ -45,12 +47,40 @@ export default function UpdateVoucher({
   const { data: voucherData, refetch } = useGetVoucherByIdQuery(id, {
     skip: !isOpen || !id,
   });
+  const [getCustomers] = useGetCustomersMutation();
+  const [customerOptions, setCustomerOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
 
   const [updateVoucher] = useUpdateVoucherMutation();
 
   useEffect(() => {
     if (isOpen && id) {
       refetch();
+
+      const handleGetCustomers = async () => {
+        try {
+          const res = await getCustomers().unwrap();
+          if (res)
+            setCustomerOptions(
+              res.map(
+                (customer: {
+                  id: string;
+                  full_name: string;
+                  email: string;
+                }) => ({
+                  label: `${customer.full_name} - ${customer.email}`,
+                  value: customer.id,
+                })
+              )
+            );
+        } catch (error) {
+          console.error("Failed to fetch customers:", error);
+        }
+      };
+
+      handleGetCustomers();
+
       form.resetFields();
     }
   }, [isOpen, id]);
@@ -198,6 +228,49 @@ export default function UpdateVoucher({
               </Form.Item>
             </Col>
           </Row>
+
+          <Form.Item label="Áp dụng cho khách hàng" name="customerIds">
+            <Select
+              mode="multiple"
+              placeholder="Chọn khách hàng áp dụng voucher"
+              options={customerOptions}
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              dropdownRender={(menu) => (
+                <>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      padding: 8,
+                    }}
+                  >
+                    <Button
+                      type="link"
+                      size="small"
+                      onClick={() => {
+                        const allValues = customerOptions.map((c) => c.value);
+                        form.setFieldsValue({ customerIds: allValues });
+                      }}
+                    >
+                      Chọn tất cả
+                    </Button>
+                    <Button
+                      type="link"
+                      size="small"
+                      onClick={() => {
+                        form.setFieldsValue({ customerIds: [] });
+                      }}
+                    >
+                      Bỏ chọn tất cả
+                    </Button>
+                  </div>
+                  {menu}
+                </>
+              )}
+            />
+          </Form.Item>
 
           <Form.Item label="Thời gian hiệu lực" name="validRange">
             <RangePicker
