@@ -136,6 +136,15 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => [
     },
   },
   {
+    title: "Lý do hủy",
+    dataIndex: "cancelReason",
+    align: "center",
+    width: 200,
+    render: (_, record) => (
+      <span>{record.cancelReason ? record.cancelReason : "-"}</span>
+    ),
+  },
+  {
     title: "",
     dataIndex: "operation",
     key: "operation",

@@ -109,6 +109,7 @@ export default function UpdateVoucher({
         validFrom: values.validRange?.[0]?.toISOString() ?? "",
         validTo: values.validRange?.[1]?.toISOString() ?? "",
         isActive: values.isActive ?? true,
+        customerIds: values.customerIds || [],
       };
 
       const res = await updateVoucher({ id, body: payload });
