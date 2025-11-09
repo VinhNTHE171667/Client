@@ -13,6 +13,7 @@ import {
   Select,
   Input,
   Form,
+  Rate,
 } from "antd";
 import {
   Calendar,
@@ -39,7 +40,9 @@ import NoImage from "@/assets/img/NoImage/NoImage.jpg";
 import { useNavigate } from "react-router-dom";
 import { appointmentStatusEnum } from "@/common/types/auth";
 import { showError, showSuccess } from "@/libs/toast";
-import { statusTagColor, translateStatus } from "@/utils/format";
+import { handleError, statusTagColor, translateStatus } from "@/utils/format";
+import { useCreateFeedbacksMutation } from "@/services/feedback";
+import FancyButton from "@/components/FancyButton";
 
 const locales = { vi };
 const localizer = dateFnsLocalizer({
@@ -68,14 +71,22 @@ const CustomerOrders: React.FC = () => {
     useState<AppointmentProps>();
 
   const navigate = useNavigate();
+  const [feedbackModal, setFeedbackModal] = useState(false);
+  const [feedbacks, setFeedbacks] = useState<
+    { serviceId: string; rating?: number; comment?: string }[]
+  >([]);
 
-  useEffect(() => {
+  const handleEvent = () => {
     if (auth?.accountId) {
       getAppointments({ customerId: auth.accountId })
         .unwrap()
         .then(setAppointments)
         .catch(() => setAppointments([]));
     }
+  };
+
+  useEffect(() => {
+    handleEvent();
   }, [auth]);
 
   const [statusFilter, setStatusFilter] = useState<string[] | null>(null);
@@ -199,7 +210,7 @@ const CustomerOrders: React.FC = () => {
       const payload = {
         appointmentId: item.id,
         amount: depositAmount,
-        description: `Coc lich hen #${item.id}`.slice(0, 25),
+        description: `${item.id}`.slice(0, 25),
         returnUrl: `${window.location.origin}${configRoutes.paymentSuccessDeposit}`,
         cancelUrl: `${window.location.origin}${configRoutes.paymentFailDeposit}`,
         customerName: item.customer?.full_name || "Khách hàng",
@@ -217,6 +228,27 @@ const CustomerOrders: React.FC = () => {
       const msg =
         err instanceof Error ? err.message : "Đã xảy ra lỗi khi tạo đặt cọc.";
       message.error(msg);
+    }
+  };
+
+  const [createFeedbacks] = useCreateFeedbacksMutation();
+
+  const handleCreateFeedbacks = async () => {
+    try {
+      await createFeedbacks({
+        feedbacks: feedbacks.map((f) => ({
+          appointmentId: selectedAppointment?.id || "",
+          customerId: auth.accountId!,
+          serviceId: f.serviceId,
+          rating: f.rating!,
+          comment: f.comment,
+        })),
+      }).unwrap();
+      showSuccess("Gửi feedback thành công!");
+      setFeedbackModal(false);
+      handleEvent();
+    } catch (err) {
+      handleError(err);
     }
   };
 
@@ -303,7 +335,6 @@ const CustomerOrders: React.FC = () => {
           </Card>
         </Col>
       </Row>
-
       <Row>
         <Col xs={12}>
           <Card className={styles.listCard}>
@@ -376,6 +407,7 @@ const CustomerOrders: React.FC = () => {
                     item.status === appointmentStatusEnum.Confirmed;
                   const isRejected =
                     item.status === appointmentStatusEnum.Rejected;
+                  const isPay = item.status === appointmentStatusEnum.Paid;
 
                   // const isCancelled =
                   //   item.status === appointmentStatusEnum.Cancelled;
@@ -483,6 +515,26 @@ const CustomerOrders: React.FC = () => {
                               </Button>
                             )}
 
+                            {isPay && (
+                              <Button
+                                type="primary"
+                                onClick={() => {
+                                  setSelectedAppointment(item);
+                                  setFeedbacks(
+                                    item.details?.map((d) => ({
+                                      serviceId: d.serviceId,
+                                      rating: undefined,
+                                      comment: "",
+                                    })) || []
+                                  );
+                                  setFeedbackModal(true);
+                                }}
+                                disabled={item.isFeedbackGiven}
+                              >
+                                Đánh giá
+                              </Button>
+                            )}
+
                             {isRejected && (
                               <Button
                                 onClick={() => {
@@ -507,7 +559,6 @@ const CustomerOrders: React.FC = () => {
           </Card>
         </Col>
       </Row>
-
       <Modal
         title="Chi tiết lịch hẹn"
         open={editModal}
@@ -545,7 +596,6 @@ const CustomerOrders: React.FC = () => {
           })}
         </div>
       </Modal>
-
       <Modal
         title="Huỷ lịch hẹn"
         open={cancelModal}
@@ -571,7 +621,6 @@ const CustomerOrders: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
-
       <Modal
         title="Lý do từ chối lịch hẹn"
         open={rejectModal}
@@ -588,7 +637,6 @@ const CustomerOrders: React.FC = () => {
       >
         <p style={{ whiteSpace: "pre-wrap", fontSize: 15 }}>{rejectReason}</p>
       </Modal>
-
       <Modal
         title="Chi tiết lịch hẹn"
         open={detailModal}
@@ -625,7 +673,6 @@ const CustomerOrders: React.FC = () => {
             <div style={{ marginTop: 12 }}>
               <strong>Dịch vụ:</strong>
               {selectedAppointment.details?.map((detail) => {
-                console.log("detail.service", detail);
                 const svc = detail.service;
                 const img = svc?.images?.[0]?.url || NoImage;
                 return (
@@ -675,6 +722,97 @@ const CustomerOrders: React.FC = () => {
         ) : (
           <p>Không có thông tin lịch hẹn.</p>
         )}
+      </Modal>
+
+      <Modal
+        open={feedbackModal}
+        onCancel={() => setFeedbackModal(false)}
+        footer={null}
+        width={800}
+      >
+        <div>
+          <h3 className="cus-text-primary text-center">Đánh giá dịch vụ</h3>
+        </div>
+        <div className={styles.feedbackModalContent}>
+          <div className={styles.appointmentInfo}>
+            <p>
+              <strong>Khách hàng:</strong>{" "}
+              {selectedAppointment?.customer?.full_name}
+            </p>
+            <p>
+              <strong>Ngày:</strong>{" "}
+              {dayjs(selectedAppointment?.startTime).format("DD/MM/YYYY HH:mm")}
+            </p>
+            <p>
+              <strong>Bác sĩ:</strong>{" "}
+              {selectedAppointment?.doctor?.full_name || "Chưa có"}
+            </p>
+            <p>
+              <strong>Tổng tiền:</strong>{" "}
+              {selectedAppointment?.details
+                ?.reduce((sum, d) => sum + Number(d.price ?? 0), 0)
+                .toLocaleString("vi-VN")}
+              ₫
+            </p>
+          </div>
+
+          <div className={styles.feedbackList}>
+            {feedbacks.map((f, idx) => {
+              const detail = selectedAppointment?.details[idx];
+              const svc = detail?.service;
+              const img = svc?.images?.[0]?.url || NoImage;
+
+              return (
+                <div key={f.serviceId} className={styles.feedbackCard}>
+                  <div className={styles.feedbackLeft}>
+                    <img
+                      src={img}
+                      alt={svc?.name}
+                      className={styles.feedbackImage}
+                    />
+                    <div>
+                      <p className={styles.feedbackServiceName}>{svc?.name}</p>
+                      <p className={styles.feedbackServicePrice}>
+                        {Number(detail?.price ?? 0).toLocaleString("vi-VN")} đ
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className={styles.feedbackRight}>
+                    <Rate
+                      allowHalf
+                      value={f.rating}
+                      onChange={(val) => {
+                        const copy = [...feedbacks];
+                        copy[idx].rating = val;
+                        setFeedbacks(copy);
+                      }}
+                    />
+                    <Input.TextArea
+                      rows={3}
+                      placeholder="Cảm nhận của bạn..."
+                      value={f.comment}
+                      onChange={(e) => {
+                        const copy = [...feedbacks];
+                        copy[idx].comment = e.target.value;
+                        setFeedbacks(copy);
+                      }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className={styles.feedbackFooter}>
+            <FancyButton
+              onClick={handleCreateFeedbacks}
+              variant="primary"
+              size="middle"
+              label="Gửi đánh giá"
+            />
+          </div>
+        </div>
       </Modal>
     </Container>
   );

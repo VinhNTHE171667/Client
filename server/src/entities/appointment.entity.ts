@@ -109,4 +109,7 @@ export class Appointment {
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   depositAmount: number;
+
+  @Column({ type: 'boolean', default: false })
+  isFeedbackGiven: boolean;
 }

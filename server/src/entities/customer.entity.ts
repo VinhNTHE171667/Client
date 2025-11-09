@@ -100,4 +100,13 @@ export class Customer {
 
   @Column({ type: 'timestamp', nullable: true })
   resetTokenExpire?: Date | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  emailVerificationToken?: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  emailVerificationTokenExpire?: Date | null;
+
+  @Column({ default: false })
+  isEmailVerified: boolean;
 }

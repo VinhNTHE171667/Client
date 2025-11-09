@@ -194,3 +194,8 @@
         box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
     }
 }
+
+:global(.ant-form-item-explain-error) {
+    text-align: left !important;
+    margin-left: 0 !important;
+}

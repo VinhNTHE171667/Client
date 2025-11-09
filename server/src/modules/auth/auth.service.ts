@@ -18,7 +18,6 @@ import { ConfigService } from '@nestjs/config';
 import { Internal } from '@/entities/internal.entity';
 import { Role } from '@/entities/role.entity';
 import { Doctor } from '@/entities/doctor.entity';
-import nodemailer from 'nodemailer';
 import {
   ChangePasswordDto,
   UpdateCustomerProfileDto,
@@ -403,6 +402,16 @@ export class AuthService {
     if (!user)
       throw new NotFoundException('Email không tồn tại trong hệ thống');
 
+    const now = new Date();
+    if (user.resetTokenExpire && user.resetTokenExpire > now) {
+      const minutesLeft = Math.ceil(
+        (user.resetTokenExpire.getTime() - now.getTime()) / 60000,
+      );
+      throw new BadRequestException(
+        `Vui lòng chờ ${minutesLeft} phút trước khi gửi lại.`,
+      );
+    }
+
     const token = await this.jwtService.signAsync(
       { email },
       {
@@ -415,7 +424,7 @@ export class AuthService {
     user.resetTokenExpire = new Date(Date.now() + 15 * 60 * 1000);
     await this.customerRepository.save(user);
 
-    const resetLink = `http://localhost:3000/reset-password?token=${token}`;
+    const resetLink = `${this.configService.get<string>('CLIENT_URL')}/reset-password?token=${token}`;
 
     await this.mailService.sendResetPasswordEmail({
       to: email,
@@ -459,25 +468,49 @@ export class AuthService {
     }
   }
 
-  private async sendResetEmail(email: string, link: string) {
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: this.configService.get('MAIL_USER'),
-        pass: this.configService.get('MAIL_PASS'),
-      },
+  async sendEmailVerification(customer: Customer) {
+    const token = await this.jwtService.signAsync(
+      { email: customer.email },
+      { secret: process.env.JWT_SECRET, expiresIn: '24h' }, // 24h token
+    );
+
+    customer.emailVerificationToken = token;
+    customer.emailVerificationTokenExpire = new Date(
+      Date.now() + 24 * 60 * 60 * 1000,
+    );
+    await this.customerRepository.save(customer);
+
+    const verifyLink = `${this.configService.get<string>('CLIENT_URL')}/verify-email?token=${token}`;
+
+    await this.mailService.sendVerifyEmail({
+      to: customer.email,
+      customerName: customer.full_name || 'Khách hàng',
+      verifyUrl: verifyLink,
     });
 
-    await transporter.sendMail({
-      from: `"Spa Management" <${this.configService.get('MAIL_USER')}>`,
-      to: email,
-      subject: 'Đặt lại mật khẩu - Spa Management',
-      html: `
-        <p>Xin chào,</p>
-        <p>Bạn đã yêu cầu đặt lại mật khẩu. Vui lòng nhấn vào liên kết bên dưới để đặt lại mật khẩu:</p>
-        <a href="${link}">${link}</a>
-        <p>Liên kết này sẽ hết hạn sau 15 phút.</p>
-      `,
+    return { message: 'Đã gửi email xác thực, vui lòng kiểm tra hộp thư.' };
+  }
+
+  async verifyEmail(token: string) {
+    if (!token) throw new BadRequestException('Token không được để trống');
+
+    const customer = await this.customerRepository.findOne({
+      where: { emailVerificationToken: token },
     });
+    if (!customer) throw new NotFoundException('Token không hợp lệ');
+
+    if (
+      !customer.emailVerificationTokenExpire ||
+      customer.emailVerificationTokenExpire < new Date()
+    ) {
+      throw new BadRequestException('Token đã hết hạn');
+    }
+
+    customer.isEmailVerified = true;
+    customer.emailVerificationToken = null;
+    customer.emailVerificationTokenExpire = null;
+    await this.customerRepository.save(customer);
+
+    return { message: 'Email đã được xác thực thành công' };
   }
 }

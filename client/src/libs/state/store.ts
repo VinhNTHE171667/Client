@@ -10,6 +10,8 @@ import { serviceApi } from "@/services/services";
 import { cartApi } from "@/services/cart";
 import { appointmentApi } from "@/services/appointment";
 import { voucherApi } from "@/services/voucher";
+import { membershipApi } from "@/services/membership";
+import { feedbackApi } from "@/services/feedback";
 
 const persistConfig = {
   key: "root",
@@ -25,6 +27,8 @@ const rootReducer = combineReducers({
   [cartApi.reducerPath]: cartApi.reducer,
   [appointmentApi.reducerPath]: appointmentApi.reducer,
   [voucherApi.reducerPath]: voucherApi.reducer,
+  [membershipApi.reducerPath]: membershipApi.reducer,
+  [feedbackApi.reducerPath]: feedbackApi.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -38,7 +42,9 @@ export const store = configureStore({
       serviceApi.middleware,
       cartApi.middleware,
       appointmentApi.middleware,
-      voucherApi.middleware
+      voucherApi.middleware,
+      membershipApi.middleware,
+      feedbackApi.middleware
     );
   },
 });

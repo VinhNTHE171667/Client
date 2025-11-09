@@ -27,6 +27,7 @@ interface FancyButtonProps {
   loading?: boolean;
   disabled?: boolean;
   className?: string;
+  htmlType?: "button" | "submit" | "reset";
 }
 
 const FancyButton: React.FC<FancyButtonProps> = ({
@@ -38,6 +39,7 @@ const FancyButton: React.FC<FancyButtonProps> = ({
   loading = false,
   disabled = false,
   className = "",
+  htmlType = "button",
 }) => {
   return (
     <Button
@@ -50,6 +52,7 @@ const FancyButton: React.FC<FancyButtonProps> = ({
         `fancy-button-${size}`,
         className
       )}
+      htmlType={htmlType}
     >
       {icon && <span className="d-flex align-items-center">{icon}</span>}
       {label && <span>{label}</span>}

@@ -1,86 +1,38 @@
 import { Link, useNavigate } from "react-router-dom";
 import styles from "../Auth.module.scss";
 import classNames from "classnames/bind";
-import { useLoginMutation } from "@/services/auth";
-import { Form, Input, Row, Col } from "antd";
-import { useAuthStore } from "@/hooks/UseAuth";
-import { RoleEnum, type RoleEnumType } from "@/common/types/auth";
+import { useForgotPasswordMutation } from "@/services/auth";
+import { Form, Input, Row, Col, Modal } from "antd";
 import { configRoutes } from "@/constants/route";
-import { showError } from "@/libs/toast";
 import { useBreakpoint } from "@/hooks/UseBreakPoint";
 import { IoIosArrowBack } from "react-icons/io";
 import logo from "@/assets/img/Logo/mainLogo.png";
 import FancyButton from "@/components/FancyButton";
+import { useState } from "react";
+import { handleError } from "@/utils/format";
 
 const cx = classNames.bind(styles);
 
-interface LoginFormValues {
+interface ForgotPasswordFormValues {
   email: string;
-  password: string;
 }
 
-const ForgotEmailPage = () => {
-  const [form] = Form.useForm<LoginFormValues>();
+const ForgotPasswordPage = () => {
+  const [form] = Form.useForm<ForgotPasswordFormValues>();
   const navigate = useNavigate();
-  const [login, { isLoading }] = useLoginMutation();
-  const { setCredentials } = useAuthStore();
+  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
 
-  const handleSubmitEmail = async (values: LoginFormValues) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleSubmitEmail = async (values: ForgotPasswordFormValues) => {
     try {
-      const res = (await login({
+      await forgotPassword({
         email: values.email.trim(),
-        password: values.password.trim(),
-      })) as {
-        data?: {
-          id: string;
-          username: string;
-          fullName?: string;
-          name?: string;
-          email?: string;
-          phone?: string;
-          address?: string;
-          image?: string;
-          role?: string;
-          avatar?: string | null;
-        };
-        error?: { data?: { message?: string[] } };
-      };
+      }).unwrap();
 
-      if (res.data) {
-        setCredentials({
-          accountId: res.data.id ?? "",
-          username: res.data.username ?? "",
-          fullName: res.data.fullName || res.data.name || "",
-          email: res.data.email || "",
-          phone: res.data.phone || "",
-          address: res.data.address || "",
-          image: res.data.image || "",
-          roles: res.data.role ? (res.data.role as RoleEnumType) : null,
-          avatar: res.data.avatar || null,
-        });
-
-        if (res.data.role === RoleEnum.Admin) {
-          navigate(configRoutes.adminDashboard, { replace: true });
-        } else if (res.data.role === RoleEnum.Customer) {
-          navigate(configRoutes.home);
-        } else if (res.data.role === RoleEnum.Staff) {
-          navigate(configRoutes.staffDashboard, { replace: true });
-        } else if (res.data.role === RoleEnum.Doctor) {
-          navigate(configRoutes.doctorDashboard, { replace: true });
-        } else if (res.data.role === RoleEnum.Casher) {
-          navigate(configRoutes.casherOrderManagement, { replace: true });
-        } else {
-          navigate(configRoutes.home);
-        }
-      } else if (res.error) {
-        const message = res.error.data?.message;
-        const msg = Array.isArray(message)
-          ? message.join(", ")
-          : message || "Đăng nhập thất bại";
-        showError("Lỗi khi đăng nhập", msg);
-      }
+      setIsModalOpen(true);
     } catch (err) {
-      console.error("Login error:", err);
+      handleError(err, "Gửi yêu cầu khôi phục mật khẩu thất bại");
     }
   };
 
@@ -132,7 +84,7 @@ const ForgotEmailPage = () => {
 
             <div className="flex-grow-1 d-flex justify-content-center align-items-center">
               <div className={cx("auth-header", "max-w-md", "w-100")}>
-                <h2>{"Nhập email của bạn"}</h2>
+                <h2>{"Yêu cầu đặt lại mật khẩu"}</h2>
 
                 <div>
                   <p className="text-gray-500">
@@ -162,13 +114,13 @@ const ForgotEmailPage = () => {
                     </Form.Item>
 
                     <FancyButton
-                      onClick={() => form.submit()}
                       icon={<></>}
                       label="Gửi"
                       variant="primary"
                       size="middle"
                       loading={isLoading}
                       className="w-100"
+                      htmlType="submit"
                     />
                   </Form>
                 </div>
@@ -201,8 +153,88 @@ const ForgotEmailPage = () => {
           </div>
         </div>
       </div> */}
+
+      <Modal
+        open={isModalOpen}
+        centered
+        footer={null}
+        closable={false}
+        bodyStyle={{
+          textAlign: "center",
+          padding: "32px 24px",
+          borderRadius: "16px",
+        }}
+        className={cx("custom-modal")}
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 16,
+          }}
+        >
+          <div
+            style={{
+              background: "#E6F4EA",
+              color: "#16a34a",
+              borderRadius: "50%",
+              width: 64,
+              height: 64,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              fontSize: 32,
+            }}
+          >
+            ✓
+          </div>
+
+          <h3 style={{ marginTop: 12, fontWeight: 600, fontSize: 20 }}>
+            Đã gửi yêu cầu thành công
+          </h3>
+
+          <p style={{ color: "#667085", lineHeight: 1.6 }}>
+            Chúng tôi đã gửi liên kết đặt lại mật khẩu đến email của bạn.
+            <br /> Vui lòng kiểm tra hộp thư (kể cả thư rác).
+          </p>
+
+          <div style={{ marginTop: 24, display: "flex", gap: 12 }}>
+            <button
+              onClick={() => setIsModalOpen(false)}
+              style={{
+                padding: "8px 20px",
+                border: "1px solid #D0D5DD",
+                borderRadius: 8,
+                background: "white",
+                cursor: "pointer",
+                fontWeight: 500,
+              }}
+            >
+              Đóng
+            </button>
+            <button
+              onClick={() => {
+                setIsModalOpen(false);
+                navigate(configRoutes.login);
+              }}
+              style={{
+                padding: "8px 20px",
+                border: "none",
+                borderRadius: 8,
+                background: "#16a34a",
+                color: "white",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              Đăng nhập ngay
+            </button>
+          </div>
+        </div>
+      </Modal>
     </>
   );
 };
 
-export default ForgotEmailPage;
+export default ForgotPasswordPage;

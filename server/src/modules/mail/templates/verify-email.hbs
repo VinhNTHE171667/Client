@@ -1,0 +1,102 @@
+<html lang='vi'>
+  <head>
+    <meta charset='UTF-8' />
+    <title>Xác thực email - GenSpa</title>
+    <style>
+      body {
+        font-family: 'Helvetica', 'Arial', sans-serif;
+        background-color: #f7f8fa;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 580px;
+        margin: 40px auto;
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+      }
+      .header {
+        background: linear-gradient(135deg, #8bc34a, #4caf50);
+        padding: 24px;
+        text-align: center;
+        color: #fff;
+      }
+      .header h1 {
+        font-size: 22px;
+        margin: 0;
+      }
+      .content {
+        padding: 32px 28px;
+        color: #444;
+        line-height: 1.6;
+      }
+      .content h2 {
+        font-size: 18px;
+        color: #333;
+      }
+      .btn {
+        display: inline-block;
+        background-color: #4caf50;
+        color: #fff !important;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        margin-top: 16px;
+        font-weight: bold;
+        transition: background 0.2s;
+      }
+      .btn:hover {
+        background-color: #43a047;
+      }
+      .footer {
+        text-align: center;
+        padding: 20px;
+        font-size: 13px;
+        color: #999;
+      }
+      .footer a {
+        color: #4caf50;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <div class='header'>
+        <h1>Xác thực email</h1>
+      </div>
+      <div class='content'>
+        <h2>Xin chào {{customerName}},</h2>
+        <p>
+          Cảm ơn bạn đã đăng ký tài khoản tại
+          <strong>{{spaName}}</strong>.
+        </p>
+        <p>
+          Nhấn vào nút bên dưới để xác thực email của bạn. Liên kết này chỉ có
+          hiệu lực trong vòng
+          <strong>24 giờ</strong>.
+        </p>
+
+        <p style='text-align: center;'>
+          <a href='{{verifyUrl}}' class='btn'>Xác thực email</a>
+        </p>
+
+        <p>
+          Nếu bạn không thực hiện đăng ký, vui lòng bỏ qua email này.
+        </p>
+
+        <p>Trân trọng,<br />Đội ngũ {{spaName}}</p>
+      </div>
+
+      <div class='footer'>
+        ©
+        {{year}}
+        {{spaName}}. Mọi quyền được bảo lưu.<br />
+        Liên hệ hỗ trợ:
+        <a href='tel:{{spaHotline}}'>{{spaHotline}}</a>
+      </div>
+    </div>
+  </body>
+</html>
