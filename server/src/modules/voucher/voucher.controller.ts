@@ -16,7 +16,7 @@ export class VoucherController {
 
   @Post()
   create(@Body() createVoucherDto: CreateVoucherDto) {
-    return this.voucherService.create(createVoucherDto);
+    return this.voucherService.createForCustomers(createVoucherDto);
   }
 
   @Get()

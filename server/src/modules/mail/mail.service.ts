@@ -1,3 +1,4 @@
+import { Voucher } from '@/entities/voucher.entity';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
@@ -169,6 +170,28 @@ export class MailService implements OnModuleInit {
       context: {
         customerName: data.customerName,
         verifyUrl: data.verifyUrl,
+        spaName: data.spaName || 'GenSpa',
+        spaHotline: data.spaHotline || '1900 1234',
+        year: new Date().getFullYear(),
+      },
+    });
+  }
+
+  async sendVoucherEmail(data: {
+    to: string;
+    customerName: string;
+    voucher: Voucher;
+    spaName?: string;
+    spaHotline?: string;
+  }) {
+    await this.transporter.sendMail({
+      from: this.configService.get<string>('EMAIL_USER'),
+      to: data.to,
+      subject: `Bạn vừa nhận được voucher mới - ${data.spaName || 'GenSpa'}`,
+      template: 'new-voucher',
+      context: {
+        customerName: data.customerName,
+        voucher: data.voucher,
         spaName: data.spaName || 'GenSpa',
         spaHotline: data.spaHotline || '1900 1234',
         year: new Date().getFullYear(),

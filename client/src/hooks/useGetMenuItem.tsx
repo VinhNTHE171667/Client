@@ -4,6 +4,7 @@ import {
   // MdCardMembership,
   // MdCategory,
   MdDashboard,
+  MdFeedback,
   MdPeopleAlt,
   // MdScheduleSend,
   // MdSpa,
@@ -78,16 +79,16 @@ export const getSidebarItemsByRole = (role: string): SiderItem[] => {
 
   const StaffSidebar = (): SiderItem[] => [
     {
-      name: "Dashboard",
-      link: configRoutes.staffDashboard,
-      icon: <MdDashboard />,
-      activeLink: [configRoutes.staffDashboard],
-    },
-    {
       name: "Đơn hàng",
       link: configRoutes.staffOrders,
       icon: <MdPeopleAlt className="ml-3" />,
       activeLink: [configRoutes.staffOrders],
+    },
+    {
+      name: "Feedback",
+      link: configRoutes.staffFeedback,
+      icon: <MdFeedback className="ml-3" />,
+      activeLink: [configRoutes.staffFeedback],
     },
     // {
     //   name: "Khách hàng",
@@ -104,12 +105,6 @@ export const getSidebarItemsByRole = (role: string): SiderItem[] => {
   ];
 
   const DoctorSidebar = (): SiderItem[] => [
-    {
-      name: "Dashboard",
-      link: configRoutes.doctorDashboard,
-      icon: <MdDashboard />,
-      activeLink: [configRoutes.doctorDashboard],
-    },
     {
       name: "Đơn hàng",
       link: configRoutes.doctorOrderManagement,

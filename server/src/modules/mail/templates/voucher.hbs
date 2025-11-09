@@ -1,0 +1,159 @@
+<html lang='vi'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Cảm ơn bạn đã sử dụng dịch vụ</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f9fafb;
+        color: #333;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+      }
+      .header {
+        background: linear-gradient(135deg, #43e97b, #38f9d7);
+        padding: 24px;
+        text-align: center;
+        color: #fff;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .content {
+        padding: 24px;
+        line-height: 1.6;
+      }
+      .content h2 {
+        color: #5ca16a;
+        font-size: 20px;
+        margin-top: 0;
+      }
+      ul {
+        list-style: none;
+        padding: 0;
+        margin: 12px 0;
+      }
+      li {
+        background: #fff7ed;
+        padding: 8px 12px;
+        margin-bottom: 6px;
+        border-radius: 6px;
+        border-left: 4px solid #7fb97a;
+      }
+      .info-box {
+        background-color: #fff7ed;
+        border-left: 4px solid #7fb97a;
+        padding: 12px 16px;
+        margin: 16px 0;
+        border-radius: 8px;
+      }
+      .voucher-box {
+        background-color: #e0f7f1;
+        border-left: 4px solid #38f9d7;
+        padding: 12px 16px;
+        margin: 16px 0;
+        border-radius: 8px;
+      }
+      .footer {
+        text-align: center;
+        padding: 16px;
+        font-size: 14px;
+        color: #777;
+        background-color: #f9fafb;
+        border-top: 1px solid #eee;
+      }
+      .button {
+        display: inline-block;
+        background-color: #5ca16a;
+        color: #fff !important;
+        text-decoration: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        margin-top: 16px;
+      }
+      .button:hover {
+        background-color: #5ca16a;
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <div class='header'>
+        <h1>Cảm ơn bạn đã tin tưởng {{spaName}}</h1>
+      </div>
+
+      <div class='content'>
+        <h2>Trải nghiệm của bạn là ưu tiên của chúng tôi</h2>
+
+        <p>
+          Xin chào
+          <strong>{{customerName}}</strong>,<br />
+          Cảm ơn bạn đã lựa chọn và sử dụng các dịch vụ tại
+          <strong>{{spaName}}</strong>.
+        </p>
+
+        <ul>
+          {{#each services}}
+            <li><strong>{{this.name}}</strong> — {{this.price}}</li>
+          {{/each}}
+        </ul>
+
+        <div class='info-box'>
+          <div><strong>Ngày sử dụng:</strong> {{usedDate}}</div>
+          <div><strong>Chuyên viên phục vụ:</strong> {{specialistName}}</div>
+        </div>
+
+        {{#if voucher}}
+          <div class='voucher-box'>
+            <h3>Bạn vừa nhận được Voucher mới!</h3>
+            <div><strong>Mã voucher:</strong> {{voucher.code}}</div>
+            {{#if voucher.description}}
+              <div><strong>Mô tả:</strong> {{voucher.description}}</div>
+            {{/if}}
+            {{#if voucher.discountAmount}}
+              <div><strong>Giảm:</strong> {{voucher.discountAmount}}₫</div>
+            {{/if}}
+            {{#if voucher.discountPercent}}
+              <div><strong>Giảm:</strong> {{voucher.discountPercent}}%</div>
+            {{/if}}
+            {{#if voucher.maxDiscount}}
+              <div><strong>Giảm tối đa:</strong> {{voucher.maxDiscount}}₫</div>
+            {{/if}}
+            {{#if voucher.validFrom}}
+              <div><strong>Bắt đầu:</strong> {{voucher.validFrom}}</div>
+            {{/if}}
+            {{#if voucher.validTo}}
+              <div><strong>Hết hạn:</strong> {{voucher.validTo}}</div>
+            {{/if}}
+          </div>
+        {{/if}}
+
+        <p>
+          Chúng tôi hy vọng bạn đã có trải nghiệm tuyệt vời cùng
+          {{spaName}}! Nếu hài lòng, đừng quên để lại đánh giá giúp chúng tôi
+          hoàn thiện hơn nhé
+        </p>
+
+        <a href='{{feedbackUrl}}' class='button'>Đánh giá ngay</a>
+      </div>
+
+      <div class='footer'>
+        ©
+        {{year}}
+        {{spaName}}
+        — Cảm ơn bạn đã đồng hành cùng chúng tôi<br />
+        <small>Nếu có thắc mắc, vui lòng liên hệ: {{spaHotline}}</small>
+      </div>
+    </div>
+  </body>
+</html>

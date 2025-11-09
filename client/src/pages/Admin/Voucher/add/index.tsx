@@ -8,6 +8,7 @@ import {
   InputNumber,
   Modal,
   Row,
+  Select,
   Space,
   Spin,
   Switch,
@@ -23,6 +24,7 @@ import {
   type VoucherFormValues,
 } from "@/services/voucher";
 import FancyButton from "@/components/FancyButton";
+import { useGetCustomersMutation } from "@/services/account";
 
 const { RangePicker } = DatePicker;
 
@@ -40,9 +42,34 @@ export default function AddVoucher({
   const [form] = useForm();
   const [isLoading, setIsLoading] = useState(false);
   const [createVoucher] = useCreateVoucherMutation();
+  const [getCustomers] = useGetCustomersMutation();
+  const [customerOptions, setCustomerOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
 
   useEffect(() => {
     if (isOpen) form.resetFields();
+
+    const handleGetCustomers = async () => {
+      try {
+        const res = await getCustomers().unwrap();
+        if (res)
+          setCustomerOptions(
+            res.map(
+              (customer: { id: string; full_name: string; email: string }) => ({
+                label: `${customer.full_name} - ${customer.email}`,
+                value: customer.id,
+              })
+            )
+          );
+      } catch (error) {
+        console.error("Failed to fetch customers:", error);
+      }
+    };
+
+    if (isOpen) {
+      handleGetCustomers();
+    }
   }, [isOpen]);
 
   const onFinish = async (values: VoucherFormValues) => {
@@ -186,6 +213,15 @@ export default function AddVoucher({
               disabledDate={(current) =>
                 current && current < dayjs().startOf("day")
               }
+            />
+          </Form.Item>
+
+          <Form.Item label="Áp dụng cho khách hàng" name="customerIds">
+            <Select
+              mode="multiple"
+              placeholder="Chọn khách hàng áp dụng voucher"
+              options={customerOptions}
+              allowClear
             />
           </Form.Item>
 

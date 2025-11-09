@@ -53,9 +53,11 @@ export class FeedbackService {
   }
 
   async findAll() {
-    return this.feedbackRepo.find({
+    const feedbacks = await this.feedbackRepo.find({
       relations: ['customer', 'appointmentDetail'],
     });
+
+    return feedbacks;
   }
 
   async findOne(id: string) {
@@ -85,10 +87,30 @@ export class FeedbackService {
     });
   }
 
+  async findByAppointment(appointmentId: string) {
+    return this.feedbackRepo.find({
+      where: { appointmentId },
+      select: ['id', 'rating', 'comment', 'status', 'createdAt', 'service'],
+      relations: ['service'],
+    });
+  }
+
   async findByCustomer(customerId: string) {
     return this.feedbackRepo.find({
       where: { customerId },
       relations: ['appointmentDetail'],
     });
+  }
+
+  async approveFeedback(id: string) {
+    const feedback = await this.findOne(id);
+    feedback.status = FeedbackStatus.Approved;
+    return this.feedbackRepo.save(feedback);
+  }
+
+  async rejectFeedback(id: string) {
+    const feedback = await this.findOne(id);
+    feedback.status = FeedbackStatus.Rejected;
+    return this.feedbackRepo.save(feedback);
   }
 }

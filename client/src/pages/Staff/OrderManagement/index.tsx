@@ -17,9 +17,6 @@ import dayjs from "dayjs";
 import { showError, showSuccess } from "@/libs/toast";
 import { AppointmentColumn } from "./_components/columnTypes";
 import FancyButton from "@/components/FancyButton";
-import { configRoutes } from "@/constants/route";
-import { Link } from "react-router-dom";
-import FancyBreadcrumb from "@/components/FancyBreadcrumb";
 import {
   useGetAppointmentsForManagementMutation,
   useUpdateAppointmentStatusConfirmedMutation,
@@ -165,17 +162,6 @@ export default function OrderManagementStaff() {
           <h4 className="cus-text-primary">
             <strong>Lịch hẹn</strong>
           </h4>
-        </Col>
-        <Col style={{ marginLeft: "auto" }}>
-          <FancyBreadcrumb
-            items={[
-              {
-                title: <Link to={configRoutes.staffDashboard}>Dashboard</Link>,
-              },
-              { title: <span>Lịch hẹn</span> },
-            ]}
-            separator=">"
-          />
         </Col>
       </Row>
 

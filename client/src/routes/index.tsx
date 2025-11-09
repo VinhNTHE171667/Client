@@ -21,7 +21,6 @@ import Booking from "@/pages/Customer/Bookings";
 import Profile from "@/pages/Customer/Profile";
 import DoctorPublicProfile from "@/pages/Services/DoctorProfile";
 import CustomerOrders from "@/pages/Customer/Order";
-import StaffDashboard from "@/pages/Staff/Dashboard";
 import OrderManagementStaff from "@/pages/Staff/OrderManagement";
 import OrderManagementDoctor from "@/pages/Doctor/OrderManagement";
 import DoctorDashboard from "@/pages/Doctor/Dashboard";
@@ -36,6 +35,7 @@ import ForgotPasswordPage from "@/pages/Auth/ForgotPassword";
 import ForbiddenPage from "@/pages/Error/ForbiddenPage";
 import NotFoundPage from "@/pages/Error/NotFound";
 import ResetPasswordPage from "@/pages/Auth/ResetPassword";
+import FeedbackManagementStaff from "@/pages/Staff/Feedback";
 
 const router = createBrowserRouter([
   {
@@ -251,22 +251,6 @@ const router = createBrowserRouter([
   },
 
   {
-    path: configRoutes.staffDashboard,
-    element: <ProtectedRoute allowedRoles={[RoleEnum.Staff]} />,
-    children: [
-      {
-        element: <SystemLayoutReposive />,
-        children: [
-          {
-            index: true,
-            element: <StaffDashboard />,
-          },
-        ],
-      },
-    ],
-  },
-
-  {
     path: configRoutes.staffOrders,
     element: <ProtectedRoute allowedRoles={[RoleEnum.Staff]} />,
     children: [
@@ -356,6 +340,22 @@ const router = createBrowserRouter([
           {
             index: true,
             element: <Membership />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.staffFeedback,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Staff]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <FeedbackManagementStaff />,
           },
         ],
       },
