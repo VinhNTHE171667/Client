@@ -165,41 +165,44 @@ export default function AddVoucher({
           <Row gutter={[16, 16]}>
             <Col xs={24} md={8}>
               <Form.Item label="Giảm theo số tiền (VNĐ)" name="discountAmount">
-                <InputNumber<number>
+                <InputNumber
                   style={{ width: "100%" }}
+                  suffix="₫"
                   placeholder="Nhập số tiền giảm"
                   min={0}
                   formatter={(value) =>
-                    value ? `${Number(value).toLocaleString()}₫` : ""
+                    value ? `${Number(value).toLocaleString()}` : ""
                   }
-                  parser={(value) => Number(value?.replace(/[₫,]/g, "") || 0)}
+                  // parser={(value) =>
+                  //   Number(value?.toString().replace(/[₫,]/g, "") || 0)
+                  // }
                 />
               </Form.Item>
             </Col>
 
             <Col xs={24} md={8}>
               <Form.Item label="Giảm theo %" name="discountPercent">
-                <InputNumber<number>
+                <InputNumber
                   style={{ width: "100%" }}
                   placeholder="Nhập phần trăm giảm"
                   min={0}
                   max={100}
-                  formatter={(value) => `${value}%`}
-                  parser={(value) => Number(value?.replace("%", "") || 0)}
+                  formatter={(value) => (value ? `${value}` : "")}
+                  suffix="%"
                 />
               </Form.Item>
             </Col>
 
             <Col xs={24} md={8}>
               <Form.Item label="Giảm tối đa (VNĐ)" name="maxDiscount">
-                <InputNumber<number>
+                <InputNumber
                   style={{ width: "100%" }}
                   placeholder="Nhập mức giảm tối đa"
                   min={0}
                   formatter={(value) =>
-                    value ? `${Number(value).toLocaleString()}₫` : ""
+                    value ? `${Number(value).toLocaleString()}` : ""
                   }
-                  parser={(value) => Number(value?.replace(/[₫,]/g, "") || 0)}
+                  suffix="₫"
                 />
               </Form.Item>
             </Col>
@@ -222,6 +225,40 @@ export default function AddVoucher({
               placeholder="Chọn khách hàng áp dụng voucher"
               options={customerOptions}
               allowClear
+              showSearch
+              optionFilterProp="label"
+              dropdownRender={(menu) => (
+                <>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      padding: 8,
+                    }}
+                  >
+                    <Button
+                      type="link"
+                      size="small"
+                      onClick={() => {
+                        const allValues = customerOptions.map((c) => c.value);
+                        form.setFieldsValue({ customerIds: allValues });
+                      }}
+                    >
+                      Chọn tất cả
+                    </Button>
+                    <Button
+                      type="link"
+                      size="small"
+                      onClick={() => {
+                        form.setFieldsValue({ customerIds: [] });
+                      }}
+                    >
+                      Bỏ chọn tất cả
+                    </Button>
+                  </div>
+                  {menu}
+                </>
+              )}
             />
           </Form.Item>
 
