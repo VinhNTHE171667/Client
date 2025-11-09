@@ -38,4 +38,9 @@ export class VoucherController {
   remove(@Param('id') id: string) {
     return this.voucherService.remove(id);
   }
+
+  @Get('customers/:customerId')
+  findVouchersByCustomer(@Param('customerId') customerId: string) {
+    return this.voucherService.findVouchersByCustomer(customerId);
+  }
 }

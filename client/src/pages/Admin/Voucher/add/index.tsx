@@ -84,6 +84,7 @@ export default function AddVoucher({
         validFrom: values.validRange?.[0]?.toISOString() ?? "",
         validTo: values.validRange?.[1]?.toISOString() ?? "",
         isActive: values.isActive ?? true,
+        customerIds: values.customerIds || [],
       };
 
       const res = await createVoucher(payload);

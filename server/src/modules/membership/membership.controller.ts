@@ -20,4 +20,9 @@ export class MembershipController {
   update(@Param('id') id: string, @Body() dto: UpdateMembershipDto) {
     return this.membershipService.update(id, dto);
   }
+
+  @Get('customer/:customerId')
+  findByCustomer(@Param('customerId') customerId: string) {
+    return this.membershipService.findByCustomer(customerId);
+  }
 }

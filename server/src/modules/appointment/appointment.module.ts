@@ -17,6 +17,8 @@ import { Spa } from '@/entities/spa.entity';
 import { CacheModule } from '@nestjs/cache-manager';
 import { Cart } from '@/entities/cart.entity';
 import { CartDetail } from '@/entities/cartDetails.entity';
+import { Voucher } from '@/entities/voucher.entity';
+import { CustomerVoucher } from '@/entities/customerVoucher.entity';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { CartDetail } from '@/entities/cartDetails.entity';
       Spa,
       Cart,
       CartDetail,
+      Voucher,
+      CustomerVoucher,
     ]),
     JwtModule.register({
       global: true,

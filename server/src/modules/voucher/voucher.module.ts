@@ -7,11 +7,16 @@ import { VoucherController } from './voucher.controller';
 import { VoucherService } from './voucher.service';
 import { CustomerVoucher } from '@/entities/customerVoucher.entity';
 import { Customer } from '@/entities/customer.entity';
+import { MailModule } from '../mail/mail.module';
+import { Spa } from '@/entities/spa.entity';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
+    CacheModule.register(),
     ConfigModule.forRoot(),
-    TypeOrmModule.forFeature([Voucher, CustomerVoucher, Customer]),
+    TypeOrmModule.forFeature([Voucher, CustomerVoucher, Customer, Spa]),
+    MailModule,
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,

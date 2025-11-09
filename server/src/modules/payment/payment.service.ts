@@ -114,11 +114,12 @@ export class PaymentService {
       const spa = await this.getSpa();
 
       appointment.status = AppointmentStatus.Deposited;
-      appointment.depositAmount =
-        appointment.details.reduce(
-          (sum, detail) => sum + detail.service.price,
-          0,
-        ) * 0.5;
+      // appointment.depositAmount =
+      //   appointment.details.reduce(
+      //     (sum, detail) => sum + detail.service.price,
+      //     0,
+      //   ) * 0.5;
+      appointment.depositAmount = appointment.totalAmount * 0.5;
 
       await this.appointmentRepo.save(appointment);
 

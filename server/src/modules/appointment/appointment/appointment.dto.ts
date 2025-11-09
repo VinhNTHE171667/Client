@@ -108,6 +108,14 @@ export class CreateAppointmentDto {
   @IsOptional()
   @IsUUID()
   voucherId?: string;
+
+  @ApiProperty({
+    example: 650000,
+    description: 'Tổng số tiền của cuộc hẹn sau khi áp dụng voucher (nếu có)',
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  totalAmount: number = 0;
 }
 
 export class UpdateAppointmentDto extends PartialType(CreateAppointmentDto) {}

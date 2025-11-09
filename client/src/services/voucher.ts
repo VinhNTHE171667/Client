@@ -32,6 +32,23 @@ export type CreateVoucherProps = {
   validFrom: string;
   validTo: string;
   isActive: boolean;
+  customerIds?: string[];
+};
+
+export type voucherData = {
+  id: string;
+  code: string;
+  description: string;
+  discountAmount: number;
+  discountPercent: number;
+  maxDiscount: number;
+  validFrom: string;
+  validTo: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: null;
+  customerIds?: string[];
 };
 
 export const voucherApi = createApi({
@@ -55,7 +72,7 @@ export const voucherApi = createApi({
       }),
     }),
 
-    getVoucherById: build.query<voucherDatas, string>({
+    getVoucherById: build.query<voucherData, string>({
       query: (id) => ({
         url: `/voucher/${id}`,
         method: "Get",
@@ -79,6 +96,13 @@ export const voucherApi = createApi({
         method: "Delete",
       }),
     }),
+
+    findVouchersByCustomer: build.mutation<voucherDatas[], string>({
+      query: (customerId) => ({
+        url: `/voucher/customers/${customerId}`,
+        method: "Get",
+      }),
+    }),
   }),
 });
 
@@ -88,4 +112,6 @@ export const {
   useGetVoucherByIdQuery,
   useUpdateVoucherMutation,
   useDeleteVoucherMutation,
+
+  useFindVouchersByCustomerMutation,
 } = voucherApi;

@@ -21,6 +21,9 @@ import { useAuthStore } from "@/hooks/UseAuth";
 
 import NoImage from "@/assets/img/NoImage/NoImage.jpg";
 import { appointmentStatusEnum } from "@/common/types/auth";
+import { useFindVouchersByCustomerMutation } from "@/services/voucher";
+import { useGetMembershipByCustomerMutation } from "@/services/membership";
+import { handleError } from "@/utils/format";
 
 interface ServiceImage {
   url: string;
@@ -87,9 +90,15 @@ const BookingCalendar: React.FC = () => {
 
   const [membershipDiscount, setMembershipDiscount] = useState<number>(0);
 
+  const [getMembershipByCustomer] = useGetMembershipByCustomerMutation();
+
   // const [appointmentsBooked, setAppointmentsBooked] = useState<
   //   AppointmentProps[]
   // >([]);
+
+  // const calculateTotalBeforeVoucher = (): number => {
+  //   return services.reduce((sum, service) => sum + service.price, 0);
+  // };
 
   const { auth } = useAuthStore();
 
@@ -116,6 +125,17 @@ const BookingCalendar: React.FC = () => {
 
     handleGetBookedAppointments();
   }, []);
+
+  const [getVouchersByCustomer] = useFindVouchersByCustomerMutation();
+  const [vouchers, setVouchers] = useState<
+    {
+      id: string;
+      code: string;
+      discountAmount: number;
+      discountPercent: number;
+      maxDiscount: number;
+    }[]
+  >([]);
 
   // const [createLinkPayment] = useCreateLinkPaymentMutation();
 
@@ -185,7 +205,8 @@ const BookingCalendar: React.FC = () => {
           price: Number(service.price),
         })),
         note: values.note || "",
-        voucherId: null,
+        voucherId: selectedVoucherId || null,
+        totalAmount: calculateTotal(),
       };
 
       if (appointmentId) {
@@ -221,8 +242,8 @@ const BookingCalendar: React.FC = () => {
 
       setOpen(false);
       form.resetFields();
-    } catch {
-      showError("Đặt lịch thất bại. Vui lòng thử lại.");
+    } catch (error) {
+      handleError(error, "Đặt lịch thất bại. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }
@@ -232,6 +253,19 @@ const BookingCalendar: React.FC = () => {
     if (!state.doctorId) return;
 
     try {
+      const vouchersByCustomer = await getVouchersByCustomer(
+        auth.accountId!
+      ).unwrap();
+      setVouchers(vouchersByCustomer);
+
+      const membershipData = await getMembershipByCustomer(
+        auth.accountId!
+      ).unwrap();
+
+      if (membershipData) {
+        setMembershipDiscount(Number(membershipData.discountPercent));
+      }
+
       const [res, res1] = await Promise.all([
         getAppointmentsBookedByDoctor({ doctorId: state.doctorId }),
         getAppointmentsBookedByCustomer({ customerId: auth.accountId! }),
@@ -294,6 +328,49 @@ const BookingCalendar: React.FC = () => {
     } catch (error) {
       console.error("Error fetching booked appointments:", error);
     }
+  };
+
+  const calculateTotal = (): number => {
+    const subtotal = services.reduce(
+      (sum, service) => sum + Number(service.price),
+      0
+    );
+
+    let total = subtotal;
+
+    if (selectedVoucherId) {
+      const voucher = vouchers.find((v) => v.id === selectedVoucherId);
+      if (voucher) {
+        const discountAmount = Number(voucher.discountAmount || 0);
+        const discountPercent = Number(voucher.discountPercent || 0);
+        const maxDiscount = Number(voucher.maxDiscount || 0);
+
+        let calculatedDiscount = 0;
+
+        if (discountAmount > 0) {
+          calculatedDiscount = discountAmount;
+        } else if (discountPercent > 0) {
+          calculatedDiscount = (discountPercent / 100) * subtotal;
+        }
+
+        if (maxDiscount > 0) {
+          calculatedDiscount = Math.min(calculatedDiscount, maxDiscount);
+        }
+
+        calculatedDiscount = Math.min(calculatedDiscount, subtotal);
+
+        total = subtotal - calculatedDiscount;
+      }
+    }
+
+    if (membershipDiscount && Number(membershipDiscount) > 0) {
+      const memPercent = Number(membershipDiscount);
+      const membershipReduction = (memPercent / 100) * total;
+      total = total - membershipReduction;
+    }
+
+    const safeTotal = Math.max(0, Math.round(total));
+    return safeTotal;
   };
 
   const handleBack = () => {
@@ -362,59 +439,79 @@ const BookingCalendar: React.FC = () => {
           onFinish={handleFinish}
           className={styles.form}
         >
-          <Form.Item
-            label="Họ và tên"
-            name="name"
-            rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
-          >
+          <Form.Item label="Họ và tên" name="name" rules={[{ required: true }]}>
             <Input placeholder="Nhập họ và tên của bạn" />
           </Form.Item>
 
           <Form.Item
             label="Số điện thoại"
             name="phone"
-            rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
+            rules={[{ required: true }]}
           >
             <Input placeholder="Nhập số điện thoại" />
           </Form.Item>
-
-          {/* <Form.Item label="Giờ cụ thể (tuỳ chọn)" name="time">
-            <TimePicker
-              format="HH:mm"
-              style={{ width: "100%" }}
-              minuteStep={15}
-            />
-          </Form.Item> */}
 
           <Form.Item label="Ghi chú" name="note">
             <Input.TextArea rows={3} placeholder="Ghi chú thêm (nếu có)" />
           </Form.Item>
 
-          {/* <Form.Item label="Voucher">
+          <Form.Item label="Voucher">
             <Select
               placeholder="Chọn voucher"
               allowClear
               value={selectedVoucherId ?? undefined}
               onChange={(value) => setSelectedVoucherId(value)}
-              options={vouchers.map((v) => ({
-                label: `${v.code} - Giảm ${
-                  v.discountAmount || v.discountPercent
-                }%`,
-                value: v.id,
-              }))}
+              options={vouchers.map((v) => {
+                const amount = Number(v.discountAmount);
+                const percent = Number(v.discountPercent);
+
+                let label = v.code;
+
+                if (amount > 0) {
+                  label += ` - Giảm ${amount.toLocaleString("vi-VN")}₫`;
+                } else if (percent > 0) {
+                  label += ` - Giảm ${percent}%`;
+                  if (v.maxDiscount) {
+                    label += ` (tối đa ${Number(v.maxDiscount).toLocaleString(
+                      "vi-VN"
+                    )}₫)`;
+                  }
+                }
+
+                return {
+                  label,
+                  value: v.id,
+                };
+              })}
             />
-          </Form.Item> */}
+          </Form.Item>
 
           <Form.Item label="Membership giảm giá">
             <Input
               value={membershipDiscount}
-              onChange={(e) => setMembershipDiscount(Number(e.target.value))}
               type="number"
               min={0}
               max={100}
               addonAfter="%"
-              placeholder="Nhập % giảm giá nếu có"
+              disabled
+              style={{ background: "#f5f5f5" }}
             />
+          </Form.Item>
+
+          <Form.Item label="Tổng tiền" style={{ marginBottom: 16 }}>
+            <div
+              style={{
+                background: "#f0f6ff",
+                padding: "12px 16px",
+                borderRadius: 8,
+                fontWeight: 600,
+                fontSize: 18,
+                color: "#003366",
+                textAlign: "right",
+              }}
+            >
+              {calculateTotal().toLocaleString("vi-VN")}₫
+            </div>
           </Form.Item>
 
           <Button

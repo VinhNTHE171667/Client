@@ -204,10 +204,11 @@ const CustomerOrders: React.FC = () => {
 
   const handleDeposit = async (item: AppointmentProps) => {
     try {
-      const total = (item.details ?? []).reduce(
-        (sum, d) => sum + Number(d.price ?? 0),
-        0
-      );
+      // const total = (item.details ?? []).reduce(
+      //   (sum, d) => sum + Number(d.price ?? 0),
+      //   0
+      // );
+      const total = Number(item.totalAmount);
 
       if (total <= 0) {
         message.error("Không có giá trị dịch vụ để đặt cọc.");
@@ -418,9 +419,12 @@ const CustomerOrders: React.FC = () => {
                 itemLayout="vertical"
                 dataSource={filteredAppointments}
                 renderItem={(item) => {
-                  const totalPrice = item.details
-                    ?.reduce((sum, d) => sum + Number(d.price ?? 0), 0)
-                    .toLocaleString("vi-VN");
+                  // const totalPrice = item.details
+                  //   ?.reduce((sum, d) => sum + Number(d.price ?? 0), 0)
+                  //   .toLocaleString("vi-VN");
+                  const totalPrice = Number(item.totalAmount).toLocaleString(
+                    "vi-VN"
+                  );
                   const isPending =
                     item.status === appointmentStatusEnum.Pending;
                   const isConfirmed =
@@ -450,8 +454,7 @@ const CustomerOrders: React.FC = () => {
                           title={
                             <div className={styles.header}>
                               <h5>
-                                {item.customer?.full_name || "Khách hàng"} -
-                                Lịch hẹn #{item.id}
+                                {item.customer?.full_name || "Khách hàng"}{" "}
                               </h5>
                               <Tag color={statusTagColor(item.status)}>
                                 {translateStatus(item.status)}
@@ -602,7 +605,83 @@ const CustomerOrders: React.FC = () => {
         }}
         cancelText="Huỷ"
       >
-        <div className={styles.selectedList}>
+        {selectedAppointment ? (
+          <>
+            <p>
+              <strong>Trạng thái:</strong>{" "}
+              <Tag color={statusTagColor(selectedAppointment.status)}>
+                {translateStatus(selectedAppointment.status)}
+              </Tag>
+            </p>
+
+            <p>
+              <strong>Ngày:</strong>{" "}
+              {dayjs(selectedAppointment.startTime).format("DD/MM/YYYY HH:mm")}
+            </p>
+
+            <p>
+              <strong>Bác sĩ:</strong>{" "}
+              {selectedAppointment.doctor?.full_name || "Chưa có"}
+            </p>
+
+            <p>
+              <strong>Ghi chú:</strong> {selectedAppointment.note || "Không có"}
+            </p>
+
+            <div style={{ marginTop: 12 }}>
+              <strong>Dịch vụ:</strong>
+              {selectedAppointment.details?.map((detail) => {
+                const svc = detail.service;
+                const img = svc?.images?.[0]?.url || NoImage;
+                return (
+                  <div
+                    key={detail.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      marginTop: 8,
+                      borderBottom: "1px solid #eee",
+                      paddingBottom: 8,
+                    }}
+                  >
+                    <img
+                      src={img}
+                      alt={svc?.name}
+                      style={{
+                        width: 60,
+                        height: 60,
+                        objectFit: "cover",
+                        borderRadius: 8,
+                      }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <p style={{ margin: 0, fontWeight: 600 }}>
+                        {svc?.name || "Dịch vụ"}
+                      </p>
+                      <p style={{ margin: 0 }}>
+                        Giá: {Number(detail.price ?? 0).toLocaleString("vi-VN")}
+                        ₫
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <p style={{ marginTop: 12, fontWeight: 600 }}>
+              Tổng tiền:{" "}
+              {/* {selectedAppointment.details
+                ?.reduce((sum, d) => sum + Number(d.price ?? 0), 0)
+                .toLocaleString("vi-VN")}
+              ₫ */}
+              {Number(selectedAppointment.totalAmount).toLocaleString("vi-VN")}₫
+            </p>
+          </>
+        ) : (
+          <p>Không có thông tin lịch hẹn.</p>
+        )}
+        {/* <div className={styles.selectedList}>
           {selectedAppointment?.details.map((detail) => {
             const svc = detail.service;
             const imgSrc = svc?.images?.[0]?.url ? svc.images[0].url : NoImage;
@@ -625,8 +704,9 @@ const CustomerOrders: React.FC = () => {
               </div>
             );
           })}
-        </div>
+        </div> */}
       </Modal>
+
       <Modal
         title="Huỷ lịch hẹn"
         open={cancelModal}
@@ -652,6 +732,7 @@ const CustomerOrders: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
+
       <Modal
         title="Lý do từ chối lịch hẹn"
         open={rejectModal}
@@ -668,6 +749,7 @@ const CustomerOrders: React.FC = () => {
       >
         <p style={{ whiteSpace: "pre-wrap", fontSize: 15 }}>{rejectReason}</p>
       </Modal>
+
       <Modal
         title="Chi tiết lịch hẹn"
         open={detailModal}
@@ -744,10 +826,11 @@ const CustomerOrders: React.FC = () => {
 
             <p style={{ marginTop: 12, fontWeight: 600 }}>
               Tổng tiền:{" "}
-              {selectedAppointment.details
+              {/* {selectedAppointment.details
                 ?.reduce((sum, d) => sum + Number(d.price ?? 0), 0)
                 .toLocaleString("vi-VN")}
-              ₫
+              ₫ */}
+              {Number(selectedAppointment.totalAmount).toLocaleString("vi-VN")}₫
             </p>
           </>
         ) : (
