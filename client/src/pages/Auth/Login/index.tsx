@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import styles from "../Auth.module.scss";
 import classNames from "classnames/bind";
 import { useLoginMutation } from "@/services/auth";
-import { Form, Input, Row, Col } from "antd";
+import { Form, Input, Row, Col, Typography } from "antd";
 import { useAuthStore } from "@/hooks/UseAuth";
 import { RoleEnum, type RoleEnumType } from "@/common/types/auth";
 import { configRoutes } from "@/constants/route";
@@ -130,7 +130,7 @@ const LoginPage = () => {
                   </p>
                 </div>
 
-                <div className="py-3">
+                {/* <div className="py-3">
                   <button className={cx("btn-google")}>
                     <img
                       src="https://www.svgrepo.com/show/475656/google-color.svg"
@@ -142,7 +142,7 @@ const LoginPage = () => {
 
                 <div className={cx("divider", "my-4", "text-gray-500")}>
                   Hoặc đăng nhập bằng email
-                </div>
+                </div> */}
 
                 <div>
                   <Form
@@ -177,16 +177,31 @@ const LoginPage = () => {
                         size="large"
                       />
                     </Form.Item>
+                    <div
+                      style={{
+                        marginTop: 10,
+                        textAlign: "right",
+                      }}
+                    >
+                      <Typography.Text>
+                        <Link
+                          to={configRoutes.forgotPassword}
+                          className="fw-bold cus-text-primary text-decoration-none"
+                        >
+                          Quên mật khẩu?
+                        </Link>
+                      </Typography.Text>
+                    </div>
 
                     <FancyButton
-                      onClick={() => form.submit()}
                       icon={<></>}
                       label="Đăng nhập"
                       variant="primary"
                       size="middle"
                       loading={isLoading}
                       className="w-100"
-                    ></FancyButton>
+                      htmlType="submit"
+                    />
 
                     <div className="text-start mt-4">
                       <span>Bạn chưa có tài khoản? </span>

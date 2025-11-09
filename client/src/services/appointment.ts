@@ -82,6 +82,7 @@ export type AppointmentProps = {
   totalAmount: number | 0;
   depositAmount: number | 0;
   orderCode: string | null;
+  isFeedbackGiven: boolean;
 };
 
 export type CreateAppointmentProps = {

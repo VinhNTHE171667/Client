@@ -1,4 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { appointmentStatusEnum } from "@/common/types/auth";
+import { showError } from "@/libs/toast";
+import { AxiosError } from "axios";
 
 export const formatCurrency = (amount: number) =>
   amount.toLocaleString("vi-VN", {
@@ -54,3 +57,36 @@ export const statusTagColor = (status?: string) => {
       return "default";
   }
 };
+
+export function handleError(err: unknown, title = "Đã xảy ra lỗi") {
+  console.error("Error:", err);
+
+  let message = "Vui lòng thử lại sau!";
+
+  if (err instanceof AxiosError) {
+    const dataMessage = err.response?.data?.message;
+    if (Array.isArray(dataMessage)) {
+      message = dataMessage.join(", ");
+    } else if (typeof dataMessage === "string") {
+      message = dataMessage;
+    }
+  } else if (
+    err &&
+    typeof err === "object" &&
+    "data" in err &&
+    err.data &&
+    typeof (err as any).data === "object" &&
+    "message" in (err as any).data
+  ) {
+    const dataMessage = (err as any).data.message;
+    if (Array.isArray(dataMessage)) {
+      message = dataMessage.join(", ");
+    } else if (typeof dataMessage === "string") {
+      message = dataMessage;
+    }
+  } else if (err instanceof Error) {
+    message = err.message;
+  }
+
+  showError(title, message);
+}

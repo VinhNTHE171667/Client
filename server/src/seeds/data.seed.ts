@@ -21,7 +21,7 @@ async function seedData() {
     const spa = spaRepository.create({
       name: 'GenSpa',
       logo: 'https://res.cloudinary.com/dlf04wlnw/image/upload/v1762503338/Asset_4_300x-8_cvsoe9.png',
-      address: '123 Nguyễn Văn Linh, Quận 7, Hà Nội',
+      address: '123 Tố Hữu, Hà Đông, Hà Nội',
       phone: '0901234567',
       email: 'genspa.systembusiness@gmail.com',
     });

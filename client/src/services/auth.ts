@@ -134,6 +134,25 @@ export const authApi = createApi({
         data: { oldPassword, newPassword },
       }),
     }),
+
+    forgotPassword: build.mutation<{ message: string }, { email: string }>({
+      query: ({ email }) => ({
+        url: `/auth/forgot-password`,
+        method: "POST",
+        data: { email },
+      }),
+    }),
+
+    resetPassword: build.mutation<
+      { message: string },
+      { token: string; newPassword: string }
+    >({
+      query: ({ token, newPassword }) => ({
+        url: `/auth/reset-password`,
+        method: "POST",
+        data: { token, newPassword },
+      }),
+    }),
   }),
 });
 
@@ -142,7 +161,11 @@ export const {
   useRegisterMutation,
   useGetAdminStatisticsMutation,
   useGetCustomerProfileMutation,
+
   useUpdateAvatarMutation,
   useUpdateCustomerProfileMutation,
   useChangePasswordMutation,
+
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
 } = authApi;

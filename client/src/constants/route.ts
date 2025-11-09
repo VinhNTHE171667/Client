@@ -5,8 +5,8 @@ export const configRoutes = {
   register: "/register",
   services: "/services",
   serviceDetail: "/services/:id",
-  forgotEmail: "/forgot-email",
   forgotPassword: "/forgot-password",
+  resetPassword: "/reset-password",
 
   profile: "/profile",
   cart: "/cart",

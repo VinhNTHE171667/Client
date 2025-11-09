@@ -154,6 +154,28 @@ export class MailService implements OnModuleInit {
     });
   }
 
+  async sendVerifyEmail(data: {
+    to: string;
+    customerName: string;
+    verifyUrl: string;
+    spaName?: string;
+    spaHotline?: string;
+  }) {
+    await this.transporter.sendMail({
+      from: this.configService.get<string>('EMAIL_USER'),
+      to: data.to,
+      subject: `Xác thực email - ${data.spaName || 'GenSpa'}`,
+      template: 'verify-email',
+      context: {
+        customerName: data.customerName,
+        verifyUrl: data.verifyUrl,
+        spaName: data.spaName || 'GenSpa',
+        spaHotline: data.spaHotline || '1900 1234',
+        year: new Date().getFullYear(),
+      },
+    });
+  }
+
   async sendSuccessResetPasswordEmail(data: {
     to: string;
     user: { full_name?: string; email: string };

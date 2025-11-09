@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import Homepage from "../pages/Homepage";
 import HomeLayouts from "../layouts/Home";
-import { configRoutes } from "@/constants/route";
+import { configError, configRoutes } from "@/constants/route";
 import AboutPage from "@/pages/About/page";
 import LoginPage from "@/pages/Auth/Login";
 import RegisterPage from "@/pages/Auth/Register";
@@ -32,7 +32,10 @@ import SuccessPaymentPaid from "@/pages/Customer/Payment/Paid/success";
 import FailPaymentPaid from "@/pages/Customer/Payment/Paid/fail";
 import Vouchers from "@/pages/Admin/Voucher";
 import Membership from "@/pages/Admin/Membership";
-import ForgotEmailPage from "@/pages/Auth/ForgotEmail";
+import ForgotPasswordPage from "@/pages/Auth/ForgotPassword";
+import ForbiddenPage from "@/pages/Error/ForbiddenPage";
+import NotFoundPage from "@/pages/Error/NotFound";
+import ResetPasswordPage from "@/pages/Auth/ResetPassword";
 
 const router = createBrowserRouter([
   {
@@ -360,8 +363,21 @@ const router = createBrowserRouter([
   },
 
   {
-    path: configRoutes.forgotEmail,
-    element: <ForgotEmailPage />,
+    path: configRoutes.forgotPassword,
+    element: <ForgotPasswordPage />,
+  },
+  {
+    path: configRoutes.resetPassword,
+    element: <ResetPasswordPage />,
+  },
+
+  {
+    path: configError.UnAuthorize,
+    element: <ForbiddenPage />,
+  },
+  {
+    path: "*",
+    element: <NotFoundPage />,
   },
 ]);
 

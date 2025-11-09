@@ -60,16 +60,23 @@ export class ChangePasswordDto {
 }
 
 export class ForgotPasswordDto {
-  @IsEmail()
+  @IsEmail({}, { message: 'Email không hợp lệ' })
+  @IsNotEmpty({ message: 'Email không được để trống' })
   email: string;
 }
 
 export class ResetPasswordDto {
-  @IsString()
-  @IsNotEmpty()
+  @IsString({ message: 'Token phải là chuỗi ký tự' })
+  @IsNotEmpty({ message: 'Token không được để trống' })
   token: string;
 
-  @IsString()
-  @IsNotEmpty()
+  @IsString({ message: 'Mật khẩu mới phải là chuỗi ký tự' })
+  @IsNotEmpty({ message: 'Mật khẩu mới không được để trống' })
   newPassword: string;
+}
+
+export class VerifyEmailDto {
+  @IsString({ message: 'Token phải là chuỗi ký tự' })
+  @IsNotEmpty({ message: 'Token không được để trống' })
+  token: string;
 }
