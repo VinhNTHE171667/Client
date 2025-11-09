@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { type SlotInfo, type Event as RBCEvent } from "react-big-calendar";
 import dayjs from "dayjs";
-import { Modal, Form, Input, Button, message, Card } from "antd";
+import { Modal, Form, Input, Button, message, Card, Select } from "antd";
 import { Container } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import styles from "./Booking.module.scss";
@@ -80,6 +80,12 @@ const BookingCalendar: React.FC = () => {
     useGetAppointmentsBookedByDoctorMutation();
   const [getAppointmentsBookedByCustomer] =
     useGetAppointmentsBookedByCustomerMutation();
+
+  const [selectedVoucherId, setSelectedVoucherId] = useState<string | null>(
+    null
+  );
+
+  const [membershipDiscount, setMembershipDiscount] = useState<number>(0);
 
   // const [appointmentsBooked, setAppointmentsBooked] = useState<
   //   AppointmentProps[]
@@ -382,6 +388,33 @@ const BookingCalendar: React.FC = () => {
 
           <Form.Item label="Ghi chú" name="note">
             <Input.TextArea rows={3} placeholder="Ghi chú thêm (nếu có)" />
+          </Form.Item>
+
+          {/* <Form.Item label="Voucher">
+            <Select
+              placeholder="Chọn voucher"
+              allowClear
+              value={selectedVoucherId ?? undefined}
+              onChange={(value) => setSelectedVoucherId(value)}
+              options={vouchers.map((v) => ({
+                label: `${v.code} - Giảm ${
+                  v.discountAmount || v.discountPercent
+                }%`,
+                value: v.id,
+              }))}
+            />
+          </Form.Item> */}
+
+          <Form.Item label="Membership giảm giá">
+            <Input
+              value={membershipDiscount}
+              onChange={(e) => setMembershipDiscount(Number(e.target.value))}
+              type="number"
+              min={0}
+              max={100}
+              addonAfter="%"
+              placeholder="Nhập % giảm giá nếu có"
+            />
           </Form.Item>
 
           <Button

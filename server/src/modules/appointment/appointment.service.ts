@@ -16,6 +16,8 @@ import { AppointmentStatus } from '@/entities/enums/appointment-status';
 import { MailService } from '../mail/mail.service';
 import { Spa } from '@/entities/spa.entity';
 import { Internal } from '@/entities/internal.entity';
+import { Cart } from '@/entities/cart.entity';
+import { CartDetail } from '@/entities/cartDetails.entity';
 
 @Injectable()
 export class AppointmentService {
@@ -35,6 +37,12 @@ export class AppointmentService {
 
     @InjectRepository(Internal)
     private readonly internalRepo: Repository<Internal>,
+
+    @InjectRepository(Cart)
+    private readonly cartRepo: Repository<Cart>,
+
+    @InjectRepository(CartDetail)
+    private readonly cartDetailRepo: Repository<CartDetail>,
 
     private readonly mailService: MailService,
     private readonly dataSource: DataSource,
@@ -132,8 +140,30 @@ export class AppointmentService {
       totalAmount: services.reduce((sum, service) => sum + service.price, 0),
     });
 
-    const saved = await this.appointmentRepo.save(appointment);
+    const cart = await this.cartRepo.findOne({
+      where: { customerId: dto.customerId },
+      relations: ['details'],
+    });
 
+    if (cart && cart.details?.length) {
+      const deleteConditions = dto.details.map((d) => ({
+        cartId: cart.id,
+        serviceId: d.serviceId,
+        doctorId: dto.doctorId,
+      }));
+
+      await this.cartDetailRepo.delete(deleteConditions);
+
+      const remaining = await this.cartDetailRepo.count({
+        where: { cartId: cart.id },
+      });
+
+      if (remaining === 0) {
+        await this.cartRepo.delete(cart.id);
+      }
+    }
+
+    const saved = await this.appointmentRepo.save(appointment);
     return this.findOne(saved.id);
   }
 

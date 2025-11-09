@@ -12,6 +12,7 @@ import { Appointment } from './appointment.entity';
 import { Customer } from './customer.entity';
 import { Service } from './service.entity';
 import { FeedbackStatus } from './enums/feedback-status';
+import { AppointmentDetail } from './appointmentDetails.entity';
 
 @Entity()
 export class Feedback {
@@ -60,4 +61,8 @@ export class Feedback {
 
   @DeleteDateColumn({ nullable: true })
   deletedAt?: Date;
+
+  @ManyToOne(() => AppointmentDetail, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'appointmentDetailId' })
+  appointmentDetail: AppointmentDetail;
 }

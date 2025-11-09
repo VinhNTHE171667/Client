@@ -35,4 +35,10 @@ export const appointmentStatusEnum = {
   Completed: "completed",
 } as const;
 
+export const feedbackStatus = {
+  Pending: "pending",
+  Approved: "approved",
+  Rejected: "rejected",
+};
+
 export type RoleEnumType = (typeof RoleEnum)[keyof typeof RoleEnum];

@@ -320,12 +320,12 @@
 
 .checkoutBtn {
     margin-top: 16px;
-    background: linear-gradient(180deg, #3ddab4, #0faf90);
+    background: #5ca16a;
     border: none;
     font-weight: 600;
     transition: all 0.3s ease;
 
     &:hover {
-        background: linear-gradient(180deg, #49f5ca, #14c8a4) !important;
+        background: #68bb79 !important;
     }
 }

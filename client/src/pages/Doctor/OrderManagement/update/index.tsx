@@ -3,7 +3,6 @@ import {
   Form,
   Input,
   Button,
-  DatePicker,
   TimePicker,
   Select,
   message,
@@ -224,19 +223,6 @@ const UpdateAppointmentModal: React.FC<Props> = ({
               label: `${service.name} - ${service.price.toLocaleString()} VND`,
               value: service.id,
             }))}
-          />
-        </Form.Item>
-
-        <Form.Item
-          label="Ngày hẹn"
-          name="date"
-          rules={[{ required: true, message: "Vui lòng chọn ngày hợp lệ" }]}
-        >
-          <DatePicker
-            style={{ width: "100%" }}
-            disabledDate={(current) => {
-              return current && current < dayjs().startOf("day");
-            }}
           />
         </Form.Item>
 

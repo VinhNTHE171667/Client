@@ -64,9 +64,9 @@ const LoginPage = () => {
         } else if (res.data.role === RoleEnum.Customer) {
           navigate(configRoutes.home);
         } else if (res.data.role === RoleEnum.Staff) {
-          navigate(configRoutes.staffDashboard, { replace: true });
+          navigate(configRoutes.staffOrders, { replace: true });
         } else if (res.data.role === RoleEnum.Doctor) {
-          navigate(configRoutes.doctorDashboard, { replace: true });
+          navigate(configRoutes.doctorOrderManagement, { replace: true });
         } else if (res.data.role === RoleEnum.Casher) {
           navigate(configRoutes.casherOrderManagement, { replace: true });
         } else {

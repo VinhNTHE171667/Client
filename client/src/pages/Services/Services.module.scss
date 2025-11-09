@@ -450,3 +450,30 @@
     border-right: 10px solid white;
     filter: drop-shadow(-1px 2px 2px rgba(0, 0, 0, 0.05));
 }
+
+.ratingRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    min-height: 22px;
+}
+
+.stars {
+    color: #ffc107;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.ratingValue {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #555;
+}
+
+.noRating {
+    font-size: 0.85rem;
+    color: #aaa;
+    font-style: italic;
+}

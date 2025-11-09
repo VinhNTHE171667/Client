@@ -42,6 +42,43 @@ export type ServiceData = {
   }[];
 };
 
+export type PublicService = {
+  id: string;
+  name: string;
+  price: number;
+  images:
+    | {
+        alt: string;
+        url: string;
+      }[]
+    | [];
+  description: string;
+  categoryId: string;
+  category: {
+    id: string;
+    name: string;
+  };
+  doctors: {
+    id: string;
+    name: string;
+    avatar: string | null;
+    specialization: string;
+    biography: string;
+    experience_years: string;
+  }[];
+  feedbacks: {
+    rating: number;
+    comment: string;
+    customer: {
+      id: string;
+      full_name: string;
+      avatar: string | null;
+    };
+    createdAt: string;
+  }[];
+  feedbacksCount: number;
+};
+
 export type CreateService = {
   name: string;
   price: number;
@@ -211,21 +248,21 @@ export const serviceApi = createApi({
       }),
     }),
 
-    getPublicServices: build.mutation<ServiceData[], void>({
+    getPublicServices: build.mutation<PublicService[], void>({
       query: () => ({
         url: `/service/public`,
         method: "Get",
       }),
     }),
 
-    getPublicServiceById: build.query<ServiceData, string>({
+    getPublicServiceById: build.query<PublicService, string>({
       query: (id) => ({
         url: `/service/public/${id}`,
         method: "Get",
       }),
     }),
 
-    getPublicServiceByDoctor: build.mutation<ServiceData[], string>({
+    getPublicServiceByDoctor: build.mutation<PublicService[], string>({
       query: (doctorId) => ({
         url: `/service/public/doctor/${doctorId}`,
         method: "Get",

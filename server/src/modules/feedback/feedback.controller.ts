@@ -55,4 +55,19 @@ export class FeedbackController {
   findByCustomer(@Param('customerId') customerId: string) {
     return this.feedbackService.findByCustomer(customerId);
   }
+
+  @Get('appointment/:appointmentId')
+  findByAppointment(@Param('appointmentId') appointmentId: string) {
+    return this.feedbackService.findByAppointment(appointmentId);
+  }
+
+  @Patch(':id/approve')
+  approveFeedback(@Param('id') id: string) {
+    return this.feedbackService.approveFeedback(id);
+  }
+
+  @Patch(':id/reject')
+  rejectFeedback(@Param('id') id: string) {
+    return this.feedbackService.rejectFeedback(id);
+  }
 }

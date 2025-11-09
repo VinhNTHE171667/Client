@@ -5,11 +5,13 @@ import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { VoucherController } from './voucher.controller';
 import { VoucherService } from './voucher.service';
+import { CustomerVoucher } from '@/entities/customerVoucher.entity';
+import { Customer } from '@/entities/customer.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    TypeOrmModule.forFeature([Voucher]),
+    TypeOrmModule.forFeature([Voucher, CustomerVoucher, Customer]),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,

@@ -16,7 +16,7 @@ import styles from "./Services.module.scss";
 import {
   useGetCategoriesMutation,
   useGetPublicServicesMutation,
-  type ServiceData,
+  type PublicService,
 } from "@/services/services";
 import { useEffect, useMemo, useState } from "react";
 import NoImage from "@/assets/img/NoImage/NoImage.jpg";
@@ -46,14 +46,14 @@ const ServicesComp = () => {
   const [addToCart] = useAddToCartMutation();
 
   const [categoriesData, setCategoriesData] = useState<Category[]>([]);
-  const [servicesData, setServicesData] = useState<ServiceData[]>([]);
+  const [servicesData, setServicesData] = useState<PublicService[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
 
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 4;
 
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedService, setSelectedService] = useState<ServiceData | null>(
+  const [selectedService, setSelectedService] = useState<PublicService | null>(
     null
   );
   const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);
@@ -254,9 +254,49 @@ const ServicesComp = () => {
                           </span>
                         }
                         description={
-                          <span className={styles.cardDesc}>
-                            {service.description}
-                          </span>
+                          <div>
+                            {service.feedbacks &&
+                            service.feedbacks.length > 0 ? (
+                              <div className={styles.ratingRow}>
+                                <span className={styles.stars}>
+                                  {"★".repeat(
+                                    Math.round(
+                                      service.feedbacks.reduce(
+                                        (sum, r) => sum + r.rating,
+                                        0
+                                      ) / service.feedbacks.length
+                                    )
+                                  )}
+                                  {"☆".repeat(
+                                    5 -
+                                      Math.round(
+                                        service.feedbacks.reduce(
+                                          (sum, r) => sum + r.rating,
+                                          0
+                                        ) / service.feedbacks.length
+                                      )
+                                  )}
+                                </span>
+                                <span className={styles.ratingValue}>
+                                  {(
+                                    service.feedbacks.reduce(
+                                      (sum, r) => sum + r.rating,
+                                      0
+                                    ) / service.feedbacks.length
+                                  ).toFixed(1)}{" "}
+                                  / 5
+                                </span>
+                              </div>
+                            ) : (
+                              <div className={styles.noRating}>
+                                Chưa có đánh giá
+                              </div>
+                            )}
+
+                            <span className={styles.cardDesc}>
+                              {service.description}
+                            </span>
+                          </div>
                         }
                       />
                       <div className={styles.cardFooter}>

@@ -8,9 +8,11 @@ import {
   DeleteDateColumn,
   UpdateDateColumn,
   ManyToMany,
+  OneToMany,
 } from 'typeorm';
 import { Category } from './category.entity';
 import { Doctor } from './doctor.entity';
+import { Feedback } from './feedback.entity';
 
 @Entity()
 export class Service {
@@ -50,4 +52,7 @@ export class Service {
 
   @Column({ default: true })
   isActive: boolean;
+
+  @OneToMany(() => Feedback, (feedback) => feedback.service)
+  feedbacks: Feedback[];
 }

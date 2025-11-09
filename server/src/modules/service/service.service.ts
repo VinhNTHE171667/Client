@@ -8,6 +8,7 @@ import { UpdateServiceDto } from './dto/service.dto';
 import omit from 'lodash/omit';
 import { Console } from 'console';
 import { Doctor } from '@/entities/doctor.entity';
+import { FeedbackStatus } from '@/entities/enums/feedback-status';
 
 @Injectable()
 export class ServiceService {
@@ -178,17 +179,33 @@ export class ServiceService {
     return uploads;
   }
 
-  async findPublicServices(): Promise<Service[]> {
+  async findPublicServices(): Promise<any[]> {
     const services = await this.serviceRepo.find({
       where: {
         isActive: true,
         deletedAt: IsNull(),
       },
-      relations: ['category'],
+      relations: ['category', 'feedbacks', 'feedbacks.customer'],
     });
 
-    const result = await Promise.all(
+    const serviceFormatted = await Promise.all(
       services.map(async (service) => {
+        const feedbacks = service.feedbacks
+          .filter((f) => f.status === FeedbackStatus.Approved)
+          .map((f) => ({
+            rating: f.rating,
+            comment: f.comment,
+            customer: f.customer
+              ? {
+                  id: f.customer.id,
+                  full_name: f.customer.full_name,
+                  avatar: f.customer.avatar,
+                }
+              : null,
+          }));
+
+        const feedbacksCount = feedbacks.length;
+
         const doctorsRaw = await this.doctorRepo
           .createQueryBuilder('doctor')
           .innerJoin('doctor.services', 'service', 'service.id = :serviceId', {
@@ -207,42 +224,61 @@ export class ServiceService {
           experience_years: d.experience_years,
         }));
 
+        const category = service.category
+          ? {
+              id: service.category.id,
+              name: service.category.name,
+            }
+          : null;
+
         return {
-          ...service,
+          id: service.id,
+          name: service.name,
+          price: service.price,
+          images: service.images || [],
+          description: service.description || '',
+          categoryId: service.categoryId,
+          category,
           doctors,
+          feedbacks,
+          feedbacksCount,
         };
       }),
     );
 
-    return result.map((service) => {
-      const category = service.category
-        ? omit(service.category, [
-            'createdAt',
-            'updatedAt',
-            'deletedAt',
-            'isActive',
-          ])
-        : null;
-
-      service.category = category;
-
-      return omit(service, ['deletedAt', 'createdAt', 'updatedAt', 'isActive']);
-    });
+    return serviceFormatted;
   }
 
-  async findOnePublicService(id: string): Promise<Service | null> {
+  async findOnePublicService(id: string): Promise<any> {
     const service = await this.serviceRepo.findOne({
       where: {
         id,
         deletedAt: IsNull(),
         isActive: true,
       },
-      relations: ['category'],
+      relations: ['category', 'feedbacks', 'feedbacks.customer'],
     });
 
     if (!service) {
       throw new NotFoundException('Không tìm thấy dịch vụ');
     }
+
+    const feedbacks = service.feedbacks
+      .filter((f) => f.status === FeedbackStatus.Approved)
+      .map((f) => ({
+        rating: f.rating,
+        comment: f.comment,
+        customer: f.customer
+          ? {
+              id: f.customer.id,
+              full_name: f.customer.full_name,
+              avatar: f.customer.avatar,
+            }
+          : null,
+        createdAt: f.createdAt,
+      }));
+
+    const feedbacksCount = feedbacks.length;
 
     const doctorsRaw = await this.doctorRepo
       .createQueryBuilder('doctor')
@@ -253,37 +289,36 @@ export class ServiceService {
       .andWhere('doctor.isActive = :isActive', { isActive: true })
       .getMany();
 
-    const doctors = doctorsRaw.map((d) => {
-      id = d.id;
-      return {
-        id: d.id,
-        name: d.full_name,
-        avatar: d.avatar,
-        specialization: d.specialization,
-        biography: d.biography,
-        experience_years: d.experience_years,
-      };
-    });
+    const doctors = doctorsRaw.map((d) => ({
+      id: d.id,
+      name: d.full_name,
+      avatar: d.avatar,
+      specialization: d.specialization,
+      biography: d.biography,
+      experience_years: d.experience_years,
+    }));
 
     const category = service.category
-      ? omit(service.category, [
-          'createdAt',
-          'updatedAt',
-          'deletedAt',
-          'isActive',
-        ])
+      ? {
+          id: service.category.id,
+          name: service.category.name,
+        }
       : null;
 
-    const result = omit(
-      {
-        ...service,
-        doctors,
-      },
-      ['deletedAt', 'createdAt', 'updatedAt', 'isActive'],
-    );
-    result.category = category;
+    const result = {
+      id: service.id,
+      name: service.name,
+      price: service.price,
+      images: service.images || [],
+      description: service.description || '',
+      categoryId: service.categoryId,
+      category,
+      doctors,
+      feedbacks,
+      feedbacksCount,
+    };
 
-    return result as Service;
+    return result;
   }
 
   async findDoctorsByService(serviceId: string): Promise<Doctor[]> {

@@ -5,6 +5,7 @@ import {
   IsNumber,
   IsBoolean,
   IsDateString,
+  IsArray,
 } from 'class-validator';
 
 export class CreateVoucherDto {
@@ -70,6 +71,15 @@ export class CreateVoucherDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Danh sách customerId được gắn voucher (nếu có)',
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  customerIds?: string[];
 }
 
 export class UpdateVoucherDto extends PartialType(CreateVoucherDto) {}

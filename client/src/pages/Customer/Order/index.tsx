@@ -41,7 +41,11 @@ import { useNavigate } from "react-router-dom";
 import { appointmentStatusEnum } from "@/common/types/auth";
 import { showError, showSuccess } from "@/libs/toast";
 import { handleError, statusTagColor, translateStatus } from "@/utils/format";
-import { useCreateFeedbacksMutation } from "@/services/feedback";
+import {
+  useCreateFeedbacksMutation,
+  useFindByAppointmentMutation,
+  type FeedbackResponse,
+} from "@/services/feedback";
 import FancyButton from "@/components/FancyButton";
 
 const locales = { vi };
@@ -75,6 +79,11 @@ const CustomerOrders: React.FC = () => {
   const [feedbacks, setFeedbacks] = useState<
     { serviceId: string; rating?: number; comment?: string }[]
   >([]);
+
+  const [viewFeedbackModal, setViewFeedbackModal] = useState(false);
+  const [viewFeedbacks, setViewFeedbacks] = useState<FeedbackResponse[]>([]);
+  const [getFeedbackByAppointment, { isLoading: isLoadingFeedback }] =
+    useFindByAppointmentMutation();
 
   const handleEvent = () => {
     if (auth?.accountId) {
@@ -247,6 +256,17 @@ const CustomerOrders: React.FC = () => {
       showSuccess("Gửi feedback thành công!");
       setFeedbackModal(false);
       handleEvent();
+    } catch (err) {
+      handleError(err);
+    }
+  };
+
+  const handleViewFeedback = async (appointment: AppointmentProps) => {
+    try {
+      const res = await getFeedbackByAppointment(appointment.id).unwrap();
+      setViewFeedbacks(res);
+      setSelectedAppointment(appointment);
+      setViewFeedbackModal(true);
     } catch (err) {
       handleError(err);
     }
@@ -516,23 +536,34 @@ const CustomerOrders: React.FC = () => {
                             )}
 
                             {isPay && (
-                              <Button
-                                type="primary"
-                                onClick={() => {
-                                  setSelectedAppointment(item);
-                                  setFeedbacks(
-                                    item.details?.map((d) => ({
-                                      serviceId: d.serviceId,
-                                      rating: undefined,
-                                      comment: "",
-                                    })) || []
-                                  );
-                                  setFeedbackModal(true);
-                                }}
-                                disabled={item.isFeedbackGiven}
-                              >
-                                Đánh giá
-                              </Button>
+                              <>
+                                <Button
+                                  type="primary"
+                                  onClick={() => {
+                                    setSelectedAppointment(item);
+                                    setFeedbacks(
+                                      item.details?.map((d) => ({
+                                        serviceId: d.serviceId,
+                                        rating: undefined,
+                                        comment: "",
+                                      })) || []
+                                    );
+                                    setFeedbackModal(true);
+                                  }}
+                                  disabled={item.isFeedbackGiven}
+                                >
+                                  Đánh giá
+                                </Button>
+
+                                {item.isFeedbackGiven && (
+                                  <Button
+                                    onClick={() => handleViewFeedback(item)}
+                                    style={{ marginLeft: 8 }}
+                                  >
+                                    Xem đánh giá
+                                  </Button>
+                                )}
+                              </>
                             )}
 
                             {isRejected && (
@@ -813,6 +844,79 @@ const CustomerOrders: React.FC = () => {
             />
           </div>
         </div>
+      </Modal>
+
+      <Modal
+        open={viewFeedbackModal}
+        onCancel={() => setViewFeedbackModal(false)}
+        footer={[
+          <Button key="close" onClick={() => setViewFeedbackModal(false)}>
+            Đóng
+          </Button>,
+        ]}
+        width={800}
+      >
+        <div>
+          <h3 className="cus-text-primary text-center">Đánh giá của bạn</h3>
+        </div>
+
+        {isLoadingFeedback ? (
+          <Spin className="d-block mx-auto my-4" />
+        ) : viewFeedbacks.length === 0 ? (
+          <Empty description="Chưa có đánh giá nào." />
+        ) : (
+          <div className={styles.feedbackModalContent}>
+            <div className={styles.appointmentInfo}>
+              <p>
+                <strong>Khách hàng:</strong>{" "}
+                {selectedAppointment?.customer?.full_name}
+              </p>
+              <p>
+                <strong>Ngày:</strong>{" "}
+                {dayjs(selectedAppointment?.startTime).format(
+                  "DD/MM/YYYY HH:mm"
+                )}
+              </p>
+              <p>
+                <strong>Bác sĩ:</strong>{" "}
+                {selectedAppointment?.doctor?.full_name || "Chưa có"}
+              </p>
+            </div>
+
+            <div className={styles.feedbackList}>
+              {viewFeedbacks.map((f) => {
+                const svc = f.service;
+                const img = svc?.images?.[0]?.url || NoImage;
+                return (
+                  <div key={f.id} className={styles.feedbackCard}>
+                    <div className={styles.feedbackLeft}>
+                      <img
+                        src={img}
+                        alt={svc?.name}
+                        className={styles.feedbackImage}
+                      />
+                      <div>
+                        <p className={styles.feedbackServiceName}>
+                          {svc?.name}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className={styles.feedbackRight}>
+                      <Rate allowHalf disabled value={Number(f.rating)} />
+                      <Input.TextArea
+                        rows={3}
+                        value={f.comment}
+                        disabled
+                        style={{ backgroundColor: "#f9f9f9" }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </Modal>
     </Container>
   );

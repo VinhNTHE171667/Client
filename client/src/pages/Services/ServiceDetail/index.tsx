@@ -10,15 +10,16 @@ import {
   Empty,
   List,
   Avatar,
+  Rate,
 } from "antd";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, ShoppingCartOutlined } from "@ant-design/icons";
 import styles from "./ServiceDetail.module.scss";
 
 import NoImage from "@/assets/img/NoImage/NoImage.jpg";
 import {
   useGetPublicServiceByIdQuery,
   useGetPublicServicesMutation,
-  type ServiceData,
+  type PublicService,
 } from "@/services/services";
 import { useParams, useNavigate } from "react-router-dom";
 import FancyButton from "@/components/FancyButton";
@@ -28,14 +29,14 @@ import { showError, showSuccess } from "@/libs/toast";
 
 const { Title, Paragraph } = Typography;
 
-type Service = {
-  id: string;
-  name: string;
-  price: number;
-  images: { url: string }[];
-  description: string;
-  category: { id: string; name: string };
-};
+// type Service = {
+//   id: string;
+//   name: string;
+//   price: number;
+//   images: { url: string }[];
+//   description: string;
+//   category: { id: string; name: string };
+// };
 
 const ServiceDetail = () => {
   const { id } = useParams();
@@ -45,11 +46,11 @@ const ServiceDetail = () => {
     id || ""
   );
   const [selectedImage, setSelectedImage] = useState(0);
-  const [servicesData, setServicesData] = useState<Service[]>([]);
+  const [servicesData, setServicesData] = useState<PublicService[]>([]);
   const [getServices] = useGetPublicServicesMutation();
 
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedService, setSelectedService] = useState<ServiceData | null>(
+  const [selectedService, setSelectedService] = useState<PublicService | null>(
     null
   );
   const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);
@@ -174,6 +175,32 @@ const ServiceDetail = () => {
                 {price.toLocaleString("vi-VN")}₫
               </Paragraph>
 
+              {serviceData.feedbacks && serviceData.feedbacks.length > 0 ? (
+                <div className={styles.ratingRow}>
+                  <Rate
+                    disabled
+                    allowHalf
+                    value={
+                      serviceData.feedbacks.reduce(
+                        (sum, r) => sum + r.rating,
+                        0
+                      ) / serviceData.feedbacks.length
+                    }
+                  />
+                  <span className={styles.ratingValue}>
+                    {(
+                      serviceData.feedbacks.reduce(
+                        (sum, r) => sum + r.rating,
+                        0
+                      ) / serviceData.feedbacks.length
+                    ).toFixed(1)}{" "}
+                    / 5
+                  </span>
+                </div>
+              ) : (
+                <div className={styles.noRating}>Chưa có đánh giá</div>
+              )}
+
               <Paragraph className={styles.category}>
                 Danh mục: <strong>{category?.name}</strong>
               </Paragraph>
@@ -205,27 +232,140 @@ const ServiceDetail = () => {
           <Paragraph>{description}</Paragraph>
         </div>
 
+        <div className={styles.feedbackSection}>
+          <Title level={4}>Đánh giá từ khách hàng</Title>
+
+          {serviceData.feedbacks && serviceData.feedbacks.length > 0 ? (
+            <List
+              itemLayout="vertical"
+              dataSource={serviceData.feedbacks}
+              pagination={{
+                pageSize: 3,
+                showSizeChanger: false,
+                showQuickJumper: false,
+                position: "bottom",
+              }}
+              renderItem={(item) => (
+                <List.Item key={item.customer?.id}>
+                  <List.Item.Meta
+                    avatar={<Avatar src={item.customer?.avatar || NoImage} />}
+                    title={
+                      <span>
+                        {item.customer?.full_name || "Khách hàng"}{" "}
+                        <Rate disabled allowHalf value={Number(item.rating)} />
+                      </span>
+                    }
+                    description={<p>{item.comment}</p>}
+                  />
+                  <div className={styles.feedbackDate}>
+                    {new Date(item.createdAt).toLocaleDateString("vi-VN")}
+                  </div>
+                </List.Item>
+              )}
+            />
+          ) : (
+            <div className={styles.noRating}>Chưa có đánh giá</div>
+          )}
+        </div>
+
         {relatedServices && relatedServices.length > 0 && (
           <div className={styles.relatedWrapper}>
             <Title level={3}>Dịch vụ liên quan</Title>
             <Row gutter={[24, 24]} justify="center">
               {relatedServices.map((srv) => (
-                <Col key={srv.id} xs={24} sm={12} md={8} lg={6}>
+                <Col key={srv.id} xs={24} sm={24} md={12} lg={8} xl={6}>
                   <Card
-                    className={styles.relatedCard}
                     cover={
-                      <img
-                        src={srv.images?.[0]?.url || NoImage}
-                        alt={srv.name}
-                        className={styles.relatedImage}
-                      />
+                      <div
+                        className={styles.imageWrapper}
+                        onClick={() => navigate(`/services/${srv.id}`)}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <img
+                          src={srv.images[0]?.url || NoImage}
+                          alt={srv.name}
+                          className={styles.image}
+                        />
+                      </div>
                     }
-                    onClick={() => navigate(`/services/${srv.id}`)}
+                    className={styles.card}
                   >
                     <Card.Meta
-                      title={srv.name}
-                      description={srv.description.slice(0, 60) + "..."}
+                      title={
+                        <span
+                          className={`${styles.cardTitle} cus-text-primary`}
+                          onClick={() => navigate(`/services/${srv.id}`)}
+                          style={{ cursor: "pointer" }}
+                        >
+                          {srv.name}
+                        </span>
+                      }
+                      description={
+                        <div>
+                          {srv.feedbacks && srv.feedbacks.length > 0 ? (
+                            <div className={styles.ratingRow}>
+                              <span className={styles.stars}>
+                                {"★".repeat(
+                                  Math.round(
+                                    srv.feedbacks.reduce(
+                                      (sum, r) => sum + r.rating,
+                                      0
+                                    ) / srv.feedbacks.length
+                                  )
+                                )}
+                                {"☆".repeat(
+                                  5 -
+                                    Math.round(
+                                      srv.feedbacks.reduce(
+                                        (sum, r) => sum + r.rating,
+                                        0
+                                      ) / srv.feedbacks.length
+                                    )
+                                )}
+                              </span>
+                              <span className={styles.ratingValue}>
+                                {(
+                                  srv.feedbacks.reduce(
+                                    (sum, r) => sum + r.rating,
+                                    0
+                                  ) / srv.feedbacks.length
+                                ).toFixed(1)}{" "}
+                                / 5
+                              </span>
+                            </div>
+                          ) : (
+                            <div className={styles.noRating}>
+                              Chưa có đánh giá
+                            </div>
+                          )}
+
+                          {/* <span className={styles.cardDesc}>
+                            {srv.description}
+                          </span> */}
+                        </div>
+                      }
                     />
+                    <div className={styles.cardFooter}>
+                      <span className={styles.price}>
+                        {srv.price.toLocaleString("vi-VN")}₫
+                      </span>
+                      <div className={styles.actions}>
+                        <FancyButton
+                          size="small"
+                          variant="primary"
+                          label="Đặt lịch"
+                          onClick={() => navigate(`/services/${srv.id}`)}
+                        />
+                        <ShoppingCartOutlined
+                          className={styles.addToCartIcon}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedService(srv);
+                            setIsModalVisible(true);
+                          }}
+                        />
+                      </div>
+                    </div>
                   </Card>
                 </Col>
               ))}
