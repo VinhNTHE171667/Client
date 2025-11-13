@@ -99,6 +99,107 @@ export type CreateAppointmentProps = {
   note: string;
   voucherId: string | null;
   totalAmount: number | 0;
+  membershipDiscount?: number;
+};
+
+export type InvoiceProps = {
+  id: string;
+  customerId: string;
+  appointmentId: string;
+  total_amount: number;
+  status: "confirmed" | "pending" | "cancelled";
+  payment_status: "paid";
+  invoice_type: "final" | "deposit";
+  payment_method: "qr";
+  createdAt: string;
+  updatedAt: string;
+  voucherId: string;
+  total: number;
+  discount: number;
+  finalAmount: number;
+  customer: {
+    id: string;
+    avatar: string | null;
+    full_name: string;
+    gender: "male" | "female" | "other";
+    birth_date: string;
+    password: string;
+    refreshToken: string;
+    email: string;
+    phone: string;
+    address: string;
+    customer_type: string;
+    total_spent: number;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+    membershipId: string | null;
+    isActive: boolean;
+    isVerified: boolean;
+    resetToken: string | null;
+    resetTokenExpire: string | null;
+    emailVerificationToken: string | null;
+    emailVerificationTokenExpire: string | null;
+    isEmailVerified: boolean;
+  };
+  appointment: {
+    id: string;
+    customerId: string;
+    doctorId: string;
+    staffId: string;
+    appointment_date: string;
+    status: "paid";
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+    voucherId: string;
+    cancelledAt: string | null;
+    cancelReason: string | null;
+    rejectionReason: string | null;
+    startTime: string;
+    endTime: string;
+    note: string;
+    orderCode: number;
+    appointmentType: "online" | "offline";
+    paymentMethod: "qr" | "cash";
+    totalAmount: number;
+    depositAmount: number;
+    isFeedbackGiven: boolean;
+    staff: {
+      id: string;
+      avatar: string;
+      full_name: string;
+      gender: "male" | "female" | "other";
+      email: string;
+      phone: string;
+      password: string;
+      refreshToken: string;
+      createdAt: string;
+      updatedAt: string;
+      deletedAt: string | null;
+      isActive: boolean;
+      isVerified: boolean;
+    };
+  };
+  details: {
+    id: string;
+    invoiceId: string;
+    serviceId: string;
+    quantity: number;
+    price: number;
+    service: {
+      id: string;
+      name: string;
+      price: number;
+      images: { url: string }[];
+      description: string;
+      categoryId: string;
+      createdAt: string;
+      updatedAt: string;
+      deletedAt: string | null;
+      isActive: boolean;
+    };
+  }[];
 };
 
 export const appointmentApi = createApi({
@@ -316,6 +417,13 @@ export const appointmentApi = createApi({
         body: data,
       }),
     }),
+
+    getInvoice: build.mutation<InvoiceProps[], void>({
+      query: () => ({
+        url: `/payment/invoice`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -339,4 +447,6 @@ export const {
   useGetAppointmentsBookedByDoctorMutation,
   useGetAppointmentsBookedByCustomerMutation,
   useGetAppointmentsForManagementMutation,
+
+  useGetInvoiceMutation,
 } = appointmentApi;

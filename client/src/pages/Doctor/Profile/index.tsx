@@ -6,11 +6,10 @@ import {
   Button,
   Form,
   Input,
-  DatePicker,
   message,
   Avatar,
-  Spin,
   Select,
+  InputNumber,
 } from "antd";
 import {
   UploadOutlined,
@@ -18,14 +17,12 @@ import {
   UserOutlined,
   LockOutlined,
 } from "@ant-design/icons";
-import dayjs from "dayjs";
 import styles from "./Profile.module.scss";
 import {
-  useChangePasswordCustomerMutation,
-  useGetCustomerProfileMutation,
-  useUpdateAvatarCustomerMutation,
-  useUpdateCustomerProfileMutation,
-  type CustomerProfileProps,
+  useChangePasswordDoctorMutation,
+  useGetDoctorProfileMutation,
+  useUpdateAvatarDoctorMutation,
+  useUpdateDoctorProfileMutation,
 } from "@/services/auth";
 import { useAuthStore } from "@/hooks/UseAuth";
 import type { UploadChangeParam, UploadFile } from "antd/es/upload";
@@ -34,25 +31,45 @@ import { showError, showSuccess } from "@/libs/toast";
 const { TabPane } = Tabs;
 const { Option } = Select;
 
-const Profile = () => {
+interface ProfileProps {
+  id: string;
+  full_name: string;
+  avatar: string;
+  email: string;
+  phone: string;
+  gender: string;
+  biography: string;
+  specialization: string;
+  experience_years: number;
+}
+
+interface UpdateProfileDto {
+  full_name: string;
+  phone: string;
+  email: string;
+  gender: string;
+  biography: string;
+  specialization: string;
+  experience_years: number;
+}
+
+const DoctorProfile = () => {
   const [loading, setLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [customer, setCustomer] = useState<CustomerProfileProps | null>(null);
+  const [doctor, setDoctor] = useState<ProfileProps | null>(null);
 
-  const [getProfile] = useGetCustomerProfileMutation();
-  const [updateAvatar] = useUpdateAvatarCustomerMutation();
-  const [updateProfile] = useUpdateCustomerProfileMutation();
-  const [updatePassword] = useChangePasswordCustomerMutation();
+  const [getProfile] = useGetDoctorProfileMutation();
+  const [updateAvatar] = useUpdateAvatarDoctorMutation();
+  const [updateProfile] = useUpdateDoctorProfileMutation();
+  const [updatePassword] = useChangePasswordDoctorMutation();
   const { auth, setCredentials } = useAuthStore();
   const [form] = Form.useForm();
   const [passwordForm] = Form.useForm();
 
   const handleGetProfile = async () => {
     try {
-      const customerId = auth.accountId || "";
-      const response: CustomerProfileProps = await getProfile(
-        customerId
-      ).unwrap();
+      const doctorId = auth.accountId || "";
+      const response: ProfileProps = await getProfile(doctorId).unwrap();
       return response;
     } catch (error) {
       console.error("Failed to fetch profile:", error);
@@ -65,14 +82,15 @@ const Profile = () => {
     const fetchProfile = async () => {
       const profileData = await handleGetProfile();
       if (profileData) {
-        setCustomer(profileData);
+        setDoctor(profileData);
         form.setFieldsValue({
           full_name: profileData.full_name,
           email: profileData.email,
           phone: profileData.phone,
-          address: profileData.address,
           gender: profileData.gender,
-          birth_date: dayjs(profileData.birth_date),
+          biography: profileData.biography,
+          specialization: profileData.specialization,
+          experience_years: profileData.experience_years,
         });
       }
     };
@@ -117,36 +135,20 @@ const Profile = () => {
     }
   };
 
-  const handleSaveProfile = async (values: CustomerProfileProps) => {
+  const handleSaveProfile = async (values: UpdateProfileDto) => {
     try {
-      const customerId = auth.accountId || "";
-      const updatedProfile: Omit<CustomerProfileProps, "avatar"> = {
-        birth_date: values.birth_date
-          ? dayjs(values.birth_date).format("YYYY-MM-DD")
-          : "",
-        full_name: values.full_name ? values.full_name.trim() : "",
-        email: values.email ? values.email.trim() : "",
-        phone: values.phone ? values.phone.trim() : "",
-        address: values.address ? values.address.trim() : "",
-        gender: values.gender ? values.gender : "",
-      };
-
       await updateProfile({
-        id: customerId,
-        data: updatedProfile,
+        data: {
+          full_name: values.full_name,
+          gender: values.gender,
+          phone: values.phone,
+          email: values.email,
+          biography: values.biography,
+          specialization: values.specialization,
+          experience_years: values.experience_years,
+        },
+        id: auth.accountId as string,
       }).unwrap();
-
-      setCredentials({
-        accountId: auth.accountId ?? "",
-        username: auth.username ?? "",
-        fullName: updatedProfile.full_name,
-        email: updatedProfile.email || "",
-        phone: updatedProfile.phone || "",
-        address: updatedProfile.address || "",
-        image: auth.image || "",
-        roles: auth.roles,
-        avatar: auth.avatar,
-      });
 
       showSuccess("Cập nhật hồ sơ thành công!");
     } catch (error) {
@@ -177,29 +179,18 @@ const Profile = () => {
     }
   };
 
-  if (!customer) {
-    return (
-      <div
-        className="d-flex justify-content-center align-items-center"
-        style={{ height: "60vh" }}
-      >
-        <Spin size="large" />
-      </div>
-    );
-  }
-
   return (
     <div className={`${styles.profilePage} py-5`}>
       <Card
         className={`${styles.profileCard} shadow`}
-        title={<h3 className={styles.cardTitle}>Hồ sơ khách hàng</h3>}
+        title={<h3 className={styles.cardTitle}>Hồ sơ Spa</h3>}
       >
         <Tabs defaultActiveKey="1" centered animated>
           <TabPane tab="Ảnh đại diện" key="1">
             <div className="text-center py-4">
               <Avatar
                 size={140}
-                src={avatarUrl || customer.avatar}
+                src={avatarUrl || doctor?.avatar}
                 icon={<UserOutlined />}
                 className={styles.avatar}
               />
@@ -225,14 +216,16 @@ const Profile = () => {
             </div>
           </TabPane>
 
-          <TabPane tab="Thông tin cá nhân" key="2">
+          <TabPane tab="Thông tin nhân viên" key="2">
             <Form layout="vertical" form={form} onFinish={handleSaveProfile}>
               <Form.Item
-                label="Họ và tên"
+                label="Tên nhân viên"
                 name="full_name"
-                rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
+                rules={[
+                  { required: true, message: "Vui lòng nhập tên nhân viên" },
+                ]}
               >
-                <Input placeholder="Nhập họ và tên" />
+                <Input placeholder="Nhập tên nhân viên" />
               </Form.Item>
 
               <Form.Item label="Giới tính" name="gender">
@@ -255,15 +248,28 @@ const Profile = () => {
                 <Input placeholder="Nhập số điện thoại" />
               </Form.Item>
 
-              <Form.Item label="Địa chỉ" name="address">
-                <Input placeholder="Nhập địa chỉ" />
+              <Form.Item label="Tiểu sử" name="biography">
+                <Input.TextArea
+                  rows={4}
+                  placeholder="Giới thiệu ngắn về bản thân, kinh nghiệm, thành tích..."
+                />
               </Form.Item>
 
-              <Form.Item label="Ngày sinh" name="birth_date">
-                <DatePicker
+              <Form.Item label="Chuyên môn" name="specialization">
+                <Input placeholder="Ví dụ: Da liễu, Vật lý trị liệu, Thẩm mỹ..." />
+              </Form.Item>
+
+              <Form.Item
+                label="Số năm kinh nghiệm"
+                name="experience_years"
+                rules={[
+                  { type: "number", min: 0, message: "Phải là số không âm" },
+                ]}
+              >
+                <InputNumber
+                  min={0}
                   style={{ width: "100%" }}
-                  format="DD/MM/YYYY"
-                  placeholder="Chọn ngày sinh"
+                  placeholder="Nhập số năm"
                 />
               </Form.Item>
 
@@ -361,4 +367,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default DoctorProfile;

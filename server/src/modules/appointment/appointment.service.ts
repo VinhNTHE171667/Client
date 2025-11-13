@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm/dist/common/typeorm.decorators';
-import { In, Repository, Not, MoreThan, DataSource } from 'typeorm';
+import { In, Repository, Not, MoreThan, DataSource, Between } from 'typeorm';
 import {
   CreateAppointmentDto,
   UpdateAppointmentDto,
@@ -20,6 +20,8 @@ import { Cart } from '@/entities/cart.entity';
 import { CartDetail } from '@/entities/cartDetails.entity';
 import { Voucher } from '@/entities/voucher.entity';
 import { CustomerVoucher } from '@/entities/customerVoucher.entity';
+import { Invoice } from '@/entities/invoice.entity';
+import { InvoiceDetail } from '@/entities/invoiceDetail.entity';
 
 @Injectable()
 export class AppointmentService {
@@ -51,6 +53,11 @@ export class AppointmentService {
 
     @InjectRepository(CustomerVoucher)
     private readonly customerVoucherRepo: Repository<CustomerVoucher>,
+
+    @InjectRepository(Invoice)
+    private readonly invoiceRepo: Repository<Invoice>,
+    @InjectRepository(InvoiceDetail)
+    private readonly invoiceDetailRepo: Repository<InvoiceDetail>,
 
     private readonly mailService: MailService,
     private readonly dataSource: DataSource,
@@ -129,55 +136,75 @@ export class AppointmentService {
 
   async create(dto: CreateAppointmentDto) {
     const serviceIds = dto.details.map((d) => d.serviceId);
-
-    const services = await this.serviceRepo.findBy({
-      id: In(serviceIds),
-    });
+    const services = await this.serviceRepo.findBy({ id: In(serviceIds) });
 
     if (services.length !== serviceIds.length) {
       throw new BadRequestException('Một hoặc nhiều dịch vụ không hợp lệ');
     }
 
-    const voucher = await this.voucherRepo.findOne({
-      where: { id: dto.voucherId },
-    });
+    const subtotal = services.reduce((sum, s) => sum + s.price, 0);
+    let totalAmount = subtotal;
 
-    if (voucher) {
+    let appliedVoucher: Voucher | null = null;
+
+    if (dto.voucherId) {
+      const voucher = await this.voucherRepo.findOne({
+        where: { id: dto.voucherId },
+      });
+      if (!voucher) throw new BadRequestException('Voucher không tồn tại');
+
       const now = new Date();
-      const validTo = voucher.validTo ? new Date(voucher.validTo) : null;
-      if (validTo && validTo < now) {
+      if (voucher.validTo && voucher.validTo < now)
         throw new BadRequestException('Voucher đã hết hạn');
-      } else {
-        const customerVoucher = await this.customerVoucherRepo.findOne({
-          where: {
-            customerId: dto.customerId,
-            voucherId: dto.voucherId,
-            isUsed: false,
-          },
-        });
 
-        if (!customerVoucher) {
-          throw new BadRequestException('Voucher không hợp lệ cho khách hàng');
-        }
+      const customerVoucher = await this.customerVoucherRepo.findOne({
+        where: {
+          customerId: dto.customerId,
+          voucherId: dto.voucherId,
+          isUsed: false,
+        },
+      });
+      if (!customerVoucher)
+        throw new BadRequestException('Voucher không hợp lệ cho khách hàng');
 
-        await this.customerVoucherRepo.update(customerVoucher.id, {
-          isUsed: true,
-          usedAt: new Date(),
-        });
+      appliedVoucher = voucher;
+
+      let discount = 0;
+      if (voucher.discountAmount && voucher.discountAmount > 0) {
+        discount = voucher.discountAmount;
+      } else if (voucher.discountPercent && voucher.discountPercent > 0) {
+        discount = (voucher.discountPercent / 100) * subtotal;
       }
+
+      if (voucher.maxDiscount && voucher.maxDiscount > 0) {
+        discount = Math.min(discount, voucher.maxDiscount);
+      }
+
+      discount = Math.min(discount, subtotal);
+
+      totalAmount = subtotal - discount;
+
+      await this.customerVoucherRepo.update(customerVoucher.id, {
+        isUsed: true,
+        usedAt: new Date(),
+      });
     }
+
+    if (dto.membershipDiscount && dto.membershipDiscount > 0) {
+      const membershipReduction = (dto.membershipDiscount / 100) * totalAmount;
+      totalAmount -= membershipReduction;
+    }
+
+    totalAmount = Math.max(0, Math.round(totalAmount));
 
     const appointment = this.appointmentRepo.create({
       ...dto,
-
       status: AppointmentStatus.Pending,
-      details: dto.details.map((d) => ({
-        ...d,
-      })),
-
-      // totalAmount: services.reduce((sum, service) => sum + service.price, 0),
-      totalAmount: dto.totalAmount,
+      details: dto.details.map((d) => ({ ...d })),
+      totalAmount,
     });
+
+    if (appliedVoucher) appointment.voucher = appliedVoucher;
 
     const cart = await this.cartRepo.findOne({
       where: { customerId: dto.customerId },
@@ -196,10 +223,7 @@ export class AppointmentService {
       const remaining = await this.cartDetailRepo.count({
         where: { cartId: cart.id },
       });
-
-      if (remaining === 0) {
-        await this.cartRepo.delete(cart.id);
-      }
+      if (remaining === 0) await this.cartRepo.delete(cart.id);
     }
 
     const saved = await this.appointmentRepo.save(appointment);
@@ -382,9 +406,27 @@ export class AppointmentService {
 
   async cancel(id: string, reason: string) {
     const appointment = await this.findOne(id);
+
     appointment.status = AppointmentStatus.Cancelled;
     appointment.cancelledAt = new Date();
     appointment.cancelReason = reason;
+
+    if (appointment.voucherId) {
+      const customerVoucher = await this.customerVoucherRepo.findOne({
+        where: {
+          customerId: appointment.customerId,
+          voucherId: appointment.voucherId,
+          isUsed: true,
+        },
+      });
+
+      if (customerVoucher) {
+        customerVoucher.isUsed = false;
+        customerVoucher.usedAt = undefined;
+        await this.customerVoucherRepo.save(customerVoucher);
+      }
+    }
+
     await this.appointmentRepo.save(appointment);
     return appointment;
   }
@@ -401,5 +443,61 @@ export class AppointmentService {
     const appointment = await this.findOne(id);
     await this.appointmentRepo.softRemove(appointment);
     return { message: 'Đã xoá lịch hẹn' };
+  }
+
+  async getDashboard({ year, month }: { year: number; month?: number }) {
+    const startDate = month
+      ? new Date(year, month - 1, 1)
+      : new Date(year, 0, 1);
+    const endDate = month
+      ? new Date(year, month, 0, 23, 59, 59)
+      : new Date(year, 11, 31, 23, 59, 59);
+
+    const invoices = await this.invoiceRepo.find({
+      where: {
+        createdAt: Between(startDate, endDate),
+        payment_status: 'paid',
+      },
+      relations: ['customer', 'details', 'details.service'],
+    });
+
+    const totalInvoices = invoices.length;
+    const totalAmount = invoices.reduce((acc, i) => acc + i.finalAmount, 0);
+
+    const customerIds = new Set(invoices.map((i) => i.customer.id));
+    const totalCustomers = customerIds.size;
+
+    const serviceMap = new Map<string, number>();
+    invoices.forEach((inv) => {
+      inv.details.forEach((item) => {
+        const prev = serviceMap.get(item.service.name) || 0;
+        serviceMap.set(item.service.name, prev + item.quantity);
+      });
+    });
+
+    const topServices = Array.from(serviceMap.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    const customerMap = new Map<string, number>();
+    invoices.forEach((inv) => {
+      const prev = customerMap.get(inv.customer.full_name) || 0;
+      customerMap.set(inv.customer.full_name, prev + 1);
+    });
+
+    const topCustomers = Array.from(customerMap.entries())
+      .map(([name, total]) => ({ name, total }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5);
+
+    return {
+      totalInvoices,
+      totalAmount,
+      totalCustomers,
+      topServices,
+      topCustomers,
+      invoices,
+    };
   }
 }

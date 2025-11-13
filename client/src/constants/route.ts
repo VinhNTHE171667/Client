@@ -14,6 +14,7 @@ export const configRoutes = {
   doctorProfile: "/services/doctor/:id",
   customerOrders: "/customer/orders",
   customerPayments: "/customer/payments",
+  customerVouchers: "/customer/vouchers",
 
   paymentSuccessPaid: "/casher/payments/success-paid",
   paymentFailPaid: "/casher/payments/fail-paid",
@@ -28,15 +29,20 @@ export const configRoutes = {
   adminServices: "/admin/services",
   adminVouchers: "/admin/vouchers",
   adminMemberships: "/admin/memberships",
+  adminSpaProfile: "/admin/spa-profile",
 
   staffOrders: "/staff/orders",
   staffFeedback: "/staff/feedback",
+  staffProfile: "/staff/profile",
 
   doctorDashboard: "/doctor/dashboard",
   doctorOrderManagement: "/doctor/orders",
+  doctorProfileManagement: "/doctor/profile",
 
   // casherDashboard: "/casher/dashboard",
   casherOrderManagement: "/casher/orders",
+  casherProfile: "/casher/profile",
+  casherInvoice: "/casher/invoices",
 };
 
 export const configError = {

@@ -53,6 +53,9 @@ export class Invoice {
   payment_status: 'unpaid' | 'paid' | 'refunded';
 
   @Column({ nullable: true })
+  invoice_type: 'deposit' | 'final';
+
+  @Column({ nullable: true })
   payment_method?: string;
 
   @CreateDateColumn()

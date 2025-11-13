@@ -12,7 +12,7 @@ import {
   Avatar,
   Rate,
 } from "antd";
-import { ArrowLeftOutlined, ShoppingCartOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import styles from "./ServiceDetail.module.scss";
 
 import NoImage from "@/assets/img/NoImage/NoImage.jpg";
@@ -217,11 +217,11 @@ const ServiceDetail = () => {
                     setIsModalVisible(true);
                   }}
                 />
-                <FancyButton
+                {/* <FancyButton
                   label="Đặt lịch ngay"
                   size="middle"
                   onClick={() => navigate("/cart")}
-                />
+                /> */}
               </div>
             </div>
           </Col>
@@ -354,16 +354,21 @@ const ServiceDetail = () => {
                           size="small"
                           variant="primary"
                           label="Đặt lịch"
-                          onClick={() => navigate(`/services/${srv.id}`)}
+                          // onClick={() => navigate(`/services/${srv.id}`)}
+                          onClick={() => {
+                            // e.stopPropagation();
+                            setSelectedService(srv);
+                            setIsModalVisible(true);
+                          }}
                         />
-                        <ShoppingCartOutlined
+                        {/* <ShoppingCartOutlined
                           className={styles.addToCartIcon}
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedService(srv);
                             setIsModalVisible(true);
                           }}
-                        />
+                        /> */}
                       </div>
                     </div>
                   </Card>
