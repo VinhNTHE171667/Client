@@ -20,7 +20,6 @@ import {
   ShoppingOutlined,
   StarOutlined,
   FireOutlined,
-  ClockCircleOutlined,
 } from "@ant-design/icons";
 import FancyIconBox from "@/components/FancyIconBox";
 import FancyCounting from "@/components/FancyCounting";
@@ -406,7 +405,7 @@ export default function AdminDashboardPage() {
         </Col>
       </Row>
 
-      <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
+      {/* <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
         <Col xs={24}>
           <Card
             title={
@@ -440,7 +439,7 @@ export default function AdminDashboardPage() {
             ))}
           </Card>
         </Col>
-      </Row>
+      </Row> */}
     </div>
   );
 }
