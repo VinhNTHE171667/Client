@@ -1,5 +1,6 @@
 import { axiosBaseQuery } from "@/libs/axios/axiosBase";
 import { createApi } from "@reduxjs/toolkit/query/react";
+import type { InvoiceProps } from "./appointment";
 
 const baseUrl = import.meta.env.VITE_PUBLIC_API || "";
 
@@ -45,6 +46,22 @@ export type CustomerProfileProps = {
   address: string;
   birth_date: string;
   gender: string;
+};
+
+export type Dashboard = {
+  totalCustomers: number;
+  totalAmount: number;
+  totalInvoices: number;
+  totalServices: number;
+  topServices: {
+    name: string;
+    count: number;
+  }[];
+  topCustomers: {
+    name: string;
+    total: number;
+  }[];
+  invoices: InvoiceProps[];
 };
 
 export const authApi = createApi({
@@ -346,6 +363,23 @@ export const authApi = createApi({
         data: { oldPassword, newPassword },
       }),
     }),
+
+    dashboard: build.mutation<
+      Dashboard,
+      {
+        year: number;
+        month: number;
+      }
+    >({
+      query: ({ year, month }) => ({
+        url: `/appointment/dashboard`,
+        method: "GET",
+        params: {
+          year: year,
+          month: month,
+        },
+      }),
+    }),
   }),
 });
 
@@ -376,4 +410,6 @@ export const {
   useUpdateDoctorProfileMutation,
   useUpdateAvatarDoctorMutation,
   useChangePasswordDoctorMutation,
+
+  useDashboardMutation,
 } = authApi;
