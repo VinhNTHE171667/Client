@@ -22,6 +22,11 @@ import { AppointmentStatus } from '@/entities/enums/appointment-status';
 export class AppointmentController {
   constructor(private readonly appointmentService: AppointmentService) {}
 
+  @Get('/dashboard')
+  getDashboard(@Query('year') year: number, @Query('month') month?: number) {
+    return this.appointmentService.getDashboard({ year, month });
+  }
+
   @Get('/customer')
   findAll(@Query('customerId') customerId: string) {
     return this.appointmentService.findByCustomer(customerId);

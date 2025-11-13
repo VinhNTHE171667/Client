@@ -12,6 +12,8 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { MailModule } from '../mail/mail.module';
 import { Spa } from '@/entities/spa.entity';
 import { Doctor } from '@/entities/doctor.entity';
+import { Invoice } from '@/entities/invoice.entity';
+import { InvoiceDetail } from '@/entities/invoiceDetail.entity';
 
 @Module({
   imports: [
@@ -25,6 +27,8 @@ import { Doctor } from '@/entities/doctor.entity';
       Service,
       Spa,
       Doctor,
+      Invoice,
+      InvoiceDetail,
     ]),
     MailModule,
   ],

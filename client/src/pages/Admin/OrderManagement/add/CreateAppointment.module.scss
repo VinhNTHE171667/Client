@@ -1,0 +1,25 @@
+.createAppointment {
+    display: flex;
+    justify-content: center;
+    padding: 40px 0;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+
+    .card {
+        width: 600px;
+        border-radius: 16px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .form {
+        .ant-form-item-label {
+            font-weight: 600;
+        }
+    }
+
+    .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+}

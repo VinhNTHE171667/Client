@@ -9,10 +9,13 @@ import { Internal } from '@/entities/internal.entity';
 import { Role } from '@/entities/role.entity';
 import { Doctor } from '@/entities/doctor.entity';
 import { MailModule } from '../mail/mail.module';
+import { Spa } from '@/entities/spa.entity';
+import { CacheModule } from '@nestjs/cache-manager';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    TypeOrmModule.forFeature([Customer, Internal, Doctor, Role]),
+    CacheModule.register(),
+    TypeOrmModule.forFeature([Customer, Internal, Doctor, Role, Spa]),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,

@@ -9,6 +9,8 @@ import PayOS from '@payos/node';
 import { Repository } from 'typeorm/repository/Repository';
 import { MailService } from '../mail/mail.service';
 import { Doctor } from '@/entities/doctor.entity';
+import { Invoice } from '@/entities/invoice.entity';
+import { InvoiceDetail } from '@/entities/invoiceDetail.entity';
 
 @Injectable()
 export class PaymentService {
@@ -29,6 +31,12 @@ export class PaymentService {
 
     @InjectRepository(Doctor)
     private readonly doctorRepo: Repository<Doctor>,
+
+    @InjectRepository(Invoice)
+    private readonly invoiceRepo: Repository<Invoice>,
+
+    @InjectRepository(InvoiceDetail)
+    private readonly invoiceDetailRepo: Repository<InvoiceDetail>,
 
     private readonly mailService: MailService,
   ) {
@@ -94,88 +102,84 @@ export class PaymentService {
       throw new Error('Không tìm thấy lịch hẹn');
     }
 
-    if (appointment.status === AppointmentStatus.Confirmed) {
-      const staff = await this.internalRepo.findOne({
-        where: { id: appointment.staffId },
-      });
-
-      const services = appointment.details.map((d) => ({
-        name: d.service.name,
-        price: d.price ?? d.service.price ?? 0,
-      }));
-
-      const servicesWithFormat = services.map((s) => ({
-        name: s.name,
-        price: new Intl.NumberFormat('vi-VN', {
-          style: 'currency',
-          currency: 'VND',
-        }).format(Number(s.price)),
-      }));
-      const spa = await this.getSpa();
-
-      appointment.status = AppointmentStatus.Deposited;
-      // appointment.depositAmount =
-      //   appointment.details.reduce(
-      //     (sum, detail) => sum + detail.service.price,
-      //     0,
-      //   ) * 0.5;
-      appointment.depositAmount = appointment.totalAmount * 0.5;
-
-      await this.appointmentRepo.save(appointment);
-
-      await this.mailService.confirmAppointmentDeposit({
-        to: appointment.customer.email,
-        text: 'Xác nhận đặt cọc lịch hẹn',
-        appointment: {
-          customer: { full_name: appointment.customer.full_name },
-          startTime: appointment.startTime,
-          services: servicesWithFormat,
-          staff: { full_name: staff ? staff.full_name : 'Đang cập nhật' },
-          address: spa?.address || 'Đang cập nhật',
-          depositAmount: new Intl.NumberFormat('vi-VN', {
-            style: 'currency',
-            currency: 'VND',
-          }).format(Number(appointment.depositAmount)),
-        },
-      });
-    } else {
+    if (appointment.status !== AppointmentStatus.Confirmed) {
       throw new Error(
         'Trạng thái lịch hẹn không hợp lệ để cập nhật thanh toán',
       );
     }
 
-    // const invoice = await this.invoiceRepo.findOne({
-    //   where: { orderCode: body.orderCode },
-    // });
-    // if (!invoice) {
-    //   throw new Error('Không tìm thấy hóa đơn');
-    // }
-    // if (body.status !== 'PAID' && body.status !== 'CANCELLED') {
-    //   throw new Error('Trạng thái không hợp lệ');
-    // }
-    // if (invoice.status !== 'PENDING') {
-    //   throw new Error('Hóa đơn đã được cập nhật trước đó');
-    // }
-    // if (body.status === 'PAID') {
-    //   const [spa, spaMembership] = await Promise.all([
-    //     this.spaRepository.findOne({ where: { id: invoice.spaId } }),
-    //     this.spaMembershipRepository.findOne({
-    //       where: { id: invoice.membershipId },
-    //     }),
-    //   ]);
-    //   if (spa) {
-    //     if (spaMembership && spaMembership.id) {
-    //       spa.membershipId = spaMembership.id;
-    //       await this.spaRepository.save(spa);
-    //     } else {
-    //       throw new Error('Không tìm thấy gói thành viên spa');
-    //     }
-    //   } else {
-    //     throw new Error('Không tìm thấy spa liên kết với hóa đơn');
-    //   }
-    // }
-    // invoice.status = body.status;
-    // await this.invoiceRepo.save(invoice);
+    const staff = await this.internalRepo.findOne({
+      where: { id: appointment.staffId },
+    });
+
+    const services = appointment.details.map((d) => ({
+      name: d.service.name,
+      price: d.price ?? d.service.price ?? 0,
+    }));
+
+    const servicesWithFormat = services.map((s) => ({
+      name: s.name,
+      price: new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+      }).format(Number(s.price)),
+    }));
+    const spa = await this.getSpa();
+
+    const invoiceDetails = appointment.details.map((d) => ({
+      serviceId: d.serviceId,
+      price: d.price ?? d.service.price ?? 0,
+      quantity: 1,
+    }));
+
+    appointment.status = AppointmentStatus.Deposited;
+    // appointment.depositAmount =
+    //   appointment.details.reduce(
+    //     (sum, detail) => sum + detail.service.price,
+    //     0,
+    //   ) * 0.5;
+    appointment.depositAmount = appointment.totalAmount * 0.5;
+    const total = invoiceDetails.reduce(
+      (sum, d) => sum + Number(d.price) * d.quantity,
+      0,
+    );
+    const discount = total - appointment.totalAmount;
+
+    const invoice = this.invoiceRepo.create({
+      customerId: appointment.customerId,
+      appointmentId: appointment.id,
+      total_amount: appointment.totalAmount * 0.5,
+      total,
+      discount: discount * 0.5,
+      finalAmount: (total - discount) * 0.5,
+      status: 'completed',
+      payment_status: 'paid',
+      invoice_type: 'deposit',
+      voucherId: appointment.voucherId ?? '',
+      details: invoiceDetails,
+    });
+
+    await this.invoiceRepo.save(invoice);
+
+    await this.appointmentRepo.save(appointment);
+
+    await this.mailService.confirmAppointmentDeposit({
+      to: appointment.customer.email,
+      text: 'Xác nhận đặt cọc lịch hẹn',
+      appointment: {
+        customer: { full_name: appointment.customer.full_name },
+        startTime: appointment.startTime,
+        services: servicesWithFormat,
+        staff: { full_name: staff ? staff.full_name : 'Đang cập nhật' },
+        address: spa?.address || 'Đang cập nhật',
+        depositAmount: new Intl.NumberFormat('vi-VN', {
+          style: 'currency',
+          currency: 'VND',
+        }).format(Number(appointment.depositAmount)),
+      },
+    });
+
+    return appointment;
   }
 
   async updatePaymentStatusPaid(body: { orderCode: string }) {
@@ -188,51 +192,83 @@ export class PaymentService {
       throw new Error('Không tìm thấy lịch hẹn');
     }
 
-    if (appointment.status === AppointmentStatus.Completed) {
-      // const staff = await this.internalRepo.findOne({
-      //   where: { id: appointment.staffId },
-      // });
-
-      const doctor = await this.doctorRepo.findOne({
-        where: { id: appointment.doctorId },
-      });
-
-      const services = appointment.details.map((d) => ({
-        name: d.service.name,
-        price: d.price ?? d.service.price ?? 0,
-      }));
-
-      const servicesWithFormat = services.map((s) => ({
-        name: s.name,
-        price: new Intl.NumberFormat('vi-VN', {
-          style: 'currency',
-          currency: 'VND',
-        }).format(Number(s.price)),
-      }));
-      const spa = await this.getSpa();
-
-      appointment.status = AppointmentStatus.Paid;
-      appointment.paymentMethod = 'qr';
-
-      await this.mailService.sendThankYouForUsingServiceEmail({
-        to: appointment.customer.email,
-        customerName: appointment.customer.full_name,
-        services: servicesWithFormat,
-        usedDate: appointment.startTime.toLocaleDateString('vi-VN'),
-        specialistName: doctor?.full_name || 'Đang cập nhật',
-        spaName: spa?.name || 'Đang cập nhật',
-        spaHotline: spa?.phone || '1900 1234',
-        feedbackUrl: `${this.configService.get<string>(
-          'FRONTEND_URL',
-        )}/feedback?appointmentId=${appointment.id}`,
-      });
-
-      return await this.appointmentRepo.save(appointment);
-    } else {
+    if (appointment.status !== AppointmentStatus.Completed) {
       throw new Error(
         'Trạng thái lịch hẹn không hợp lệ để cập nhật thanh toán',
       );
     }
+
+    const doctor = await this.doctorRepo.findOne({
+      where: { id: appointment.doctorId },
+    });
+
+    const services = appointment.details.map((d) => ({
+      name: d.service.name,
+      price: d.price ?? d.service.price ?? 0,
+    }));
+
+    const services2 = appointment.details.map((d) => ({
+      serviceId: d.service.id,
+      name: d.service.name,
+      price: d.price ?? d.service.price ?? 0,
+      quantity: 1,
+    }));
+
+    const invoiceDetails = services2.map((s) => ({
+      serviceId: s.serviceId,
+      price: s.price,
+      quantity: 1,
+    }));
+
+    const total = invoiceDetails.reduce(
+      (sum, d) => sum + Number(d.price) * d.quantity,
+      0,
+    );
+    const discount = total - appointment.totalAmount;
+
+    const invoice = this.invoiceRepo.create({
+      customer: appointment.customer,
+      appointmentId: appointment.id,
+      total_amount: appointment.totalAmount * 0.5,
+      total: total,
+      discount: discount * 0.5,
+      finalAmount: appointment.totalAmount * 0.5,
+      status: 'completed',
+      payment_status: 'paid',
+      invoice_type: 'final',
+      payment_method: 'qr',
+      voucherId: appointment.voucherId ?? '',
+      details: invoiceDetails,
+    });
+
+    await this.invoiceRepo.save(invoice);
+
+    const servicesWithFormat = services.map((s) => ({
+      name: s.name,
+      price: new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+      }).format(Number(s.price)),
+    }));
+    const spa = await this.getSpa();
+
+    appointment.status = AppointmentStatus.Paid;
+    appointment.paymentMethod = 'qr';
+
+    await this.mailService.sendThankYouForUsingServiceEmail({
+      to: appointment.customer.email,
+      customerName: appointment.customer.full_name,
+      services: servicesWithFormat,
+      usedDate: appointment.startTime.toLocaleDateString('vi-VN'),
+      specialistName: doctor?.full_name || 'Đang cập nhật',
+      spaName: spa?.name || 'Đang cập nhật',
+      spaHotline: spa?.phone || '1900 1234',
+      feedbackUrl: `${this.configService.get<string>(
+        'FRONTEND_URL',
+      )}/feedback?appointmentId=${appointment.id}`,
+    });
+
+    return await this.appointmentRepo.save(appointment);
   }
 
   // async processWebhook(body: any) {
@@ -254,4 +290,10 @@ export class PaymentService {
   //     await this.invoiceRepo.save(invoice);
   //   }
   // }
+
+  async getInvoices() {
+    return this.invoiceRepo.find({
+      relations: ['customer', 'appointment', 'details', 'details.service'],
+    });
+  }
 }

@@ -19,6 +19,8 @@ import { Cart } from '@/entities/cart.entity';
 import { CartDetail } from '@/entities/cartDetails.entity';
 import { Voucher } from '@/entities/voucher.entity';
 import { CustomerVoucher } from '@/entities/customerVoucher.entity';
+import { Invoice } from '@/entities/invoice.entity';
+import { InvoiceDetail } from '@/entities/invoiceDetail.entity';
 
 @Module({
   imports: [
@@ -38,6 +40,8 @@ import { CustomerVoucher } from '@/entities/customerVoucher.entity';
       CartDetail,
       Voucher,
       CustomerVoucher,
+      Invoice,
+      InvoiceDetail,
     ]),
     JwtModule.register({
       global: true,

@@ -26,7 +26,7 @@ import { showError, showSuccess } from "@/libs/toast";
 import {
   ReloadOutlined,
   // SearchOutlined,
-  ShoppingCartOutlined,
+  // ShoppingCartOutlined,
 } from "@ant-design/icons";
 import { useAddToCartMutation } from "@/services/cart";
 import HeroSection from "@/components/HeroSection";
@@ -309,16 +309,21 @@ const ServicesComp = () => {
                             size="small"
                             variant="primary"
                             label="Đặt lịch"
+                            onClick={() => {
+                              // e.stopPropagation();
+                              setSelectedService(service);
+                              setIsModalVisible(true);
+                            }}
                           />
 
-                          <ShoppingCartOutlined
+                          {/* <ShoppingCartOutlined
                             className={styles.addToCartIcon}
                             onClick={(e) => {
                               e.stopPropagation();
                               setSelectedService(service);
                               setIsModalVisible(true);
                             }}
-                          />
+                          /> */}
                         </div>
                       </div>
                     </Card>

@@ -20,10 +20,99 @@ import {
   ResetPasswordDto,
   UpdateCustomerProfileDto,
 } from './dto/customer.dto';
+import { RoleType } from '@/common/types/role.enum';
+import { Gender } from '@/entities/enums/gender.enum';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
+
+  @Get('doctor/profile/:id')
+  @ApiParam({ name: 'id', type: String })
+  findDoctorProfile(@Param('id') id: string) {
+    return this.authService.findDoctorProfile(id);
+  }
+
+  @Patch('doctor/profile/:id')
+  @ApiParam({ name: 'id', type: String })
+  updateDoctorProfile(
+    @Param('id') id: string,
+    @Body()
+    dto: {
+      full_name: string;
+      phone: string;
+      email: string;
+      gender: Gender;
+      biography: string;
+      specialization: string;
+      experience_years: number;
+    },
+  ) {
+    return this.authService.updateDoctorProfile(id, dto);
+  }
+
+  @Get('staff/profile/:id')
+  @ApiParam({ name: 'id', type: String })
+  findStaffProfile(@Param('id') id: string) {
+    return this.authService.findStaffProfile(id);
+  }
+
+  @Patch('staff/profile/:id')
+  @ApiParam({ name: 'id', type: String })
+  updateStaffProfile(
+    @Param('id') id: string,
+    @Body()
+    dto: {
+      full_name: string;
+      phone: string;
+      email: string;
+      gender: Gender;
+    },
+  ) {
+    return this.authService.updateStaffProfile(id, dto);
+  }
+
+  @Patch('avatar/:role/:id')
+  @ApiParam({ name: 'role', type: String })
+  @ApiParam({ name: 'id', type: String })
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+  })
+  async updateAvatar(
+    @Param('id') id: string,
+    @Param('role') role: RoleType,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('Chưa upload file ảnh');
+    }
+    return this.authService.updateAvatarUniversal(id, role, file);
+  }
+
+  @Get('spa/profile/')
+  findSpaProfile() {
+    return this.authService.findSpaProfile();
+  }
+
+  @Patch('spa/profile/')
+  updateSpaProfile(
+    @Body()
+    dto: {
+      name?: string;
+      address?: string;
+      phone?: string;
+      email?: string;
+    },
+  ) {
+    return this.authService.updateSpaProfile(dto);
+  }
 
   @Get('profile/:id')
   @ApiParam({ name: 'id', type: String })
@@ -40,32 +129,15 @@ export class AuthController {
     return this.authService.updateCustomerProfile(id, dto);
   }
 
-  @Patch('avatar/:id')
+  @Patch('change-password/:role/:id')
+  @ApiParam({ name: 'role', type: String })
   @ApiParam({ name: 'id', type: String })
-  @UseInterceptors(FileInterceptor('file'))
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        file: { type: 'string', format: 'binary' },
-      },
-    },
-  })
-  updateAvatar(
-    @Param('profile/:id') id: string,
-    @UploadedFile() file: Express.Multer.File,
+  changePassword(
+    @Param('id') id: string,
+    @Param('role') role: RoleType,
+    @Body() dto: ChangePasswordDto,
   ) {
-    if (!file) {
-      throw new BadRequestException('Chưa upload file ảnh');
-    }
-    return this.authService.updateCustomerAvatar(id, file);
-  }
-
-  @Patch('change-password/:id')
-  @ApiParam({ name: 'id', type: String })
-  changePassword(@Param('id') id: string, @Body() dto: ChangePasswordDto) {
-    return this.authService.changePassword(id, dto);
+    return this.authService.changePassword(id, role, dto);
   }
 
   @Post('login')

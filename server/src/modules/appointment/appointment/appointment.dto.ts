@@ -116,6 +116,15 @@ export class CreateAppointmentDto {
   @IsNotEmpty()
   @IsNumber()
   totalAmount: number = 0;
+
+  @ApiProperty({
+    example: 10,
+    description: 'Phần trăm giảm giá từ thành viên (nếu có)',
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  membershipDiscount?: number;
 }
 
 export class UpdateAppointmentDto extends PartialType(CreateAppointmentDto) {}
