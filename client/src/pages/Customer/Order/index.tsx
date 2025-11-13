@@ -184,6 +184,7 @@ const CustomerOrders: React.FC = () => {
   };
 
   const handleSaveEdit = () => {
+    console.log(selectedAppointment);
     navigate(configRoutes.bookings, {
       state: {
         oldSlot: {
@@ -197,6 +198,8 @@ const CustomerOrders: React.FC = () => {
         full_name: selectedAppointment?.customer?.full_name || null,
         phone: selectedAppointment?.customer?.phone || null,
         note: selectedAppointment?.note || null,
+        totalAmount: selectedAppointment?.totalAmount || null,
+        voucherId: selectedAppointment?.voucherId || null,
       },
     });
   };

@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Appointment } from '@/entities/appointment.entity';
@@ -70,6 +70,11 @@ export class PaymentController {
     },
   ) {
     return this.payosService.updatePaymentStatusPaid(body);
+  }
+
+  @Get('invoice/')
+  async getInvoice() {
+    return this.payosService.getInvoices();
   }
 
   // @Post('webhook')

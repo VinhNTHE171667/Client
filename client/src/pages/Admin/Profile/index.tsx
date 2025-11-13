@@ -1,58 +1,56 @@
 import { useEffect, useState } from "react";
-import {
-  Card,
-  Tabs,
-  Upload,
-  Button,
-  Form,
-  Input,
-  DatePicker,
-  message,
-  Avatar,
-  Spin,
-  Select,
-} from "antd";
+import { Card, Tabs, Upload, Button, Form, Input, message, Avatar } from "antd";
 import {
   UploadOutlined,
   SaveOutlined,
   UserOutlined,
   LockOutlined,
 } from "@ant-design/icons";
-import dayjs from "dayjs";
 import styles from "./Profile.module.scss";
 import {
-  useChangePasswordCustomerMutation,
-  useGetCustomerProfileMutation,
-  useUpdateAvatarCustomerMutation,
-  useUpdateCustomerProfileMutation,
-  type CustomerProfileProps,
+  useChangePasswordAdminMutation,
+  useGetSpaProfileMutation,
+  useUpdateSpaProfileMutation,
 } from "@/services/auth";
-import { useAuthStore } from "@/hooks/UseAuth";
 import type { UploadChangeParam, UploadFile } from "antd/es/upload";
 import { showError, showSuccess } from "@/libs/toast";
+import { useAuthStore } from "@/hooks/UseAuth";
 
 const { TabPane } = Tabs;
-const { Option } = Select;
 
-const Profile = () => {
+interface ProfileProps {
+  id: string;
+  name: string;
+  logo: string;
+  address: string;
+  phone: string;
+  email: string;
+}
+
+interface UpdateProfileDto {
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+}
+
+const AdminSpaProfile = () => {
   const [loading, setLoading] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [customer, setCustomer] = useState<CustomerProfileProps | null>(null);
+  // const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [spa, setSpa] = useState<ProfileProps | null>(null);
 
-  const [getProfile] = useGetCustomerProfileMutation();
-  const [updateAvatar] = useUpdateAvatarCustomerMutation();
-  const [updateProfile] = useUpdateCustomerProfileMutation();
-  const [updatePassword] = useChangePasswordCustomerMutation();
-  const { auth, setCredentials } = useAuthStore();
+  const [getProfile] = useGetSpaProfileMutation();
+  // const [updateAvatar] = useUpdateAvatarMutation();
+  const [updateProfile] = useUpdateSpaProfileMutation();
+  const [updatePassword] = useChangePasswordAdminMutation();
+  // const { auth, setCredentials } = useAuthStore();
+  const { auth } = useAuthStore();
   const [form] = Form.useForm();
   const [passwordForm] = Form.useForm();
 
   const handleGetProfile = async () => {
     try {
-      const customerId = auth.accountId || "";
-      const response: CustomerProfileProps = await getProfile(
-        customerId
-      ).unwrap();
+      const response: ProfileProps = await getProfile().unwrap();
       return response;
     } catch (error) {
       console.error("Failed to fetch profile:", error);
@@ -65,14 +63,12 @@ const Profile = () => {
     const fetchProfile = async () => {
       const profileData = await handleGetProfile();
       if (profileData) {
-        setCustomer(profileData);
+        setSpa(profileData);
         form.setFieldsValue({
-          full_name: profileData.full_name,
+          name: profileData.name,
           email: profileData.email,
           phone: profileData.phone,
           address: profileData.address,
-          gender: profileData.gender,
-          birth_date: dayjs(profileData.birth_date),
         });
       }
     };
@@ -91,21 +87,19 @@ const Profile = () => {
       if (!originFile) return;
 
       try {
-        const customerId = auth.accountId;
-        const res = await updateAvatar({
-          id: customerId as string,
-          file: originFile,
-        }).unwrap();
-
-        setAvatarUrl(res.avatar);
-
-        if (res) {
-          setCredentials({
-            ...auth,
-            avatar: res.avatar,
-          });
-          showSuccess("Cập nhật ảnh đại diện thành công!");
-        }
+        // const customerId = auth.accountId;
+        // const res = await updateAvatar({
+        //   id: customerId as string,
+        //   file: originFile,
+        // }).unwrap();
+        // setAvatarUrl(res.avatar);
+        // if (res) {
+        //   setCredentials({
+        //     ...auth,
+        //     avatar: res.avatar,
+        //   });
+        //   showSuccess("Cập nhật ảnh đại diện thành công!");
+        // }
       } catch {
         showError("Cập nhật ảnh đại diện thất bại!");
       }
@@ -117,36 +111,16 @@ const Profile = () => {
     }
   };
 
-  const handleSaveProfile = async (values: CustomerProfileProps) => {
+  const handleSaveProfile = async (values: UpdateProfileDto) => {
     try {
-      const customerId = auth.accountId || "";
-      const updatedProfile: Omit<CustomerProfileProps, "avatar"> = {
-        birth_date: values.birth_date
-          ? dayjs(values.birth_date).format("YYYY-MM-DD")
-          : "",
-        full_name: values.full_name ? values.full_name.trim() : "",
-        email: values.email ? values.email.trim() : "",
-        phone: values.phone ? values.phone.trim() : "",
-        address: values.address ? values.address.trim() : "",
-        gender: values.gender ? values.gender : "",
-      };
-
       await updateProfile({
-        id: customerId,
-        data: updatedProfile,
+        data: {
+          name: values.name,
+          address: values.address,
+          phone: values.phone,
+          email: values.email,
+        },
       }).unwrap();
-
-      setCredentials({
-        accountId: auth.accountId ?? "",
-        username: auth.username ?? "",
-        fullName: updatedProfile.full_name,
-        email: updatedProfile.email || "",
-        phone: updatedProfile.phone || "",
-        address: updatedProfile.address || "",
-        image: auth.image || "",
-        roles: auth.roles,
-        avatar: auth.avatar,
-      });
 
       showSuccess("Cập nhật hồ sơ thành công!");
     } catch (error) {
@@ -177,29 +151,18 @@ const Profile = () => {
     }
   };
 
-  if (!customer) {
-    return (
-      <div
-        className="d-flex justify-content-center align-items-center"
-        style={{ height: "60vh" }}
-      >
-        <Spin size="large" />
-      </div>
-    );
-  }
-
   return (
     <div className={`${styles.profilePage} py-5`}>
       <Card
         className={`${styles.profileCard} shadow`}
-        title={<h3 className={styles.cardTitle}>Hồ sơ khách hàng</h3>}
+        title={<h3 className={styles.cardTitle}>Hồ sơ Spa</h3>}
       >
         <Tabs defaultActiveKey="1" centered animated>
           <TabPane tab="Ảnh đại diện" key="1">
             <div className="text-center py-4">
               <Avatar
                 size={140}
-                src={avatarUrl || customer.avatar}
+                src={spa?.logo}
                 icon={<UserOutlined />}
                 className={styles.avatar}
               />
@@ -217,6 +180,7 @@ const Profile = () => {
                     icon={<UploadOutlined />}
                     loading={loading}
                     className={styles.uploadBtn}
+                    disabled={true}
                   >
                     Đổi ảnh
                   </Button>
@@ -225,22 +189,14 @@ const Profile = () => {
             </div>
           </TabPane>
 
-          <TabPane tab="Thông tin cá nhân" key="2">
+          <TabPane tab="Thông tin Spa" key="2">
             <Form layout="vertical" form={form} onFinish={handleSaveProfile}>
               <Form.Item
-                label="Họ và tên"
-                name="full_name"
-                rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
+                label="Tên Spa"
+                name="name"
+                rules={[{ required: true, message: "Vui lòng nhập tên Spa" }]}
               >
-                <Input placeholder="Nhập họ và tên" />
-              </Form.Item>
-
-              <Form.Item label="Giới tính" name="gender">
-                <Select placeholder="Chọn giới tính">
-                  <Option value="male">Nam</Option>
-                  <Option value="female">Nữ</Option>
-                  <Option value="other">Khác</Option>
-                </Select>
+                <Input placeholder="Nhập tên Spa" />
               </Form.Item>
 
               <Form.Item
@@ -257,14 +213,6 @@ const Profile = () => {
 
               <Form.Item label="Địa chỉ" name="address">
                 <Input placeholder="Nhập địa chỉ" />
-              </Form.Item>
-
-              <Form.Item label="Ngày sinh" name="birth_date">
-                <DatePicker
-                  style={{ width: "100%" }}
-                  format="DD/MM/YYYY"
-                  placeholder="Chọn ngày sinh"
-                />
               </Form.Item>
 
               <div className="text-center mt-4">
@@ -361,4 +309,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default AdminSpaProfile;

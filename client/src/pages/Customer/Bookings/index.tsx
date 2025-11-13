@@ -61,6 +61,8 @@ interface LocationState {
   full_name?: string;
   phone?: string;
   note?: string;
+  totalAmount?: number;
+  voucherId?: string;
 }
 
 interface BookingFormValues {
@@ -113,6 +115,8 @@ const BookingCalendar: React.FC = () => {
   const full_name = state.full_name;
   const phone = state.phone;
   const note = state.note;
+  const totalAmount = state.totalAmount;
+  const voucherId = state.voucherId;
 
   const hasFetched = useRef(false);
 
@@ -205,8 +209,9 @@ const BookingCalendar: React.FC = () => {
           price: Number(service.price),
         })),
         note: values.note || "",
-        voucherId: selectedVoucherId || null,
-        totalAmount: calculateTotal(),
+        voucherId: selectedVoucherId || voucherId || null,
+        totalAmount: Number(totalAmount) || calculateTotal(),
+        membershipDiscount: membershipDiscount || 0,
       };
 
       if (appointmentId) {
@@ -455,64 +460,88 @@ const BookingCalendar: React.FC = () => {
             <Input.TextArea rows={3} placeholder="Ghi chú thêm (nếu có)" />
           </Form.Item>
 
-          <Form.Item label="Voucher">
-            <Select
-              placeholder="Chọn voucher"
-              allowClear
-              value={selectedVoucherId ?? undefined}
-              onChange={(value) => setSelectedVoucherId(value)}
-              options={vouchers.map((v) => {
-                const amount = Number(v.discountAmount);
-                const percent = Number(v.discountPercent);
+          {totalAmount === undefined && (
+            <Form.Item label="Chọn voucher giảm giá">
+              <Select
+                placeholder="Chọn voucher"
+                allowClear
+                value={selectedVoucherId ?? undefined}
+                onChange={(value) => setSelectedVoucherId(value)}
+                options={vouchers.map((v) => {
+                  const amount = Number(v.discountAmount);
+                  const percent = Number(v.discountPercent);
 
-                let label = v.code;
+                  let label = v.code;
 
-                if (amount > 0) {
-                  label += ` - Giảm ${amount.toLocaleString("vi-VN")}₫`;
-                } else if (percent > 0) {
-                  label += ` - Giảm ${percent}%`;
-                  if (v.maxDiscount) {
-                    label += ` (tối đa ${Number(v.maxDiscount).toLocaleString(
-                      "vi-VN"
-                    )}₫)`;
+                  if (amount > 0) {
+                    label += ` - Giảm ${amount.toLocaleString("vi-VN")}₫`;
+                  } else if (percent > 0) {
+                    label += ` - Giảm ${percent}%`;
+                    if (v.maxDiscount) {
+                      label += ` (tối đa ${Number(v.maxDiscount).toLocaleString(
+                        "vi-VN"
+                      )}₫)`;
+                    }
                   }
-                }
 
-                return {
-                  label,
-                  value: v.id,
-                };
-              })}
-            />
-          </Form.Item>
+                  return {
+                    label,
+                    value: v.id,
+                  };
+                })}
+              />
+            </Form.Item>
+          )}
 
-          <Form.Item label="Membership giảm giá">
-            <Input
-              value={membershipDiscount}
-              type="number"
-              min={0}
-              max={100}
-              addonAfter="%"
-              disabled
-              style={{ background: "#f5f5f5" }}
-            />
-          </Form.Item>
+          {totalAmount === undefined && (
+            <Form.Item label="Membership giảm giá">
+              <Input
+                value={membershipDiscount}
+                type="number"
+                min={0}
+                max={100}
+                addonAfter="%"
+                disabled
+                style={{ background: "#f5f5f5" }}
+              />
+            </Form.Item>
+          )}
 
-          <Form.Item label="Tổng tiền" style={{ marginBottom: 16 }}>
-            <div
-              style={{
-                background: "#f0f6ff",
-                padding: "12px 16px",
-                borderRadius: 8,
-                fontWeight: 600,
-                fontSize: 18,
-                color: "#003366",
-                textAlign: "right",
-              }}
-            >
-              {calculateTotal().toLocaleString("vi-VN")}₫
-            </div>
-          </Form.Item>
+          {totalAmount === undefined && (
+            <Form.Item label="Tổng tiền" style={{ marginBottom: 16 }}>
+              <div
+                style={{
+                  background: "#f0f6ff",
+                  padding: "12px 16px",
+                  borderRadius: 8,
+                  fontWeight: 600,
+                  fontSize: 18,
+                  color: "#003366",
+                  textAlign: "right",
+                }}
+              >
+                {Number(calculateTotal()).toLocaleString("vi-VN")}₫
+              </div>
+            </Form.Item>
+          )}
+
+          {totalAmount !== undefined && (
+            <Form.Item label="Tổng tiền" style={{ marginBottom: 16 }}>
+              <div
+                style={{
+                  background: "#f0f6ff",
+                  padding: "12px 16px",
+                  borderRadius: 8,
+                  fontWeight: 600,
+                  fontSize: 18,
+                  color: "#003366",
+                  textAlign: "right",
+                }}
+              >
+                {Number(totalAmount).toLocaleString("vi-VN")}₫
+              </div>
+            </Form.Item>
+          )}
 
           <Button
             type="primary"

@@ -97,7 +97,7 @@ export const authApi = createApi({
       }),
     }),
 
-    updateAvatar: build.mutation<
+    updateAvatarCustomer: build.mutation<
       { avatar: string },
       { id: string; file: File }
     >({
@@ -106,7 +106,7 @@ export const authApi = createApi({
         formData.append("file", file);
 
         return {
-          url: `/auth/avatar/${id}`,
+          url: `/auth/avatar/Customer/${id}`,
           method: "PATCH",
           body: formData,
         };
@@ -124,12 +124,12 @@ export const authApi = createApi({
       }),
     }),
 
-    changePassword: build.mutation<
+    changePasswordCustomer: build.mutation<
       { message: string },
       { id: string; oldPassword: string; newPassword: string }
     >({
       query: ({ id, oldPassword, newPassword }) => ({
-        url: `/auth/change-password/${id}`,
+        url: `/auth/change-password/Customer/${id}`,
         method: "PATCH",
         data: { oldPassword, newPassword },
       }),
@@ -153,6 +153,199 @@ export const authApi = createApi({
         data: { token, newPassword },
       }),
     }),
+
+    getSpaProfile: build.mutation<
+      {
+        id: string;
+        name: string;
+        logo: string;
+        address: string;
+        phone: string;
+        email: string;
+      },
+      void
+    >({
+      query: () => ({
+        url: `/auth/spa/profile/`,
+        method: "GET",
+      }),
+    }),
+
+    updateSpaProfile: build.mutation<
+      void,
+      {
+        data: {
+          name: string;
+          address: string;
+          phone: string;
+          email: string;
+        };
+      }
+    >({
+      query: ({ data }) => ({
+        url: `/auth/spa/profile/`,
+        method: "PATCH",
+        data: data,
+      }),
+    }),
+
+    changePasswordAdmin: build.mutation<
+      { message: string },
+      { id: string; oldPassword: string; newPassword: string }
+    >({
+      query: ({ id, oldPassword, newPassword }) => ({
+        url: `/auth/change-password/Admin/${id}`,
+        method: "PATCH",
+        data: { oldPassword, newPassword },
+      }),
+    }),
+
+    getStaffProfile: build.mutation<
+      {
+        id: string;
+        full_name: string;
+        avatar: string;
+        email: string;
+        phone: string;
+        gender: string;
+      },
+      string
+    >({
+      query: (id) => ({
+        url: `/auth/staff/profile/${id}`,
+        method: "GET",
+      }),
+    }),
+
+    UpdateStaffProfile: build.mutation<
+      void,
+      {
+        id: string;
+        data: {
+          full_name: string;
+          email: string;
+          phone: string;
+          gender: string;
+        };
+      }
+    >({
+      query: ({ id, data }) => ({
+        url: `/auth/staff/profile/${id}`,
+        method: "PATCH",
+        data: data,
+      }),
+    }),
+
+    updateAvatarStaff: build.mutation<
+      { avatar: string },
+      { id: string; file: File }
+    >({
+      query: ({ id, file }) => {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        return {
+          url: `/auth/avatar/Staff/${id}`,
+          method: "PATCH",
+          body: formData,
+        };
+      },
+    }),
+
+    updateAvatarCashier: build.mutation<
+      { avatar: string },
+      { id: string; file: File }
+    >({
+      query: ({ id, file }) => {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        return {
+          url: `/auth/avatar/Cashier/${id}`,
+          method: "PATCH",
+          body: formData,
+        };
+      },
+    }),
+
+    changePasswordStaff: build.mutation<
+      { message: string },
+      { id: string; oldPassword: string; newPassword: string }
+    >({
+      query: ({ id, oldPassword, newPassword }) => ({
+        url: `/auth/change-password/Staff/${id}`,
+        method: "PATCH",
+        data: { oldPassword, newPassword },
+      }),
+    }),
+
+    getDoctorProfile: build.mutation<
+      {
+        id: string;
+        full_name: string;
+        avatar: string;
+        email: string;
+        phone: string;
+        gender: string;
+        biography: string;
+        specialization: string;
+        experience_years: number;
+      },
+      string
+    >({
+      query: (id) => ({
+        url: `/auth/doctor/profile/${id}`,
+        method: "GET",
+      }),
+    }),
+
+    updateDoctorProfile: build.mutation<
+      void,
+      {
+        id: string;
+        data: {
+          full_name: string;
+          phone: string;
+          email: string;
+          gender: string;
+          biography: string;
+          specialization: string;
+          experience_years: number;
+        };
+      }
+    >({
+      query: ({ id, data }) => ({
+        url: `/auth/doctor/profile/${id}`,
+        method: "PATCH",
+        data: data,
+      }),
+    }),
+
+    updateAvatarDoctor: build.mutation<
+      { avatar: string },
+      { id: string; file: File }
+    >({
+      query: ({ id, file }) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        return {
+          url: `/auth/avatar/Doctor/${id}`,
+          method: "PATCH",
+          body: formData,
+        };
+      },
+    }),
+
+    changePasswordDoctor: build.mutation<
+      { message: string },
+      { id: string; oldPassword: string; newPassword: string }
+    >({
+      query: ({ id, oldPassword, newPassword }) => ({
+        url: `/auth/change-password/Doctor/${id}`,
+        method: "PATCH",
+        data: { oldPassword, newPassword },
+      }),
+    }),
   }),
 });
 
@@ -162,10 +355,25 @@ export const {
   useGetAdminStatisticsMutation,
   useGetCustomerProfileMutation,
 
-  useUpdateAvatarMutation,
+  useUpdateAvatarCustomerMutation,
   useUpdateCustomerProfileMutation,
-  useChangePasswordMutation,
+  useChangePasswordCustomerMutation,
 
   useForgotPasswordMutation,
   useResetPasswordMutation,
+
+  useGetSpaProfileMutation,
+  useUpdateSpaProfileMutation,
+  useChangePasswordAdminMutation,
+
+  useGetStaffProfileMutation,
+  useUpdateStaffProfileMutation,
+  useUpdateAvatarStaffMutation,
+  useUpdateAvatarCashierMutation,
+  useChangePasswordStaffMutation,
+
+  useGetDoctorProfileMutation,
+  useUpdateDoctorProfileMutation,
+  useUpdateAvatarDoctorMutation,
+  useChangePasswordDoctorMutation,
 } = authApi;

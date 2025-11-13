@@ -17,6 +17,7 @@ import { configRoutes } from "@/constants/route";
 import ConfirmModal from "@/components/ConfirmModal";
 import { useAuthStore } from "@/hooks/UseAuth";
 import { motion } from "framer-motion";
+import { RoleEnum } from "@/common/types/auth";
 // import { SiderItem } from "@/constants/SiderController/type";
 // import getListSlider from "@/constants/SiderController";
 // import { configRoutes } from "@/constants/routes";
@@ -62,6 +63,11 @@ const SidebarSystem = ({
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   const [confirmOpen, setConfirmOpen] = useState<boolean>(false);
+
+  const isAdmin = auth.roles === RoleEnum.Admin;
+  const isStaff = auth.roles === RoleEnum.Staff;
+  const isCashier = auth.roles === RoleEnum.Casher;
+  const isDoctor = auth.roles === RoleEnum.Doctor;
 
   return (
     <>
@@ -164,13 +170,23 @@ const SidebarSystem = ({
             {/* Profile */}
             <Link
               className={cx("profile-item-inner")}
-              to=""
-              // to={isSpaComp ? configRoutes.spaProfile : ""}
+              // to=""
+              to={
+                isAdmin
+                  ? configRoutes.adminSpaProfile
+                  : isStaff
+                  ? configRoutes.casherProfile
+                  : isCashier
+                  ? configRoutes.casherProfile
+                  : isDoctor
+                  ? configRoutes.doctorProfileManagement
+                  : ""
+              }
             >
               <div className={cx("profile-item-inner-icon-wrapper")}>
                 <div className={cx("avatar-wrapper")}>
                   <VemsImage
-                    src={auth.image ?? AvatarDefault}
+                    src={auth.avatar ?? AvatarDefault}
                     alt={"avatar"}
                     className={cx("user-avatar")}
                     fallback={NoAvatarImage}
