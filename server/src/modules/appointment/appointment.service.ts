@@ -461,6 +461,10 @@ export class AppointmentService {
       relations: ['customer', 'details', 'details.service'],
     });
 
+    const services = await this.serviceRepo.find({
+      where: { isActive: true, createdAt: Between(startDate, endDate) },
+    });
+
     const totalInvoices = invoices.length;
     const totalAmount = invoices.reduce((acc, i) => acc + i.finalAmount, 0);
 
@@ -492,9 +496,10 @@ export class AppointmentService {
       .slice(0, 5);
 
     return {
-      totalInvoices,
-      totalAmount,
       totalCustomers,
+      totalAmount,
+      totalInvoices,
+      totalServices: services.length,
       topServices,
       topCustomers,
       invoices,

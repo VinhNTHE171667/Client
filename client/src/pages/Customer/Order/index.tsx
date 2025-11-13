@@ -482,6 +482,12 @@ const CustomerOrders: React.FC = () => {
                                 <strong>Ghi chú:</strong>{" "}
                                 {item.note || "Không có"}
                               </p>
+                              <p>
+                                <strong>Dịch vụ:</strong>{" "}
+                                {item.details
+                                  ?.map((d) => d.service?.name || "Dịch vụ")
+                                  .join(", ")}
+                              </p>
                             </>
                           }
                         />
