@@ -20,23 +20,28 @@ const Header = () => {
   // console.log(location);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const stickyElements =
-        document.querySelectorAll<HTMLElement>(".sticky-top");
-      const scrollTop = window.scrollY;
+    const header = document.getElementById("sticky-header");
+    let lastScroll = 0;
 
-      stickyElements.forEach((el) => {
-        if (scrollTop > 300) {
-          el.classList.add("shadow-sm");
-          el.style.top = "0px";
-        } else {
-          el.classList.remove("shadow-sm");
-          el.style.top = "-200px";
-        }
-      });
+    const handleScroll = () => {
+      if (!header) return;
+
+      const currentScroll = window.scrollY;
+
+      if (currentScroll <= 0) {
+        header.style.top = "0px";
+        return;
+      }
+
+      if (currentScroll > lastScroll && currentScroll > 200) {
+        header.style.top = "-200px";
+      } else {
+        header.style.top = "0px";
+      }
+
+      lastScroll = currentScroll;
     };
 
-    handleScroll();
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -73,7 +78,10 @@ const Header = () => {
 
   return (
     <div className="container-fluid px-0">
-      <div className="container-fluid bg-header">
+      <div
+        id="sticky-header"
+        className={`container-fluid bg-header ${styles.stickyHeader}`}
+      >
         <div className="container px-0">
           <nav className="navbar navbar-light navbar-expand-lg">
             <div className="navbar-brand">
@@ -153,6 +161,26 @@ const Header = () => {
                   )}
                 >
                   Dịch vụ
+                </Link>
+                <Link
+                  to={configRoutes.doctocList}
+                  className={cx(
+                    "nav-item",
+                    "nav-link",
+                    "px-lg-3",
+                    "my-3",
+                    "fw-bolder",
+                    "text-uppercase",
+                    "text-decoration-none",
+                    "link-underline",
+                    "link-underline-opacity-0",
+                    "link-underline-opacity-75-hover",
+                    "d-flex",
+                    "align-items-center",
+                    location.pathname === configRoutes.doctocList && "active"
+                  )}
+                >
+                  Bác sĩ
                 </Link>
               </div>
 

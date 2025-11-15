@@ -446,12 +446,15 @@ export class AppointmentService {
   }
 
   async getDashboard({ year, month }: { year: number; month?: number }) {
-    const startDate = month
-      ? new Date(year, month - 1, 1)
-      : new Date(year, 0, 1);
-    const endDate = month
-      ? new Date(year, month, 0, 23, 59, 59)
-      : new Date(year, 11, 31, 23, 59, 59);
+    const isFullYear = !month || month === 0;
+
+    const startDate = isFullYear
+      ? new Date(year, 0, 1)
+      : new Date(year, month - 1, 1);
+
+    const endDate = isFullYear
+      ? new Date(year, 11, 31, 23, 59, 59)
+      : new Date(year, month, 0, 23, 59, 59);
 
     const invoices = await this.invoiceRepo.find({
       where: {
@@ -461,8 +464,15 @@ export class AppointmentService {
       relations: ['customer', 'details', 'details.service'],
     });
 
+    const services = await this.serviceRepo.find({
+      where: { isActive: true, createdAt: Between(startDate, endDate) },
+    });
+
     const totalInvoices = invoices.length;
-    const totalAmount = invoices.reduce((acc, i) => acc + i.finalAmount, 0);
+    const totalAmount = invoices.reduce(
+      (acc, i) => acc + Number(i.finalAmount),
+      0,
+    );
 
     const customerIds = new Set(invoices.map((i) => i.customer.id));
     const totalCustomers = customerIds.size;
@@ -492,9 +502,10 @@ export class AppointmentService {
       .slice(0, 5);
 
     return {
-      totalInvoices,
-      totalAmount,
       totalCustomers,
+      totalAmount,
+      totalInvoices,
+      totalServices: services.length,
       topServices,
       topCustomers,
       invoices,

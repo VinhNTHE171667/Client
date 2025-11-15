@@ -24,6 +24,11 @@ export class ServiceController {
     return this.servicesService.findPublicServices();
   }
 
+  @Get('public/doctors/')
+  getDoctorsWithServices() {
+    return this.servicesService.findDoctorsWithServices();
+  }
+
   @Get('public/:id')
   getPublicService(@Param('id') id: string) {
     return this.servicesService.findOnePublicService(id);

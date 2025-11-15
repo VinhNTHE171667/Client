@@ -155,7 +155,7 @@ export class PaymentService {
       status: 'completed',
       payment_status: 'paid',
       invoice_type: 'deposit',
-      voucherId: appointment.voucherId ?? '',
+      voucherId: appointment.voucherId ?? undefined,
       details: invoiceDetails,
     });
 
@@ -237,7 +237,7 @@ export class PaymentService {
       payment_status: 'paid',
       invoice_type: 'final',
       payment_method: 'qr',
-      voucherId: appointment.voucherId ?? '',
+      voucherId: appointment.voucherId ?? undefined,
       details: invoiceDetails,
     });
 
