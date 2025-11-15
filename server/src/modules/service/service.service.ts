@@ -340,6 +340,19 @@ export class ServiceService {
     return doctors;
   }
 
+  async findDoctorsWithServices(): Promise<Doctor[]> {
+    const doctors = await this.doctorRepo.find({
+      where: { deletedAt: IsNull(), isActive: true },
+      // relations: ['services'],
+    });
+
+    // if (!doctors || doctors.length === 0) {
+    //   throw new NotFoundException('Không tìm thấy bác sĩ nào');
+    // }
+
+    return doctors;
+  }
+
   async findServicesByDoctor(doctorId: string): Promise<Service[]> {
     const doctor = await this.doctorRepo.findOne({
       where: { id: doctorId, deletedAt: IsNull(), isActive: true },

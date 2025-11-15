@@ -41,6 +41,7 @@ import CasherProfile from "@/pages/Casher/Profile";
 import DoctorProfile from "@/pages/Doctor/Profile";
 import InvoiceCasher from "@/pages/Casher/Invoice";
 import VoucherCustomer from "@/pages/Customer/Voucher";
+import DoctorList from "@/pages/Services/DoctorList";
 
 const router = createBrowserRouter([
   {
@@ -447,6 +448,17 @@ const router = createBrowserRouter([
             element: <VoucherCustomer />,
           },
         ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.doctocList,
+    element: <HomeLayouts />,
+    children: [
+      {
+        index: true,
+        element: <DoctorList />,
       },
     ],
   },

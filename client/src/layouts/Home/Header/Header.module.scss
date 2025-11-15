@@ -8,6 +8,18 @@
     height: auto;
 }
 
+.stickyHeader {
+    position: fixed;
+    top: -200px;
+    left: 0;
+    width: 100%;
+    z-index: 9999;
+    transition: top 0.4s ease, box-shadow 0.3s ease;
+    background: var(--color-bg, #fff);
+}
+
+
+
 .nav-link {
     position: relative;
     text-decoration: none;
