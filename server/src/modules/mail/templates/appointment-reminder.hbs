@@ -1,0 +1,125 @@
+<html lang='vi'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Nhắc nhở lịch hẹn sắp tới</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f9fafb;
+        color: #333;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+      }
+      .header {
+        background: linear-gradient(135deg, #43e97b, #38f9d7);
+        padding: 24px;
+        text-align: center;
+        color: #fff;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .content {
+        padding: 24px;
+        line-height: 1.6;
+      }
+      .content h2 {
+        color: #5ca16a;
+        font-size: 20px;
+        margin-top: 0;
+      }
+      ul {
+        list-style: none;
+        padding: 0;
+        margin: 12px 0;
+      }
+      li {
+        background: #fff7ed;
+        padding: 8px 12px;
+        margin-bottom: 6px;
+        border-radius: 6px;
+        border-left: 4px solid #7fb97a;
+      }
+      .info-box {
+        background-color: #fff7ed;
+        border-left: 4px solid #7fb97a;
+        padding: 12px 16px;
+        margin: 16px 0;
+        border-radius: 8px;
+      }
+      .footer {
+        text-align: center;
+        padding: 16px;
+        font-size: 14px;
+        color: #777;
+        background-color: #f9fafb;
+        border-top: 1px solid #eee;
+      }
+      .button {
+        display: inline-block;
+        background-color: #5ca16a;
+        color: #fff !important;
+        text-decoration: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        margin-top: 16px;
+      }
+      .button:hover {
+        background-color: #43b165;
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <div class='header'>
+        <h1>Nhắc nhở lịch hẹn sắp tới tại {{spaName}}</h1>
+      </div>
+
+      <div class='content'>
+        <h2>Xin chào {{customerName}},</h2>
+
+        <p>
+          Đây là thông báo nhắc nhở rằng bạn có một lịch hẹn sắp tới tại
+          <strong>{{spaName}}</strong>.
+        </p>
+
+        <div class='info-box'>
+          <div><strong>Ngày giờ:</strong> {{appointmentDate}}</div>
+          <div><strong>Chuyên viên:</strong> {{specialistName}}</div>
+        </div>
+
+        <h3>Dịch vụ của bạn:</h3>
+        <ul>
+          {{#each services}}
+            <li><strong>{{this.name}}</strong> — {{this.price}}</li>
+          {{/each}}
+        </ul>
+
+        <p>
+          Vui lòng đến đúng giờ để đảm bảo trải nghiệm tốt nhất. Nếu cần thay
+          đổi hoặc hủy lịch, bạn có thể nhấn nút bên dưới.
+        </p>
+
+        <a href='{{appointmentUrl}}' class='button'>Xem / Quản lý lịch hẹn</a>
+      </div>
+
+      <div class='footer'>
+        ©
+        {{year}}
+        {{spaName}}
+        — Cảm ơn bạn đã đồng hành cùng chúng tôi<br />
+        <small>Nếu có thắc mắc, vui lòng liên hệ: {{spaHotline}}</small>
+      </div>
+    </div>
+  </body>
+</html>

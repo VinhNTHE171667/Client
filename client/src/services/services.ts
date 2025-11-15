@@ -160,6 +160,25 @@ export type InvoiceData = {
   spaName: string | null;
 };
 
+export type DoctorListProps = {
+  id: string;
+  avatar: string | null;
+  full_name: string;
+  gender: string;
+  email: string;
+  phone: string;
+  password: string;
+  refreshToken: string;
+  biography: string | null;
+  specialization: string;
+  experience_years: number | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  isActive: boolean;
+  isVerified: boolean;
+};
+
 export const serviceApi = createApi({
   reducerPath: "serviceApi",
   baseQuery: axiosBaseQuery({
@@ -268,6 +287,13 @@ export const serviceApi = createApi({
         method: "Get",
       }),
     }),
+
+    getPublicDoctorList: build.mutation<DoctorListProps[], void>({
+      query: () => ({
+        url: `/service/public/doctors/`,
+        method: "Get",
+      }),
+    }),
   }),
 });
 
@@ -287,4 +313,6 @@ export const {
   useGetPublicServicesMutation,
   useGetPublicServiceByIdQuery,
   useGetPublicServiceByDoctorMutation,
+
+  useGetPublicDoctorListMutation,
 } = serviceApi;

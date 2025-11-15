@@ -14,6 +14,7 @@ import QualitySection from "./_components/QualitySection";
 import ContactSection from "./_components/ContactSection";
 import TestimonialsSection from "./_components/TestimonialsSection";
 import GallerySection from "./_components/GallerySection";
+import { configRoutes } from "@/constants/route";
 
 const cx = classNames.bind(styles);
 
@@ -62,10 +63,16 @@ const Homepage = () => {
                 <h1 className="display-1 text-capitalize mb-3">{s.title}</h1>
                 <p className="mx-md-5 fs-4 px-4 mb-5">{s.desc}</p>
                 <div className="d-flex align-items-center justify-content-center gap-4">
-                  <a className="cus-btn-secondary py-3 px-4" href="#">
+                  <a
+                    className="cus-btn-secondary py-3 px-4"
+                    href={configRoutes.login}
+                  >
                     Đăng ký
                   </a>
-                  <a className="cus-btn-primary py-3 px-4" href="#">
+                  <a
+                    className="cus-btn-primary py-3 px-4"
+                    href={configRoutes.services}
+                  >
                     Đặt ngay
                   </a>
                 </div>

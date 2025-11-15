@@ -134,6 +134,37 @@ export class MailService implements OnModuleInit {
     });
   }
 
+  async remindUpcomingAppointment({
+    to,
+    text,
+    appointment,
+  }: {
+    to: string;
+    text: string;
+    appointment: {
+      customer: { full_name: string };
+      startTime: Date;
+      services: {
+        name: string;
+        price: string;
+      }[];
+      staff?: { name: string } | null;
+    };
+  }) {
+    await this.transporter.sendMail({
+      to,
+      subject: `Nhắc nhở lịch hẹn sắp tới tại GenSpa`,
+      template: 'appointment-reminder',
+      context: {
+        customerName: appointment.customer.full_name,
+        startTime: appointment.startTime.toLocaleString('vi-VN'),
+        services: appointment.services,
+        staffName: appointment.staff?.name || 'Đang cập nhật',
+      },
+      text,
+    });
+  }
+
   async sendResetPasswordEmail(data: {
     to: string;
     user: { full_name?: string; email: string };

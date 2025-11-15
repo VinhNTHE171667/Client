@@ -12,6 +12,7 @@ export const configRoutes = {
   cart: "/cart",
   bookings: "/bookings",
   doctorProfile: "/services/doctor/:id",
+  doctocList: "/services/doctors",
   customerOrders: "/customer/orders",
   customerPayments: "/customer/payments",
   customerVouchers: "/customer/vouchers",
