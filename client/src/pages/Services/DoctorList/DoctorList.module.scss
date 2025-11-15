@@ -44,12 +44,18 @@
     font-size: 1.2rem;
     font-weight: 600;
     color: #222;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .specialty {
     color: #666;
     font-size: 0.95rem;
     margin-bottom: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .button {
