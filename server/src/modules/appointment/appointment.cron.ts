@@ -25,7 +25,7 @@ export class AppointmentCronReminderService {
 
     const appointments = await this.appointmentRepo.find({
       where: { startTime: MoreThan(now) },
-      relations: ['customer', 'services', 'staff', 'spa'],
+      relations: ['customer', 'details', 'details.service', 'staff', 'spa'],
     });
 
     if (!appointments.length) {
