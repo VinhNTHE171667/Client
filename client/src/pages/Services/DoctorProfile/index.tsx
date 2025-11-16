@@ -15,16 +15,18 @@ import {
   PhoneOutlined,
   CalendarOutlined,
   ArrowLeftOutlined,
-  ShoppingCartOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   useGetPublicDoctorProfileMutation,
   type DoctorData,
 } from "@/services/account";
+import { useAddToCartMutation } from "@/services/cart";
 import styles from "./DoctorProfile.module.scss";
 import FancyButton from "@/components/FancyButton";
 import NoImage from "@/assets/img/NoImage/NoImage.jpg";
+import { useAuthStore } from "@/hooks/UseAuth";
+import { showError, showSuccess } from "@/libs/toast";
 
 const DoctorProfile: React.FC = () => {
   const navigate = useNavigate();
@@ -32,6 +34,10 @@ const DoctorProfile: React.FC = () => {
   const [doctor, setDoctor] = useState<DoctorData>();
   const [getPublicDoctor] = useGetPublicDoctorProfileMutation();
   const [loading, setLoading] = useState(true);
+
+  const [addToCart] = useAddToCartMutation();
+  const [isAdding, setIsAdding] = useState(false);
+  const { auth } = useAuthStore();
 
   useEffect(() => {
     if (!id) return;
@@ -56,6 +62,32 @@ const DoctorProfile: React.FC = () => {
       <Empty description="Không tìm thấy thông tin bác sĩ" className="mt-10" />
     );
 
+  const handleAddToCart = async (serviceId: string) => {
+    try {
+      setIsAdding(true);
+      await addToCart({
+        customerId: auth.accountId || "",
+        itemData: { itemId: serviceId, quantity: 1 },
+        doctorId: doctor.id,
+      }).unwrap();
+
+      showSuccess("Đã thêm dịch vụ vào giỏ hàng");
+    } catch (err: unknown) {
+      if (err && typeof err === "object" && "message" in err) {
+        message.error(
+          (err as { message?: string }).message || "Thêm giỏ hàng thất bại"
+        );
+        showError(
+          (err as { message?: string }).message || "Thêm giỏ hàng thất bại"
+        );
+      } else {
+        message.error("Thêm giỏ hàng thất bại");
+      }
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
   return (
     <div className={styles.profilePage}>
       <div className={styles.heroSection}>
@@ -69,7 +101,7 @@ const DoctorProfile: React.FC = () => {
             Quay lại
           </Button>
           <Avatar
-            src={doctor.avatar || "/NoImage.jpg"}
+            src={doctor.avatar || NoImage}
             size={150}
             className={styles.avatar}
           />
@@ -117,17 +149,6 @@ const DoctorProfile: React.FC = () => {
                   <p>Chưa có dịch vụ nào</p>
                 )}
               </div>
-
-              <FancyButton
-                variant="primary"
-                size="middle"
-                className={styles.bookBtn}
-                icon={null}
-                onClick={() =>
-                  message.info("Chức năng đặt lịch đang được phát triển!")
-                }
-                label="Đặt lịch hẹn"
-              />
             </Col>
           </Row>
         </Card>
@@ -196,25 +217,14 @@ const DoctorProfile: React.FC = () => {
                           {service.price?.toLocaleString("vi-VN")}₫
                         </span>
                         <div className={styles.actions}>
-                          <div className={styles.cusButtonGroup}>
-                            <div className={styles.actions}>
-                              <FancyButton
-                                icon={<></>}
-                                size="small"
-                                variant="primary"
-                                label="Đặt lịch"
-                              />
-
-                              <ShoppingCartOutlined
-                                className={styles.addToCartIcon}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  // setSelectedService(service);
-                                  // setIsModalVisible(true);
-                                }}
-                              />
-                            </div>
-                          </div>
+                          <FancyButton
+                            icon={<></>}
+                            size="small"
+                            variant="primary"
+                            label={isAdding ? "Đang thêm..." : "Đặt lịch"}
+                            onClick={() => handleAddToCart(service.id)}
+                            disabled={isAdding}
+                          />
                         </div>
                       </div>
                     </Card>

@@ -202,6 +202,72 @@ export type InvoiceProps = {
   }[];
 };
 
+export type DoctorRequestCancelProps = {
+  id: string;
+  doctorId: string;
+  appointmentId: string;
+  reason: string;
+  status: "pending" | "approved" | "rejected";
+  createdAt: string;
+  appointment: {
+    id: string;
+    customerId: string;
+    doctorId: string;
+    staffId: string | null;
+    appointment_date: string;
+    status: keyof AppointmentProps["status"];
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+    voucherId: string | null;
+    cancelledAt: string | null;
+    cancelReason: string | null;
+    rejectionReason: string | null;
+    startTime: string;
+    endTime: string;
+    note: string;
+    orderCode: number;
+    appointmentType: "online" | "offline";
+    paymentMethod: "qr" | "cash";
+    totalAmount: string;
+    depositAmount: string;
+    isFeedbackGiven: false;
+    staff: {
+      id: string;
+      avatar: string | null;
+      full_name: string;
+      gender: string;
+      email: string;
+      phone: string | null;
+      password: string;
+      refreshToken: string;
+      createdAt: string;
+      updatedAt: string;
+      deletedAt: string | null;
+      isActive: boolean;
+      isVerified: boolean;
+    };
+  };
+  doctor: {
+    id: string;
+    avatar: string | null;
+    full_name: string;
+    gender: string;
+    email: string;
+    phone: string | null;
+    password: string;
+    refreshToken: string;
+    biography: string | null;
+    specialization: string;
+    experience_years: number;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+    isActive: boolean;
+    isVerified: boolean;
+  };
+};
+
 export const appointmentApi = createApi({
   reducerPath: "appointmentApi",
   baseQuery: axiosBaseQuery({
@@ -424,6 +490,38 @@ export const appointmentApi = createApi({
         method: "GET",
       }),
     }),
+
+    doctorRequestCancelBulk: build.mutation<
+      void,
+      { appointmentIds: string[]; doctorId: string; reason: string }
+    >({
+      query: ({ appointmentIds, doctorId, reason }) => ({
+        url: `/appointment/request-cancel`,
+        method: "POST",
+        body: { appointmentIds, doctorId, reason },
+      }),
+    }),
+
+    getDoctorCancelRequests: build.mutation<DoctorRequestCancelProps[], void>({
+      query: () => ({
+        url: `/appointment/request-cancel/pending`,
+        method: "GET",
+      }),
+    }),
+
+    approveDoctorCancelRequest: build.mutation<void, { requestId: string }>({
+      query: ({ requestId }) => ({
+        url: `/appointment/request-cancel/approve/${requestId}`,
+        method: "POST",
+      }),
+    }),
+
+    rejectDoctorCancelRequest: build.mutation<void, { requestId: string }>({
+      query: ({ requestId }) => ({
+        url: `/appointment/request-cancel/reject/${requestId}`,
+        method: "POST",
+      }),
+    }),
   }),
 });
 
@@ -449,4 +547,9 @@ export const {
   useGetAppointmentsForManagementMutation,
 
   useGetInvoiceMutation,
+
+  useDoctorRequestCancelBulkMutation,
+  useGetDoctorCancelRequestsMutation,
+  useApproveDoctorCancelRequestMutation,
+  useRejectDoctorCancelRequestMutation,
 } = appointmentApi;
