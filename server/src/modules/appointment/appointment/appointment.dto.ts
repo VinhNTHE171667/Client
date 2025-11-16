@@ -128,3 +128,14 @@ export class CreateAppointmentDto {
 }
 
 export class UpdateAppointmentDto extends PartialType(CreateAppointmentDto) {}
+
+export class RequestCancelDto {
+  @IsUUID()
+  doctorId: string;
+
+  @IsUUID()
+  appointmentId: string;
+
+  @IsNotEmpty()
+  reason: string;
+}

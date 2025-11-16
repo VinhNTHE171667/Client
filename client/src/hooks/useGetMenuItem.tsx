@@ -108,6 +108,12 @@ export const getSidebarItemsByRole = (role: string): SiderItem[] => {
       icon: <MdFeedback className="ml-3" />,
       activeLink: [configRoutes.staffFeedback],
     },
+    {
+      name: "Yêu cầu hủy của bác sĩ",
+      link: configRoutes.staffRequestDoctor,
+      icon: <FaUserDoctor className="ml-3" />,
+      activeLink: [configRoutes.staffRequestDoctor],
+    },
     // {
     //   name: "Khách hàng",
     //   link: configRoutes.staffCustomers,

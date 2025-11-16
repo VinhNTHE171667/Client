@@ -42,6 +42,7 @@ import DoctorProfile from "@/pages/Doctor/Profile";
 import InvoiceCasher from "@/pages/Casher/Invoice";
 import VoucherCustomer from "@/pages/Customer/Voucher";
 import DoctorList from "@/pages/Services/DoctorList";
+import DoctorCancelRequestManagementStaff from "@/pages/Staff/RequestDoctor";
 
 const router = createBrowserRouter([
   {
@@ -459,6 +460,22 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <DoctorList />,
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.staffRequestDoctor,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Staff]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <DoctorCancelRequestManagementStaff />,
+          },
+        ],
       },
     ],
   },

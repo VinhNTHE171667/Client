@@ -22,6 +22,7 @@ import { CustomerVoucher } from '@/entities/customerVoucher.entity';
 import { Invoice } from '@/entities/invoice.entity';
 import { InvoiceDetail } from '@/entities/invoiceDetail.entity';
 import { AppointmentCronReminderService } from './appointment.cron';
+import { DoctorCancelRequest } from '@/entities/doctorCancelRequest.entity';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { AppointmentCronReminderService } from './appointment.cron';
       CustomerVoucher,
       Invoice,
       InvoiceDetail,
+      DoctorCancelRequest,
     ]),
     JwtModule.register({
       global: true,
