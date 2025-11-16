@@ -22,6 +22,7 @@ import { Voucher } from '@/entities/voucher.entity';
 import { CustomerVoucher } from '@/entities/customerVoucher.entity';
 import { Invoice } from '@/entities/invoice.entity';
 import { InvoiceDetail } from '@/entities/invoiceDetail.entity';
+import { DoctorCancelRequest } from '@/entities/doctorCancelRequest.entity';
 
 @Injectable()
 export class AppointmentService {
@@ -58,6 +59,9 @@ export class AppointmentService {
     private readonly invoiceRepo: Repository<Invoice>,
     @InjectRepository(InvoiceDetail)
     private readonly invoiceDetailRepo: Repository<InvoiceDetail>,
+
+    @InjectRepository(DoctorCancelRequest)
+    private readonly cancelRepo: Repository<DoctorCancelRequest>,
 
     private readonly mailService: MailService,
     private readonly dataSource: DataSource,
@@ -510,5 +514,93 @@ export class AppointmentService {
       topCustomers,
       invoices,
     };
+  }
+
+  async requestCancelByDoctorBulk(
+    appointmentIds: string[],
+    doctorId: string,
+    reason: string,
+  ) {
+    if (!appointmentIds.length) {
+      throw new BadRequestException('Chưa chọn lịch hẹn nào');
+    }
+
+    const results: { appointmentId: string; status: string }[] = [];
+
+    for (const id of appointmentIds) {
+      const appointment = await this.appointmentRepo.findOne({ where: { id } });
+
+      if (!appointment) {
+        results.push({ appointmentId: id, status: 'Không tìm thấy lịch hẹn' });
+        continue;
+      }
+
+      if (appointment.doctorId !== doctorId) {
+        results.push({ appointmentId: id, status: 'Không có quyền hủy' });
+        continue;
+      }
+
+      const existing = await this.cancelRepo.findOne({
+        where: { appointmentId: id, doctorId, status: 'pending' },
+      });
+
+      if (existing) {
+        results.push({ appointmentId: id, status: 'Đã gửi yêu cầu trước đó' });
+        continue;
+      }
+
+      const request = this.cancelRepo.create({
+        appointmentId: id,
+        doctorId,
+        reason,
+        status: 'pending',
+      });
+
+      await this.cancelRepo.save(request);
+      results.push({ appointmentId: id, status: 'Gửi yêu cầu thành công' });
+    }
+
+    return results;
+  }
+
+  async approveRequest(id: string) {
+    const req = await this.cancelRepo.findOne({ where: { id } });
+    if (!req) throw new NotFoundException('Không tìm thấy request');
+
+    req.status = 'approved';
+    await this.cancelRepo.save(req);
+
+    await this.appointmentRepo.update(req.appointmentId, {
+      status: AppointmentStatus.Cancelled,
+      cancelledAt: new Date(),
+      cancelReason: `${req.reason} (Hủy bởi hệ thống sau khi bác sĩ duyệt)`,
+    });
+
+    
+
+    // await this.historyRepo.save({
+    //   appointmentId: req.appointmentId,
+    //   status: AppointmentStatus.Cancelled,
+    //   note: `Doctor requested cancellation: ${req.reason}`,
+    // });
+
+    return { message: 'Đã duyệt yêu cầu và hủy appointment.' };
+  }
+
+  async rejectRequest(id: string) {
+    const req = await this.cancelRepo.findOne({ where: { id } });
+    if (!req) throw new NotFoundException('Không tìm thấy request');
+
+    req.status = 'rejected';
+    await this.cancelRepo.save(req);
+
+    return { message: 'Đã từ chối yêu cầu.' };
+  }
+
+  async findAllPending() {
+    return this.cancelRepo.find({
+      where: { status: 'pending' },
+      relations: ['appointment', 'doctor'],
+    });
   }
 }
