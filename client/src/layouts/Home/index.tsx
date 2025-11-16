@@ -11,11 +11,13 @@ import "@/assets/scss/page.scss";
 const HomeLayouts = () => {
   return (
     <>
-      <div>
-        <Header />
+      <Header />
+
+      <main style={{ paddingTop: "100px" }}>
         <Outlet />
-        <Footer />
-      </div>
+      </main>
+
+      <Footer />
     </>
   );
 };

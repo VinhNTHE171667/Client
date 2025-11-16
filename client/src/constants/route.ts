@@ -35,6 +35,7 @@ export const configRoutes = {
   staffOrders: "/staff/orders",
   staffFeedback: "/staff/feedback",
   staffProfile: "/staff/profile",
+  staffRequestDoctor: "/staff/doctor-cancel-requests",
 
   doctorDashboard: "/doctor/dashboard",
   doctorOrderManagement: "/doctor/orders",
