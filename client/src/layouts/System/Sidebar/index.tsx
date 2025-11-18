@@ -2,9 +2,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import classNames from "classnames/bind";
 import { MdLogout } from "react-icons/md";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { RiMenuFold2Fill, RiMenuFoldFill } from "react-icons/ri";
-
+import { BiAnalyse } from "react-icons/bi";
 // import LogoVems from "@/assets/images/Layout/Navbar/logo-login.png";
 import AvatarDefault from "@/assets/img/defaultAvatar.jpg";
 import NoAvatarImage from "@/assets/img/defaultAvatar.jpg";
@@ -68,7 +68,61 @@ const SidebarSystem = ({
   const isStaff = auth.roles === RoleEnum.Staff;
   const isCashier = auth.roles === RoleEnum.Casher;
   const isDoctor = auth.roles === RoleEnum.Doctor;
+  const [isRecommendationRunning, setIsRecommendationRunning] =
+    useState<boolean>(false);
 
+  const navigate = useNavigate();
+
+  const recommendationApiBase = `${
+    import.meta.env.VITE_RECOMMENDATION_API ?? ""
+  }`.replace(/\/$/, "");
+
+  const handleRunRecommendation = async () => {
+    if (isRecommendationRunning) return;
+    const confirmed = window.confirm(
+      "Bạn có chắc chắn muốn chạy phân tích dữ liệu không?"
+    );
+    if (!confirmed) return;
+
+    // navigate to recommendation page immediately, then trigger job in background
+  navigate(configRoutes.adminRecommendation);
+
+    setIsRecommendationRunning(true);
+    const endpoint = recommendationApiBase
+      ? `${recommendationApiBase}/api/recommendation/run`
+      : "/api/recommendation/run";
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ force_refresh: true }),
+      });
+
+      if (response.status === 202) {
+        window.alert(
+          "Đã khởi chạy quy trình phân tích dữ liệu. Vui lòng kiểm tra báo cáo sau ít phút."
+        );
+      } else {
+        let detail = "";
+        try {
+          const payload = await response.json();
+          detail = payload?.detail || JSON.stringify(payload);
+        } catch (error) {
+          detail = "Không đọc được phản hồi từ máy chủ.";
+        }
+        window.alert(
+          `Không thể khởi chạy phân tích dữ liệu. Chi tiết: ${detail}`
+        );
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Không xác định";
+      window.alert(`Kết nối tới dịch vụ phân tích thất bại: ${message}`);
+    } finally {
+      setIsRecommendationRunning(false);
+    }
+  };
   return (
     <>
       <nav className={cx("navbar", `${isToggleNavbar ? "toggle" : ""}`)}>
@@ -162,6 +216,40 @@ const SidebarSystem = ({
                 </Link>
               </motion.li>
             ))}
+
+            <motion.li
+            key="recommendation-trigger"
+            className={cx("navbar-item")}
+            initial={{ opacity: 0, x: -15 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{
+              delay: sidebarItems.length * 0.04,
+              type: "spring",
+              stiffness: 180,
+              damping: 12,
+            }}
+            whileTap={isRecommendationRunning ? undefined : { scale: 0.98 }}
+          >
+            <button
+              type="button"
+              className={cx("navbar-item-inner", {
+                disabled: isRecommendationRunning,
+              })}
+              onClick={handleRunRecommendation}
+              disabled={isRecommendationRunning}
+            >
+              <div className={cx("navbar-item-inner-icon-wrapper")}>
+                <BiAnalyse className={cx("navbar-item-inner-icon")} />
+              </div>
+              <div className={cx("link-text-wrapper")}>
+                <span className={cx("link-text")}>
+                  {isRecommendationRunning
+                    ? "Đang phân tích..."
+                    : "Phân tích dữ liệu"}
+                </span>
+              </div>
+            </button>
+          </motion.li>
         </ul>
 
         {/* Profile Start */}

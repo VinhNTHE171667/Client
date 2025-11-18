@@ -329,3 +329,60 @@
         background: #68bb79 !important;
     }
 }
+
+.cartSideColumn {
+    position: sticky;
+    top: 100px;
+    width: 360px;
+    flex-shrink: 0;
+    margin-top: 40px;
+}
+
+.recommendationCard {
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.recommendationHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.recommendationHeading {
+    margin: 0;
+}
+
+.recommendationRefresh {
+    color: #666;
+}
+
+.recommendationHint {
+    display: block;
+    margin: 8px 0 12px;
+}
+
+.recommendationAlert {
+    margin-top: 12px;
+}
+
+.recommendationLoading {
+    display: flex;
+    justify-content: center;
+    padding: 18px 0;
+}
+
+.recommendationEmpty { padding: 12px 0 }
+
+.recommendationList { display:flex; flex-direction:column; gap:12px; margin-top:12px }
+
+.recommendationItem { display:flex; gap:12px; align-items:flex-start; padding:8px; border-radius:10px; background:#fff }
+.recommendationImage { width:72px; height:72px; object-fit:cover; border-radius:8px }
+.recommendationContent { flex:1 }
+.recommendationTitle { font-weight:600; margin-bottom:6px }
+.recommendationMeta { display:flex; gap:8px; align-items:center; margin-bottom:6px; font-size:12px; color:#555 }
+.recommendationPrice { color:#d94862; font-weight:700; margin-bottom:8px }
+.recommendationActions { display:flex; justify-content:flex-end }
+.scoreTag { background:#ffe58f; padding:2px 6px; border-radius:6px; font-size:12px }
+.reasonTag { background:#e6f7ff; padding:2px 6px; border-radius:6px; font-size:12px }

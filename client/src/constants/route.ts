@@ -31,7 +31,8 @@ export const configRoutes = {
   adminVouchers: "/admin/vouchers",
   adminMemberships: "/admin/memberships",
   adminSpaProfile: "/admin/spa-profile",
-
+  adminRecommendation: "/admin/recommendation",
+  
   staffOrders: "/staff/orders",
   staffFeedback: "/staff/feedback",
   staffProfile: "/staff/profile",

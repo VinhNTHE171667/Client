@@ -1,0 +1,36 @@
+{
+  "total_revenue": 2070000.0,
+  "avg_ticket": 690000.0,
+  "num_customers": 2,
+  "retention_rate": 0.5,
+  "no_show_rate": 0.25,
+  "forecast_ready": true,
+  "segments_ready": true,
+  "anomaly_ready": true,
+  "monthly_revenue": [
+    {
+      "month": "2025-10",
+      "total": 2070000
+    }
+  ],
+  "top_services": [
+    {
+      "service_id": 1,
+      "name": "Massage Thư Giãn",
+      "quantity": 2,
+      "revenue": 900000
+    },
+    {
+      "service_id": 4,
+      "name": "Detox Body",
+      "quantity": 1,
+      "revenue": 650000
+    },
+    {
+      "service_id": 2,
+      "name": "Chăm Sóc Da Mặt",
+      "quantity": 1,
+      "revenue": 520000
+    }
+  ]
+}

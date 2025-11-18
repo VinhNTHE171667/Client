@@ -1,0 +1,22 @@
+[
+  { "id": "145f0361-5bd7-4f5d-935c-d5660373097d", "name": "Service 1", "price": 500000 },
+  { "id": "154ff289-1672-4ba0-89e0-985beaa85930", "name": "Service 2", "price": 400000 },
+  { "id": "2104cf78-31e1-4da0-976f-589dacc22041", "name": "Service 3", "price": 500000 },
+  { "id": "22c19647-2d71-44f0-8088-4a435494f3ea", "name": "Service 4", "price": 300000 },
+  { "id": "23822d73-232c-4632-b582-447645c1221c", "name": "Service 5", "price": 600000 },
+  { "id": "2a8c00a6-9743-4e0f-a7bb-85cb70cefb6a", "name": "Service 6", "price": 380000 },
+  { "id": "30c3ff43-0e25-4c22-a05c-00274991ebc2", "name": "Service 7", "price": 450000 },
+  { "id": "31bc2652-8c3f-4520-b998-36f24972cd8c", "name": "Service 8", "price": 400000 },
+  { "id": "6911e25e-2424-468a-b771-e616be9f1a85", "name": "Service 9", "price": 700000 },
+  { "id": "7179fcb4-2831-4eae-9b43-36f645012e7a", "name": "Service 10", "price": 380000 },
+  { "id": "82694742-f55c-468d-93d9-a2a59cdc9c34", "name": "Service 11", "price": 420000 },
+  { "id": "8bc1ab08-c5d9-47c8-9acf-03432e382b83", "name": "Service 12", "price": 350000 },
+  { "id": "90945fa1-4739-4911-a484-5690233226c3", "name": "Service 13", "price": 480000 },
+  { "id": "971505d9-9bda-44ef-9d70-daf3edf53890", "name": "Service 14", "price": 450000 },
+  { "id": "23822d73-232c-4632-b582-447645c1221c", "name": "Service 15", "price": 1100000 },
+  { "id": "bf920ea2-4c43-49f6-8c0b-70a8f8a7fba6", "name": "Service 16", "price": 600000 },
+  { "id": "c18f1cc6-1f15-48da-b9c9-41c02d413ab4", "name": "Service 17", "price": 470000 },
+  { "id": "cfb5b16d-d55e-4cee-a809-59af8673beb9", "name": "Service 18", "price": 520000 },
+  { "id": "f2dc5858-c1de-4bf8-859c-df50cc988b7c", "name": "Service 19", "price": 1000000 },
+  { "id": "ff9ba7a0-d10d-4c28-bb66-44cd1ac189c2", "name": "Service 20", "price": 450000 }
+]
