@@ -156,17 +156,17 @@ export default function AccountCustomer() {
   useEffect(() => {
     if (filter.value === "all") {
       setCustomers(allCustomers);
-    } else if (filter.value === CustomerTypeEnum.member) {
+    } else if (filter.value === CustomerTypeEnum.Member) {
       setCustomers(
-        allCustomers.filter((c) => c.customer_type === CustomerTypeEnum.member)
+        allCustomers.filter((c) => c.customer_type === CustomerTypeEnum.Member)
       );
-    } else if (filter.value === CustomerTypeEnum.vip) {
+    } else if (filter.value === CustomerTypeEnum.Vip) {
       setCustomers(
-        allCustomers.filter((c) => c.customer_type === CustomerTypeEnum.vip)
+        allCustomers.filter((c) => c.customer_type === CustomerTypeEnum.Vip)
       );
-    } else if (filter.value === CustomerTypeEnum.regular) {
+    } else if (filter.value === CustomerTypeEnum.Regular) {
       setCustomers(
-        allCustomers.filter((c) => c.customer_type === CustomerTypeEnum.regular)
+        allCustomers.filter((c) => c.customer_type === CustomerTypeEnum.Regular)
       );
     }
   }, [filter]);
@@ -275,9 +275,9 @@ export default function AccountCustomer() {
                 <FancySegment
                   options={[
                     { label: "Tất cả", value: "all" },
-                    { label: "Thường", value: CustomerTypeEnum.regular },
-                    { label: "Thành viên", value: CustomerTypeEnum.member },
-                    { label: "VIP", value: CustomerTypeEnum.vip },
+                    { label: "Thường", value: CustomerTypeEnum.Regular },
+                    { label: "Thành viên", value: CustomerTypeEnum.Member },
+                    { label: "VIP", value: CustomerTypeEnum.Vip },
                   ]}
                   value={filter}
                   onChange={setFilter}

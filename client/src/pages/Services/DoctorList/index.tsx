@@ -75,9 +75,7 @@ export default function DoctorList() {
                   type="primary"
                   shape="round"
                   className={styles.button}
-                  onClick={() =>
-                    (window.location.href = `/doctor/${doctor.id}`)
-                  }
+                  onClick={() => navigate(`/services/doctor/${doctor.id}`)}
                 >
                   Xem dịch vụ
                 </Button>

@@ -1,7 +1,8 @@
 import { axiosBaseQuery } from "@/libs/axios/axiosBase";
 import { createApi } from "@reduxjs/toolkit/query/react";
 
-const baseUrl = import.meta.env.VITE_PUBLIC_API || "";
+// Default to VITE_PUBLIC_API if provided, otherwise use localhost:3001 for local development
+const baseUrl = import.meta.env.VITE_PUBLIC_API || "http://localhost:3001";
 
 export type CategoryData = {
   id: string;

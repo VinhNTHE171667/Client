@@ -1,0 +1,273 @@
+{
+  "kpi": {
+    "total_revenue": 2070000.0,
+    "avg_ticket": 690000.0,
+    "num_customers": 2,
+    "retention_rate": 0.5,
+    "no_show_rate": 0.25,
+    "forecast_ready": true,
+    "segments_ready": true,
+    "anomaly_ready": true,
+    "monthly_revenue": [
+      {
+        "month": "2025-10",
+        "total": 2070000
+      }
+    ],
+    "top_services": [
+      {
+        "service_id": 1,
+        "name": "Massage Thư Giãn",
+        "quantity": 2,
+        "revenue": 900000
+      },
+      {
+        "service_id": 4,
+        "name": "Detox Body",
+        "quantity": 1,
+        "revenue": 650000
+      },
+      {
+        "service_id": 2,
+        "name": "Chăm Sóc Da Mặt",
+        "quantity": 1,
+        "revenue": 520000
+      }
+    ]
+  },
+  "forecast": {
+    "predictions": [
+      {
+        "ds": "2025-10-04",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-05",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-06",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-07",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-08",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-09",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-10",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-11",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-12",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-13",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-14",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-15",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-16",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-17",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-18",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-19",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-20",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-21",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-22",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-23",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-24",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-25",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-26",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-27",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-28",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-29",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-30",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-10-31",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-11-01",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      },
+      {
+        "ds": "2025-11-02",
+        "yhat": 690000.0,
+        "yhat_lower": 621000.0,
+        "yhat_upper": 759000.0000000001
+      }
+    ],
+    "model": "moving_average"
+  },
+  "segments": {
+    "customers": [
+      {
+        "customer_id": 1,
+        "recency": 0,
+        "frequency": 2,
+        "monetary": 1620000,
+        "segment": "VIP",
+        "segment_id": 0
+      },
+      {
+        "customer_id": 2,
+        "recency": 1,
+        "frequency": 1,
+        "monetary": 450000,
+        "segment": "Dormant",
+        "segment_id": 3
+      }
+    ],
+    "summary": [
+      {
+        "segment": "VIP",
+        "customer_count": 1,
+        "avg_spend": 1620000.0
+      },
+      {
+        "segment": "Dormant",
+        "customer_count": 1,
+        "avg_spend": 450000.0
+      }
+    ]
+  },
+  "anomaly": {
+    "anomalies": [],
+    "model": "zscore"
+  },
+  "advice": [
+    {
+      "title": "Tăng doanh thu 12% với Combo VIP",
+      "description": "Kết hợp dịch vụ Massage & Facial cho nhóm khách Dormant nhằm kích hoạt lại.",
+      "impact": "+12%",
+      "effort": "Medium"
+    },
+    {
+      "title": "Đẩy mạnh upsell ngày cuối tuần",
+      "description": "Triển khai ưu đãi 10% cho gói chăm sóc da nâng cao vào thứ 6 - CN để tối ưu công suất.",
+      "impact": "+8%",
+      "effort": "Low"
+    }
+  ]
+}

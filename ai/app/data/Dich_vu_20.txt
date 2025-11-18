@@ -1,0 +1,17 @@
+* Tên dịch vụ: Chăm sóc và Sơn móng Tay (Classic Manicure)
+* Mô tả chi tiết: Dịch vụ cơ bản làm sạch và làm đẹp cho móng tay. Bao gồm các bước ngâm tay, cắt tỉa da chết xung quanh móng (nhặt da), tạo hình (dũa) móng theo yêu cầu (vuông, tròn, nhọn), và sơn màu (khách có thể chọn sơn thường hoặc sơn gel).
+* Giá tiền (Tham khảo):
+    * Cắt da, sửa móng (Manicure): 100.000 VNĐ
+    * Sơn Gel (Màu trơn): 150.000 VNĐ
+    * Gói Combo (Cắt da + Sơn Gel): 230.000 VNĐ
+* Liệu trình (Các bước):
+    1.  Ngâm tay: Ngâm 2 bàn tay trong nước ấm để làm mềm da.
+    2.  Cắt da (Nhặt da): Kỹ thuật viên dùng kềm chuyên dụng đã tiệt trùng để cắt bỏ phần da chết, da thừa xung quanh viền móng.
+    3.  Tạo hình (Dũa móng): Dũa và tạo hình móng theo yêu cầu của khách.
+    4.  Sơn móng (Nếu khách yêu cầu):
+        * Sơn Gel: Sơn lớp base (hơ đèn UV/LED) -> Sơn 2 lớp màu (hơ đèn sau mỗi lớp) -> Sơn lớp top coat (hơ đèn).
+        * Sơn thường: Sơn base -> 2 lớp màu -> sơn top.
+    5.  Dưỡng: Thoa dầu dưỡng vào viền móng và massage nhẹ.
+* Thời gian thực hiện: 45 phút (chỉ cắt da) / 75 phút (cắt da + sơn gel).
+* Hiệu quả: Bộ móng sạch sẽ, gọn gàng, thẩm mỹ.
+* Chăm sóc sau liệu trình: Nếu sơn gel, tránh ngâm nước nóng quá lâu. Hạn chế tiếp xúc trực tiếp với hóa chất tẩy rửa (nước rửa chén, bột giặt) để sơn bền màu.

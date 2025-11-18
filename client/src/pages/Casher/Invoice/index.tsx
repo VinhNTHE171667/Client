@@ -8,16 +8,21 @@ import {
   Table,
   Divider,
   Select,
-} from "antd";
+} from "antd"
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { showError } from "@/libs/toast";
 import { InvoiceColumn } from "./_components/columnTypes";
-import {
-  useGetInvoiceMutation,
-  type InvoiceProps,
-} from "@/services/appointment";
-import * as XLSX from "xlsx";
+// import {
+//   useGetInvoiceMutation,
+//   type InvoiceProps,
+// } from "@/services/appointment";
+import { useGetInvoiceMutation,
+ type InvoiceProps,
+
+ } from "@/services/appointment";
+
+import * as XLSX from "xlsx/dist/xlsx.full.min.js";
 import { saveAs } from "file-saver";
 import { Button } from "antd";
 

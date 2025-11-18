@@ -1,0 +1,441 @@
+[ Bắt đầu Chunk Dịch vụ 1 ]
+
+* Tên dịch vụ: Liệu trình Chăm sóc da mụn Chuyên sâu (Acne Treatment Facial)
+* Mô tả chi tiết: Đây là liệu trình được thiết kế chuyên biệt dành cho làn da đang gặp vấn đề về mụn trứng cá (mụn viêm, mụn ẩn, mụn đầu đen) và da dầu. Dịch vụ tập trung vào việc làm sạch sâu lỗ chân lông, kháng viêm, tiêu diệt vi khuẩn P. acnes, và phục hồi hàng rào bảo vệ da. Liệu trình sử dụng các sản phẩm đặc trị chứa thành phần như Axit Salicylic (BHA), Benzoyl Peroxide, và Tinh chất tràm trà, kết hợp với công nghệ ánh sáng sinh học Blue Light (Ánh sáng xanh) để tối ưu hóa hiệu quả điều trị.
+* Giá tiền (Tham khảo):
+    * Giá niêm yết: 800.000 VNĐ / buổi
+    * Gói liệu trình (5 buổi): 3.500.000 VNĐ (Tiết kiệm 500.000 VNĐ)
+    * Gói liệu trình (10 buổi): 6.500.000 VNĐ (Tiết kiệm 1.500.000 VNĐ)
+*(Lưu ý: Giá có thể thay đổi tùy theo chương trình khuyến mãi hoặc tình trạng da thực tế.)*
+* Liệu trình (Các bước thực hiện):
+    1.  Thăm khám & Soi da: Chuyên gia đánh giá tình trạng mụn và cấu trúc da bằng máy soi da chuyên dụng.
+    2.  Làm sạch kép (Double Cleansing): Tẩy trang và rửa mặt bằng sữa rửa mặt kiềm dầu, dịu nhẹ.
+    3.  Tẩy tế bào chết: Sử dụng tẩy da chết hóa học (chứa AHA/BHA) hoặc vật lý để loại bỏ sừng già, làm thông thoáng bề mặt da.
+    4.  Xông hơi & Hút dầu: Xông hơi nóng để mở lỗ chân lông, sau đó dùng máy hút mụn cám và bã nhờn dư thừa.
+    5.  Lấy nhân mụn Y khoa: Kỹ thuật viên sử dụng dụng cụ vô trùng để lấy các nhân mụn đã chín (mụn đầu đen, mụn mủ, mụn ẩn), hạn chế tối đa tổn thương và thâm sẹo.
+    6.  Sát khuẩn: Điện tím hoặc dung dịch Povidine được sử dụng để sát khuẩn các nốt mụn vừa lấy, ngăn ngừa viêm nhiễm.
+    7.  Chiếu Ánh sáng sinh học (Blue Light): Chiếu đèn LED ánh sáng xanh (bước sóng ~415nm) trong 15 phút để tiêu diệt vi khuẩn P. acnes và làm dịu da.
+    8.  Đắp mặt nạ: Sử dụng mặt nạ đất sét, tràm trà hoặc mặt nạ làm dịu (chứa rau má, B5) để giảm sưng đỏ và kiểm soát dầu.
+    9.  Cân bằng & Dưỡng ẩm: Thoa toner (nước hoa hồng) và kem dưỡng/serum đặc trị mụn không gây bít tắc, khóa ẩm cho da.
+    10. Thoa kem chống nắng: Bước cuối cùng (nếu làm ban ngày) để bảo vệ da khỏi tia UV.
+* Thời gian thực hiện: 75 - 90 phút / buổi
+* Hiệu quả (Kết quả đạt được):
+    * Ngay sau liệu trình: Da sạch sâu, thông thoáng, giảm sưng đỏ đáng kể tại các nốt mụn viêm.
+    * Sau 3-5 buổi: Tình trạng mụn viêm và mụn ẩn giảm rõ rệt. Lượng dầu thừa được kiểm soát tốt hơn, da bớt bóng nhờn.
+    * Sau 10 buổi (Hoàn tất liệu trình): Nền da khỏe mạnh, mụn mới ít xuất hiện. Các vết thâm mụn cũ mờ dần, da sáng và đều màu hơn.
+    * Cam kết: Giảm 70-90% tình trạng mụn (tùy cơ địa) nếu tuân thủ đúng liệu trình và hướng dẫn chăm sóc tại nhà.
+* Chăm sóc sau liệu trình (Hướng dẫn khách hàng):
+    * Tránh rửa mặt hoặc tiếp xúc nước trong 4-6 giờ đầu tiên.
+    * Sử dụng các sản phẩm làm sạch dịu nhẹ, không chứa cồn hoặc hạt scrub trong 3 ngày đầu.
+    * Bắt buộc sử dụng kem chống nắng hàng ngày, ngay cả khi ở trong nhà.
+    * Không tự ý cạy, nặn mụn tại nhà.
+    * Tăng cường uống nước, ăn rau xanh và hạn chế đồ cay nóng, nhiều đường.
+
+[ Kết thúc Chunk Dịch vụ 1 ]
+
+--- --- ---
+
+[ Bắt đầu Chunk Dịch vụ 2 ]
+
+* Tên dịch vụ: Massage Thụy Điển Cổ điển (Swedish Massage)
+* Mô tả chi tiết: Là hình thức massage phổ biến nhất, sử dụng 5 kỹ thuật xoa bóp cơ bản (vuốt dài, nhào, miết, vỗ và rung) với tinh dầu thiên nhiên. Liệu pháp này tập trung vào việc thư giãn các lớp cơ nông, giải tỏa căng thẳng thần kinh và tăng cường tuần hoàn máu.
+* Giá tiền (Tham khảo):
+    * Gói 60 phút: 500.000 VNĐ
+    * Gói 90 phút: 700.000 VNĐ
+* Liệu trình (Các bước):
+    1.  Khởi động: Khách nằm sấp, chuyên gia ấn huyệt nhẹ nhàng qua khăn.
+    2.  Massage lưng: Sử dụng tinh dầu, thực hiện các động tác vuốt dài, nhào nặn để thư giãn cơ lưng và vai.
+    3.  Massage chân (mặt sau): Tập trung vào cơ đùi và bắp chân.
+    4.  Massage chân (mặt trước): Khách nằm ngửa, massage đùi và cẳng chân.
+    5.  Massage tay: Vuốt và nhào nặn từ bả vai xuống ngón tay.
+    6.  Massage đầu, cổ: Thư giãn các cơ vùng cổ và các huyệt đạo trên đầu.
+    7.  Kết thúc: Lau sạch dầu bằng khăn ấm.
+* Thời gian thực hiện: 60 phút hoặc 90 phút.
+* Hiệu quả: Giảm căng thẳng, mệt mỏi ngay lập tức. Cải thiện lưu thông máu, giúp ngủ ngon hơn. Làm mềm cơ, giảm đau nhức ở mức độ nhẹ.
+* Chăm sóc sau liệu trình: Uống nhiều nước ấm để hỗ trợ thải độc. Tránh tắm nước lạnh hoặc vận động mạnh ngay sau khi massage.
+
+[ Kết thúc Chunk Dịch vụ 2 ]
+
+--- --- ---
+
+[ Bắt đầu Chunk Dịch vụ 3 ]
+
+* Tên dịch vụ: Trị liệu Cổ-Vai-Gáy (Office Syndrome Relief)
+* Mô tả chi tiết: Liệu pháp chuyên sâu được thiết kế dành cho người làm việc văn phòng, lái xe hoặc những người thường xuyên bị đau mỏi vùng cổ, vai, gáy. Kỹ thuật này kết hợp giữa massage mô sâu, bấm huyệt và chườm nóng thảo dược để phá vỡ các điểm cơ bị co thắt (trigger points), giải phóng căng cứng.
+* Giá tiền (Tham khảo):
+    * Gói 60 phút: 550.000 VNĐ
+    * Gói 10 buổi: 5.000.000 VNĐ
+* Liệu trình (Các bước):
+    1.  Làm nóng: Đắp túi thảo dược nóng lên vùng cổ, vai, lưng trên để làm mềm cơ.
+    2.  Massage khô: Kỹ thuật viên ấn và day các huyệt đạo qua khăn.
+    3.  Massage dầu: Sử dụng dầu gừng hoặc ngải cứu, áp dụng kỹ thuật miết sâu, day tròn vào các bó cơ bị cứng ở bả vai, cổ và lưng trên.
+    4.  Bấm huyệt: Tập trung vào các huyệt Phong Trì, Kiên Tỉnh, Thiên Tông.
+    5.  Giãn cơ: Thực hiện các động tác kéo giãn nhẹ nhàng cho vùng cổ và vai.
+* Thời gian thực hiện: 60 phút.
+* Hiệu quả: Giảm đau mỏi rõ rệt ngay sau buổi đầu tiên. Tăng cường sự linh hoạt cho khớp cổ. Giải tỏa áp lực và căng thẳng ở vùng vai gáy.
+* Chăm sóc sau liệu trình: Giữ ấm vùng cổ. Thực hiện các bài tập vươn vai, xoay cổ nhẹ nhàng hàng ngày. Điều chỉnh tư thế ngồi làm việc.
+
+[ Kết thúc Chunk Dịch vụ 3 ]
+
+--- --- ---
+
+[ Bắt đầu Chunk Dịch vụ 4 ]
+
+* Tên dịch vụ: Massage Đá nóng (Hot Stone Massage)
+* Mô tả chi tiết: Sử dụng các viên đá bazan (đá núi lửa) nhẵn, mịn, được hấp nóng ở nhiệt độ thích hợp, đặt lên các huyệt đạo chính của cơ thể (lưng, bụng, lòng bàn tay). Kỹ thuật viên cũng dùng đá nóng để trượt, miết và xoa bóp, giúp nhiệt năng thẩm thấu sâu vào cơ bắp, thư giãn tối đa.
+* Giá tiền (Tham khảo):
+    * Gói 75 phút: 700.000 VNĐ
+    * Gói 90 phút: 850.000 VNĐ
+* Liệu trình (Các bước):
+    1.  Chuẩn bị: Làm nóng đá trong nồi chuyên dụng.
+    2.  Massage Thụy Điển: Làm nóng cơ thể bằng các động tác massage tay với dầu.
+    3.  Đặt đá: Đặt các viên đá nóng lên các điểm huyệt dọc sống lưng, lòng bàn tay.
+    4.  Massage bằng đá: Kỹ thuật viên dùng 2 viên đá nóng trượt và xoa bóp sâu trên các vùng cơ lớn (lưng, đùi, bắp chân).
+    5.  Làm sạch: Lấy đá ra và lau sạch cơ thể bằng khăn ấm.
+* Thời gian thực hiện: 75 phút hoặc 90 phút.
+* Hiệu quả: Thư giãn thần kinh sâu, giảm stress và lo âu. Hơi nóng giúp làm tan các điểm cơ co thắt, giảm đau nhức mãn tính. Tăng cường tuần hoàn máu.
+* Chăm sóc sau liệu trình: Uống nhiều nước. Tránh tiếp xúc với nhiệt độ lạnh đột ngột (phòng máy lạnh quá thấp) trong 1-2 giờ sau đó.
+
+[ Kết thúc Chunk Dịch vụ 4 ]
+
+--- --- ---
+
+[ Bắt đầu Chunk Dịch vụ 5 ]
+
+* Tên dịch vụ: Chăm sóc da cơ bản (Essential Facial)
+* Mô tả chi tiết: Là dịch vụ nền tảng giúp duy trì sức khỏe làn da. Liệu trình tập trung vào việc làm sạch sâu, loại bỏ tế bào chết, cân bằng độ ẩm và cung cấp dưỡng chất cơ bản, giúp da sạch sẽ, thông thoáng và tươi mới. Phù hợp với mọi loại da.
+* Giá tiền (Tham khảo): 450.000 VNĐ / buổi
+* Liệu trình (Các bước):
+    1.  Tẩy trang: Loại bỏ lớp trang điểm và kem chống nắng.
+    2.  Rửa mặt: Làm sạch bề mặt da với sữa rửa mặt phù hợp.
+    3.  Tẩy tế bào chết: Sử dụng gel hoặc scrub vật lý để lấy đi lớp sừng già.
+    4.  Xông hơi: Mở lỗ chân lông, làm mềm da.
+    5.  Hút dầu/bã nhờn: Dùng máy hút mụn cám và bã nhờn nhẹ.
+    6.  Massage mặt: Kích thích tuần hoàn máu, thư giãn cơ mặt, nâng cơ.
+    7.  Đắp mặt nạ: Cung cấp độ ẩm và dưỡng chất (thường là mặt nạ kem hoặc giấy).
+    8.  Cân bằng: Thoa toner (nước hoa hồng).
+    9.  Dưỡng ẩm & Chống nắng: Thoa kem dưỡng và kem chống nắng.
+* Thời gian thực hiện: 60 - 75 phút.
+* Hiệu quả: Da sạch, mịn màng, lỗ chân lông thông thoáng. Da được cấp ẩm tức thì, trông rạng rỡ và có sức sống hơn.
+* Chăm sóc sau liệu trình: Chống nắng kỹ càng. Duy trì chu trình dưỡng da tại nhà. Nên thực hiện 2-4 tuần/lần.
+
+[ Kết thúc Chunk Dịch vụ 5 ]
+
+--- --- ---
+
+[ Bắt đầu Chunk Dịch vụ 6 ]
+
+* Tên dịch vụ: Liệu trình Nâng cơ & Trẻ hóa da (RF Anti-Aging Facial)
+* Mô tả chi tiết: Liệu pháp chống lão hóa không xâm lấn, sử dụng công nghệ Sóng Radio Frequency (RF) lưỡng cực. Năng lượng sóng RF đi sâu vào lớp trung bì, hạ bì, sinh nhiệt và kích thích quá trình tăng sinh collagen, elastin. Giúp da săn chắc, cải thiện nếp nhăn và nâng viền hàm.
+* Giá tiền (Tham khảo):
+    * Giá 1 buổi: 1.500.000 VNĐ
+    * Gói 5 buổi: 6.000.000 VNĐ
+* Liệu trình (Các bước):
+    1.  Làm sạch: Tẩy trang, rửa mặt, tẩy tế bào chết.
+    2.  Thoa Gel RF: Thoa một lớp gel chuyên dụng (hoặc serum) để dẫn sóng và làm mát da.
+    3.  Đi máy RF: Kỹ thuật viên di chuyển đầu máy RF theo chiều nâng cơ trên khắp mặt và vùng nọng cằm.
+    4.  Làm sạch gel.
+    5.  Đắp mặt nạ: Sử dụng mặt nạ collagen hoặc peptide để tăng cường hiệu quả trẻ hóa.
+    6.  Điện di lạnh: Làm dịu da, khóa dưỡng chất.
+    7.  Thoa kem dưỡng và chống nắng.
+* Thời gian thực hiện: 90 phút.
+* Hiệu quả: Thấy rõ sự săn chắc nhẹ ngay sau buổi đầu. Sau liệu trình (5-10 buổi), nếp nhăn li ti mờ đi, rãnh cười nông hơn, viền hàm thon gọn, da đàn hồi tốt hơn.
+* Chăm sóc sau liệu trình: Bắt buộc chống nắng. Tăng cường các sản phẩm phục hồi (B5, Peptide). Uống nhiều nước và bổ sung collagen.
+
+[ Kết thúc Chunk Dịch vụ 6 ]
+
+--- --- ---
+
+[ Bắt đầu Chunk Dịch vụ 7 ]
+
+* Tên dịch vụ: Tẩy tế bào chết toàn thân (Full Body Scrub)
+* Mô tả chi tiết: Dịch vụ loại bỏ lớp da chết xỉn màu, thô ráp trên toàn bộ cơ thể bằng cách sử dụng các hạt scrub tự nhiên (như muối biển, đường nâu, cà phê, cám gạo) kết hợp với các động tác massage nhẹ nhàng. Giúp da mịn màng, sáng và hấp thụ kem dưỡng tốt hơn.
+* Giá tiền (Tham khảo): 400.000 VNĐ / buổi
+* Liệu trình (Các bước):
+    1.  Tắm tráng: Làm ướt cơ thể bằng nước ấm.
+    2.  Thoa hỗn hợp scrub: Khách nằm sấp, kỹ thuật viên thoa hỗn hợp tẩy tế bào chết và massage nhẹ nhàng từ chân lên lưng.
+    3.  Khách nằm ngửa: Lặp lại quy trình cho mặt trước cơ thể.
+    4.  Tắm sạch: Khách tự tắm sạch lại với nước (không dùng sữa tắm).
+    5.  Thoa kem dưỡng: Kỹ thuật viên thoa một lớp mỏng kem dưỡng ẩm toàn thân.
+* Thời gian thực hiện: 45 phút.
+* Hiệu quả: Da mịn màng, mềm mại ngay lập tức. Cải thiện tình trạng viêm nang lông, mụn lưng. Da sáng và đều màu hơn.
+* Chăm sóc sau liệu trình: Dưỡng ẩm kỹ tại nhà. Tránh tiếp xúc trực tiếp với ánh nắng gắt trong 2-3 ngày vì da đang nhạy cảm.
+
+[ Kết thúc Chunk Dịch vụ 7 ]
+
+--- --- ---
+
+[ Bắt đầu Chunk Dịch vụ 8 ]
+
+* Tên dịch vụ: Triệt lông Công nghệ Diode Laser
+* Mô tả chi tiết: Phương pháp triệt lông vĩnh viễn (giảm 90-95%) sử dụng công nghệ Diode Laser với bước sóng 808-810nm. Tia laser tác động chính xác vào mầm nhú nang lông, hấp thụ melanin, làm nang lông yếu đi và rụng tự nhiên mà không gây tổn thương bề mặt da.
+* Giá tiền (Tham khảo):
+    * Vùng nách: 5.000.000 VNĐ / Liệu trình 10 buổi (Bảo hành 5 năm)
+    * Vùng nửa chân: 8.000.000 VNĐ / Liệu trình 10 buổi
+* Liệu trình (Các bước):
+    1.  Vệ sinh: Làm sạch vùng da cần triệt.
+    2.  Cạo lông: Kỹ thuật viên cạo sạch lông trên bề mặt da.
+    3.  Thoa Gel lạnh: Bôi một lớp gel trong suốt, mát lạnh để dẫn laser và bảo vệ da.
+    4.  Chiếu Laser: Kỹ thuật viên đi máy Diode Laser trên vùng điều trị.
+    5.  Làm sạch: Lau sạch gel, thoa kem làm dịu da (nếu cần).
+* Thời gian thực hiện: 10 - 30 phút (tùy vùng).
+* Hiệu quả: Lông rụng dần sau mỗi buổi (khoảng 10-14 ngày sau triệt). Sau liệu trình, lông giảm 90-95%, lông tơ mọc lại (nếu có) sẽ rất mảnh và nhạt màu. Cải thiện tình trạng thâm và viêm nang lông.
+* Chăm sóc sau liệu trình: Tránh tiếp xúc nước trong 4-6 giờ đầu. Không dùng sữa tắm, lăn khử mùi chứa cồn trong 24 giờ. Chống nắng kỹ cho vùng da triệt.
+
+[ Kết thúc Chunk Dịch vụ 8 ]
+
+--- --- ---
+
+[ Bắt đầu Chunk Dịch vụ 9 ]
+
+* Tên dịch vụ: Massage Mô sâu (Deep Tissue Massage)
+* Mô tả chi tiết: Một kỹ thuật massage trị liệu cường độ cao, tập trung vào các lớp cơ và mô liên kết sâu bên trong cơ thể. Kỹ thuật viên sẽ sử dụng lực ấn mạnh từ ngón tay, khớp tay, cùi chỏ và cẳng tay để tác động vào các điểm co thắt cơ mãn tính (còn gọi là "trigger points") và các vùng cơ bị bó cứng lâu ngày.
+* Giá tiền (Tham khảo):
+    * Gói 60 phút: 650.000 VNĐ
+    * Gói 90 phút: 850.000 VNĐ
+* Liệu trình (Các bước):
+    1.  Khởi động: Làm nóng cơ thể bằng các động tác vuốt nhẹ và xoa bóp (tương tự Massage Thụy Điển).
+    2.  Xác định điểm đau: Kỹ thuật viên trao đổi với khách và ấn để tìm các điểm cơ bị co thắt.
+    3.  Trị liệu mô sâu: Sử dụng cùi chỏ hoặc ngón tay cái, ấn và giữ lực sâu, chậm tại các điểm đau để phá vỡ sự kết dính của cơ.
+    4.  Kỹ thuật miết ma sát: Thực hiện các động tác miết chậm, ngược thớ cơ để giải phóng căng thẳng.
+    5.  Thư giãn: Kết thúc bằng các động tác vuốt dài để làm dịu cơ bắp sau khi bị tác động mạnh.
+* Thời gian thực hiện: 60 phút hoặc 90 phút.
+* Hiệu quả: Giảm đau cơ mãn tính (đặc biệt là đau lưng dưới, vai). Phục hồi khả năng vận động, tăng tính linh hoạt. Giải phóng các nút thắt cơ (trigger points).
+* Chăm sóc sau liệu trình: Có thể cảm thấy hơi đau hoặc ê ẩm nhẹ trong 24-48 giờ sau đó, đây là phản ứng bình thường. Nên uống nhiều nước. Chườm đá vào vùng bị đau nếu cần.
+
+[ Kết thúc Chunk Dịch vụ 9 ]
+
+--- --- ---
+
+[ Bắt đầu Chunk Dịch vụ 10 ]
+
+* Tên dịch vụ: Massage Thái (Traditional Thai Massage)
+* Mô tả chi tiết: Một hình thức massage năng động, còn được gọi là "Yoga cho người lười". Khách hàng sẽ mặc quần áo thoải mái (do spa cung cấp) và nằm trên nệm. Kỹ thuật viên sẽ sử dụng bàn tay, ngón tay, cùi chỏ, đầu gối và bàn chân để thực hiện một chuỗi các động tác kéo giãn, ép, và ấn huyệt dọc theo các "kinh tuyến năng lượng" (Sen lines) của cơ thể.
+* Giá tiền (Tham khảo):
+    * Gói 60 phút: 550.000 VNĐ
+    * Gói 90 phút: 750.000 VNĐ
+* Liệu trình (Các bước):
+    1.  Chuẩn bị: Khách thay quần áo.
+    2.  Ấn huyệt: Bắt đầu từ bàn chân, kỹ thuật viên ấn huyệt dọc theo chân, lên đùi và hông để kích hoạt năng lượng.
+    3.  Kéo giãn: Thực hiện các tư thế Yoga thụ động (ví dụ: tư thế rắn hổ mang, vặn cột sống) để kéo giãn cơ thể khách hàng.
+    4.  Massage lưng và vai: Khách nằm sấp, kỹ thuật viên dùng cùi chỏ và đầu gối để massage sâu vùng lưng.
+    5.  Kết thúc: Massage đầu và cổ ở tư thế ngồi.
+* Thời gian thực hiện: 60 phút hoặc 90 phút.
+* Hiệu quả: Tăng cường sự dẻo dai, linh hoạt của khớp. Giảm căng cứng cơ bắp. Cân bằng năng lượng cơ thể, giảm mệt mỏi tinh thần.
+* Chăm sóc sau liệu trình: Cảm giác cơ thể sẽ nhẹ nhõm và linh hoạt hơn. Uống trà gừng ấm để giữ ấm cơ thể.
+
+[ Kết thúc Chunk Dịch vụ 10 ]
+
+--- --- ---
+
+[ Bắt đầu Chunk Dịch vụ 11 ]
+
+* Tên dịch vụ: Massage Bầu (Pregnancy Massage / Prenatal Massage)
+* Mô tả chi tiết: Liệu pháp massage được thiết kế đặc biệt cho phụ nữ mang thai (thường là sau tam cá nguyệt thứ nhất, tức là từ tuần 13 trở đi). Kỹ thuật massage rất nhẹ nhàng, tập trung vào việc giảm đau lưng, hông, giảm phù nề ở chân. Khách hàng sẽ được hỗ trợ bằng gối chuyên dụng để nằm nghiêng hoặc nằm ngửa một cách thoải mái và an toàn.
+* Giá tiền (Tham khảo): 600.000 VNĐ / buổi
+* Liệu trình (Các bước):
+    1.  Chuẩn bị tư thế: Kỹ thuật viên hướng dẫn mẹ bầu nằm nghiêng, chèn gối mềm giữa hai chân và dưới bụng.
+    2.  Massage lưng và hông: Xoa bóp nhẹ nhàng, vuốt dài vùng lưng dưới và hai bên hông để giảm đau mỏi.
+    3.  Massage chân: Vuốt nhẹ từ đùi xuống mắt cá chân theo hướng về tim để giảm phù nề (không bấm huyệt sâu).
+    4.  Massage tay, cổ, vai: Thư giãn các vùng chịu áp lực khi cơ thể thay đổi.
+    5.  Kết thúc: Giúp mẹ bầu ngồi dậy từ từ.
+* Thời gian thực hiện: 60 phút.
+* Hiệu quả: Giảm đau lưng, đau khớp hông. Giảm sưng phù ở chân và tay. Cải thiện giấc ngủ, giảm lo lắng và căng thẳng.
+* Chăm sóc sau liệu trình: Mẹ bầu cần di chuyển chậm rãi. Thông báo cho kỹ thuật viên nếu có bất kỳ cảm giác khó chịu nào. *Lưu ý: Luôn cần tham khảo ý kiến bác sĩ trước khi đi massage.*
+
+[ Kết thúc Chunk Dịch vụ 11 ]
+
+--- --- ---
+
+[ Bắt đầu Chunk Dịch vụ 12 ]
+
+* Tên dịch vụ: Bấm huyệt chân (Foot Reflexology)
+* Mô tả chi tiết: Một liệu pháp cổ truyền của phương Đông, dựa trên lý thuyết rằng mọi cơ quan, bộ phận trên cơ thể đều có "điểm phản xạ" tương ứng ở lòng bàn chân. Kỹ thuật viên sẽ sử dụng các kỹ thuật day, ấn, miết bằng ngón tay (đôi khi dùng dụng cụ gỗ) vào các điểm huyệt này để đả thông kinh mạch và kích thích khả năng tự chữa lành.
+* Giá tiền (Tham khảo): 350.000 VNĐ / buổi
+* Liệu trình (Các bước):
+    1.  Ngâm chân: Khách ngâm chân trong nước ấm với thảo dược (gừng, sả, muối) để thư giãn và làm mềm da (khoảng 10 phút).
+    2.  Massage thư giãn: Xoa bóp nhẹ nhàng phần bắp chân và cổ chân.
+    3.  Bấm huyệt: Bắt đầu từ gót chân, kỹ thuật viên ấn và day các huyệt đạo ở lòng bàn chân, mu bàn chân và các ngón chân.
+    4.  Đấm, vỗ: Thực hiện các động tác đấm, vỗ nhẹ để thư giãn cơ bắp chân.
+    5.  Lau khô: Lau sạch chân bằng khăn ấm.
+* Thời gian thực hiện: 45 - 60 phút.
+* Hiệu quả: Giảm mệt mỏi, nặng nề ở chân. Kích thích tuần hoàn máu. Cải thiện giấc ngủ, giảm đau đầu. Hỗ trợ chức năng các cơ quan nội tạng.
+* Chăm sóc sau liệu trình: Một số điểm huyệt có thể hơi đau khi ấn, nhưng sẽ thấy dễ chịu ngay sau đó. Uống 1 ly nước ấm.
+
+[ Kết thúc Chunk Dịch vụ 12 ]
+
+--- --- ---
+
+[ Bắt đầu Chunk Dịch vụ 13 ]
+
+* Tên dịch vụ: Phục hồi da nhạy cảm (Sensitive Skin Calming Facial)
+* Mô tả chi tiết: Liệu trình chăm sóc da mặt siêu dịu nhẹ, được thiết kế cho làn da mỏng manh, dễ kích ứng, mẩn đỏ, hoặc đang bị tổn thương (sau peel, laser). Dịch vụ hoàn toàn không sử dụng các tác động cơ học mạnh (scrub, xông hơi nóng, hút mụn) và tập trung vào việc làm dịu, giảm đỏ, cấp ẩm sâu và phục hồi hàng rào bảo vệ da.
+* Giá tiền (Tham khảo): 700.000 VNĐ / buổi
+* Liệu trình (Các bước):
+    1.  Làm sạch dịu nhẹ: Sử dụng tẩy trang dạng nước (micellar water) và sữa rửa mặt dạng gel, không tạo bọt, pH 5.5.
+    2.  Tẩy tế bào chết (Enzyme): Sử dụng enzyme dạng bột (từ đu đủ, dứa) thay vì hạt scrub để làm mềm da chết.
+    3.  Điện di lạnh (Cryo Electroporation): Dùng đầu máy lạnh -10 độ C, điện di serum chứa B5, HA, Peptide, Rau má (Centella Asiatica) để làm dịu da tức thì và đẩy sâu dưỡng chất.
+    4.  Đắp mặt nạ: Sử dụng mặt nạ dạng thạch, gel hoặc mặt nạ y tế sau xâm lấn để cấp ẩm, giảm đỏ.
+    5.  Phun Oxy tươi: Phun oxy tinh khiết để tăng cường sức sống cho da.
+    6.  Thoa kem dưỡng phục hồi và kem chống nắng vật lý.
+* Thời gian thực hiện: 75 phút.
+* Hiệu quả: Giảm đỏ, rát, ngứa ngay lập tức. Da được cấp ẩm sâu, căng mọng. Hàng rào bảo vệ da được củng cố, giúp da khỏe hơn, giảm tần suất kích ứng.
+* Chăm sóc sau liệu trình: Chỉ sử dụng các sản phẩm phục hồi tại nhà. Chống nắng tuyệt đối. Tránh xông hơi, ăn đồ cay nóng trong 3 ngày.
+
+[ Kết thúc Chunk Dịch vụ 13 ]
+
+--- --- ---
+
+[ Bắt đầu Chunk Dịch vụ 14 ]
+
+* Tên dịch vụ: Làm trắng sáng da (Vitamin C Brightening Facial)
+* Mô tả chi tiết: Liệu trình tập trung giải quyết các vấn đề về da xỉn màu, không đều màu, và các vết thâm mụn nhẹ. Dịch vụ sử dụng Vitamin C (L-Ascorbic Acid hoặc các dẫn xuất ổn định) ở nồng độ cao, kết hợp với công nghệ điện di (iontophoresis) để đẩy tinh chất thấm sâu vào da, ức chế enzyme tyrosinase (sản sinh melanin), làm sáng da và chống oxy hóa.
+* Giá tiền (Tham khảo): 850.000 VNĐ / buổi
+* Liệu trình (Các bước):
+    1.  Làm sạch sâu: Tẩy trang, rửa mặt, tẩy tế bào chết.
+    2.  Xông hơi, hút dầu (nhẹ nhàng).
+    3.  Điện di Vitamin C: Thoa tinh chất Vitamin C nồng độ cao lên da và dùng máy điện di chạy theo chiều nâng cơ.
+    4.  Massage thư giãn: Massage nhẹ nhàng để tăng tuần hoàn máu.
+    5.  Đắp mặt nạ (thường là mặt nạ giấy Vitamin C hoặc mặt nạ
+        dẻo).
+    6.  Trong lúc đắp mặt nạ, kỹ thuật viên có thể kết hợp chiếu Ánh sáng sinh học (màu Vàng hoặc Đỏ) để tăng hiệu quả.
+    7.  Thoa kem dưỡng và kem chống nắng.
+* Thời gian thực hiện: 75 - 90 phút.
+* Hiệu quả: Da sáng và rạng rỡ (glow) ngay sau buổi đầu. Sau một liệu trình (5-7 buổi), các vết thâm mụn mờ đi đáng kể, da đều màu, săn chắc hơn (do Vitamin C kích thích collagen).
+* Chăm sóc sau liệu trình: Bắt buộc phải sử dụng kem chống nắng SPF 50+ hàng ngày, vì Vitamin C làm da nhạy cảm hơn với ánh nắng.
+
+[ Kết thúc Chunk Dịch vụ 14 ]
+
+--- --- ---
+
+[ Bắt đầu Chunk Dịch vụ 15 ]
+
+* Tên dịch vụ: Tái tạo da Sinh học (Chemical Peel) - Cấp độ Nông
+* Mô tả chi tiết: Là phương pháp sử dụng các dung dịch axit (như AHA - Glycolic Acid, Lactic Acid; hoặc BHA - Salicylic Acid) ở nồng độ được kiểm soát để bôi lên da. Axit sẽ phá vỡ liên kết của lớp tế bào sừng già cỗi, xỉn màu, kích thích quá trình bong tróc (peel) có kiểm soát. Lớp da mới bên dưới sẽ được tái tạo, mịn màng, sáng và khỏe hơn.
+* Giá tiền (Tham khảo):
+    * Gói Peel Nông (Trị thâm, sáng da): 1.200.000 VNĐ / buổi
+    * Gói Peel Trung bình (Trị mụn/sẹo nhẹ): 2.000.000 VNĐ / buổi
+* Liệu trình (Các bước):
+    1.  Thăm khám & Tư vấn: Xác định loại da và mức độ peel phù hợp. (Rất quan trọng).
+    2.  Làm sạch: Tẩy trang, rửa mặt bằng sữa rửa mặt dịu nhẹ.
+    3.  Bảo vệ: Thoa vaseline hoặc kem bảo vệ lên các vùng da nhạy cảm (khóe mắt, mũi, miệng).
+    4.  Thoa dung dịch Peel: Kỹ thuật viên dùng cọ quét đều dung dịch peel lên da và canh thời gian nghiêm ngặt (từ 1-5 phút) tùy phản ứng da.
+    5.  Trung hòa: Thoa dung dịch trung hòa (neutralizer) để dừng hoạt động của axit.
+    6.  Làm dịu: Lau sạch, đắp mặt nạ làm dịu, phục hồi (chứa B5, Peptide, HA) và chiếu ánh sáng sinh học lạnh.
+    7.  Thoa kem dưỡng phục hồi và kem chống nắng.
+* Thời gian thực hiện: 45 - 60 phút.
+* Hiệu quả: Cải thiện mụn ẩn, mụn đầu đen. Làm mờ thâm mụn, giúp da sáng và đều màu. Giảm sần sùi bề mặt, da mịn màng hơn.
+* Chăm sóc sau liệu trình: (Rất quan trọng) KHÔNG tự ý cạy, gãi hay bóc lớp da đang bong. Chỉ dùng sữa rửa mặt y khoa dịu nhẹ. BẮT BUỘC dùng kem chống nắng SPF 50+ (kể cả khi ở trong nhà). Tăng cường xịt khoáng và kem dưỡng phục hồi (B5, Ceramide).
+
+[ Kết thúc Chunk Dịch vụ 15 ]
+
+--- --- ---
+
+[ Bắt đầu Chunk Dịch vụ 16 ]
+
+* Tên dịch vụ: Ủ dưỡng thể Tảo biển Thải độc (Detoxifying Seaweed Body Wrap)
+* Mô tả chi tiết: Liệu pháp thải độc và cung cấp khoáng chất cho da toàn thân. Sử dụng mặt nạ tảo biển nguyên chất, giàu i-ốt, magie và các vi chất, đắp lên cơ thể. Sau đó quấn lại bằng khăn hoặc nilon chuyên dụng, kết hợp ủ ấm bằng chăn điện. Nhiệt độ ấm giúp lỗ chân lông giãn nở, đẩy độc tố ra ngoài và hấp thụ tối đa dưỡng chất từ tảo.
+* Giá tiền (Tham khảo): 900.000 VNĐ / buổi
+* Liệu trình (Các bước):
+    1.  Tẩy tế bào chết: Làm sạch da chết toàn thân (bằng muối biển hoặc đường) để da thông thoáng.
+    2.  Tắm tráng: Tắm sạch lớp scrub bằng nước ấm.
+    3.  Thoa mặt nạ tảo: Đắp hỗn hợp tảo biển ấm lên khắp cơ thể (trừ vùng nhạy cảm).
+    4.  Quấn ủ: Quấn cơ thể bằng nilon mỏng và ủ trong chăn điện hoặc chăn lông ấm.
+    5.  Thư giãn: Khách nằm thư giãn (20-30 phút). Kỹ thuật viên có thể massage đầu trong lúc này.
+    6.  Tắm sạch: Tháo quấn và tắm sạch lại với nước ấm (không dùng sữa tắm).
+    7.  Thoa kem dưỡng: Khóa ẩm bằng kem dưỡng thể.
+* Thời gian thực hiện: 75 phút.
+* Hiệu quả: Thải độc da qua đường mồ hôi, da trở nên nhẹ nhàng, tinh khiết. Cung cấp khoáng chất, giúp da săn chắc và mịn màng. Hỗ trợ giảm tình trạng da sần vỏ cam (cellulite) nhẹ.
+* Chăm sóc sau liệu trình: Uống nhiều nước (nước lọc, trà thảo mộc) để tiếp tục hỗ trợ quá trình thải độc của cơ thể.
+
+[ Kết thúc Chunk Dịch vụ 16 ]
+
+--- --- ---
+
+[ Bắt đầu Chunk Dịch vụ 17 ]
+
+* Tên dịch vụ: Tắm trắng Công nghệ Phi thuyền (Spaceship Whitening Bath)
+* Mô tả chi tiết: Liệu pháp làm sáng da body cao cấp, kết hợp giữa việc ủ dưỡng chất làm trắng (như Arbutin, Vitamin C, Glutathione, Kojic Acid) và công nghệ ánh sáng hồng ngoại từ máy phi thuyền (Spaceship Capsule). Nhiệt năng và các bước sóng ánh sáng giúp đẩy sâu tinh chất vào hạ bì da, ức chế enzyme sản sinh melanin, kích thích da bật tông an toàn.
+* Giá tiền (Tham khảo):
+    * Giá 1 buổi: 2.000.000 VNĐ
+    * Liệu trình 5 buổi: 8.500.000 VNĐ
+* Liệu trình (Các bước):
+    1.  Tẩy tế bào chết: Sử dụng scrub chuyên dụng để làm sạch sâu da body.
+    2.  Tắm tráng.
+    3.  Ủ dưỡng chất: Thoa tinh chất hoặc kem ủ trắng chuyên sâu lên toàn bộ cơ thể.
+    4.  Massage thẩm thấu: Massage nhẹ nhàng 10-15 phút.
+    5.  Vào phi thuyền: Khách nằm trong máy phi thuyền (20-30 phút). Máy sẽ phát ra nhiệt ấm và ánh sáng hồng ngoại.
+    6.  Tắm sạch: Tắm sạch lại hoàn toàn bằng nước.
+    7.  Thoa kem dưỡng trắng và kem chống nắng body.
+* Thời gian thực hiện: 90 - 120 phút.
+* Hiệu quả: Da bật 1-3 tông (tùy cơ địa) ngay sau buổi đầu tiên. Da sáng hồng, mịn màng, không phải trắng bệch. Mờ các vết thâm sạm ở lưng, đầu gối, khuỷu tay.
+* Chăm sóc sau liệu trình: Chống nắng cho body là BẮT BUỘC. Luôn mặc áo khoác, che chắn cẩn thận khi ra ngoài. Sử dụng kem dưỡng trắng tại nhà theo chỉ định để duy trì kết quả.
+
+[ Kết thúc Chunk Dịch vụ 17 ]
+
+--- --- ---
+
+[ Bắt đầu Chunk Dịch vụ 18 ]
+
+* Tên dịch vụ: Gội đầu Dưỡng sinh (Wellness Hair Wash & Scalp Treatment)
+* Mô tả chi tiết: Đây không chỉ là làm sạch tóc, mà là một liệu pháp trị liệu tinh thần, giải tỏa căng thẳng. Dịch vụ kết hợp gội đầu bằng thảo dược (nước nấu từ bồ kết, sả, vỏ bưởi, hương nhu) với các kỹ thuật massage, bấm huyệt chuyên sâu vùng đầu, cổ, vai, gáy, và hai cánh tay.
+* Giá tiền (Tham khảo): 250.000 VNĐ / buổi (chưa bao gồm sấy tạo kiểu)
+* Liệu trình (Các bước):
+    1.  Massage khô: Bấm huyệt vùng đầu, cổ, vai gáy để khai thông kinh lạc (10-15 phút).
+    2.  Rửa mặt và massage mặt cơ bản.
+    3.  Gội lần 1: Gội bằng nước thảo dược, kết hợp massage da đầu, cào nhẹ để làm sạch.
+    4.  Ủ tóc: Ủ tóc bằng kem ủ thảo dược.
+    5.  Massage tay: Trong lúc ủ tóc, kỹ thuật viên massage thư giãn hai cánh tay và bàn tay.
+    6.  Gội lần 2 & Xả: Gội sạch và xả bằng nước thảo dược.
+    7.  Sấy khô: Sấy khô tóc ở chế độ mát hoặc ấm.
+* Thời gian thực hiện: 60 phút.
+* Hiệu quả: Giảm stress, căng thẳng, đau đầu, mỏi mắt ngay lập tức. Cải thiện giấc ngủ, giúp ngủ sâu hơn. Da đầu sạch, tóc suôn mượt và giảm gãy rụng (do thảo dược và massage kích thích tuần hoàn máu).
+* Chăm sóc sau liệu trình: Tận hưởng cảm giác thư thái. Hạn chế gội đầu lại trong 24 giờ để thảo dược thẩm thấu.
+
+[ Kết thúc Chunk Dịch vụ 18 ]
+
+--- --- ---
+
+[ Bắt đầu Chunk Dịch vụ 19 ]
+
+* Tên dịch vụ: Gói Thủy trị liệu (Sauna & Hydrotherapy Package)
+* Mô tả chi tiết: Là dịch vụ tự phục vụ, sử dụng nhiệt và nước để thư giãn cơ thể. Gói bao gồm 3 khu vực: Xông hơi khô (Sauna) dùng nhiệt khô từ đá nóng để thải độc qua mồ hôi; Xông hơi ướt (Steam) dùng hơi nước nóng (thường có tinh dầu sả/bạc hà) để làm thông thoáng đường hô hấp; và Bồn sục Jacuzzi dùng áp lực nước mạnh để massage cơ bắp.
+* Giá tiền (Tham khảo):
+    * Bán kèm dịch vụ massage: 150.000 VNĐ (sử dụng trước khi massage)
+    * Bán vé riêng: 300.000 VNĐ (không giới hạn thời gian trong ngày)
+* Liệu trình (Khách tự thực hiện):
+    1.  Tắm tráng: Tắm sơ qua để làm sạch cơ thể.
+    2.  Xông hơi khô (Sauna): Ngồi trong phòng 10-15 phút.
+    3.  Nghỉ ngơi: Ra ngoài nghỉ 5-10 phút, uống 1 ly nước lọc.
+    4.  Xông hơi ướt (Steam): Vào phòng 10-15 phút.
+    5.  Tắm tráng: Tắm lại bằng nước mát để hạ nhiệt và đóng lỗ chân lông.
+    6.  Ngâm mình Jacuzzi: Thư giãn trong bồn sục 15-20 phút.
+* Thời gian thực hiện: 45 - 90 phút (tùy nhu cầu của khách).
+* Hiệu quả: Đào thải độc tố, kim loại nặng qua mồ hôi. Làm sạch sâu lỗ chân lông. Thư giãn cơ bắp, giảm đau nhức. Cải thiện lưu thông máu, da dẻ hồng hào.
+* Chăm sóc sau liệu trình: Uống bù nhiều nước (nước lọc hoặc nước điện giải). Không nên ăn quá no hoặc uống rượu bia trước và ngay sau khi xông hơi.
+
+[ Kết thúc Chunk Dịch vụ 19 ]
+
+--- --- ---
+
+[ Bắt đầu Chunk Dịch vụ 20 ]
+
+* Tên dịch vụ: Chăm sóc và Sơn móng Tay (Classic Manicure)
+* Mô tả chi tiết: Dịch vụ cơ bản làm sạch và làm đẹp cho móng tay. Bao gồm các bước ngâm tay, cắt tỉa da chết xung quanh móng (nhặt da), tạo hình (dũa) móng theo yêu cầu (vuông, tròn, nhọn), và sơn màu (khách có thể chọn sơn thường hoặc sơn gel).
+* Giá tiền (Tham khảo):
+    * Cắt da, sửa móng (Manicure): 100.000 VNĐ
+    * Sơn Gel (Màu trơn): 150.000 VNĐ
+    * Gói Combo (Cắt da + Sơn Gel): 230.000 VNĐ
+* Liệu trình (Các bước):
+    1.  Ngâm tay: Ngâm 2 bàn tay trong nước ấm để làm mềm da.
+    2.  Cắt da (Nhặt da): Kỹ thuật viên dùng kềm chuyên dụng đã tiệt trùng để cắt bỏ phần da chết, da thừa xung quanh viền móng.
+    3.  Tạo hình (Dũa móng): Dũa và tạo hình móng theo yêu cầu của khách.
+    4.  Sơn móng (Nếu khách yêu cầu):
+        * Sơn Gel: Sơn lớp base (hơ đèn UV/LED) -> Sơn 2 lớp màu (hơ đèn sau mỗi lớp) -> Sơn lớp top coat (hơ đèn).
+        * Sơn thường: Sơn base -> 2 lớp màu -> sơn top.
+    5.  Dưỡng: Thoa dầu dưỡng vào viền móng và massage nhẹ.
+* Thời gian thực hiện: 45 phút (chỉ cắt da) / 75 phút (cắt da + sơn gel).
+* Hiệu quả: Bộ móng sạch sẽ, gọn gàng, thẩm mỹ.
+* Chăm sóc sau liệu trình: Nếu sơn gel, tránh ngâm nước nóng quá lâu. Hạn chế tiếp xúc trực tiếp với hóa chất tẩy rửa (nước rửa chén, bột giặt) để sơn bền màu.
+
+[ Kết thúc Chunk Dịch vụ 20 ]
