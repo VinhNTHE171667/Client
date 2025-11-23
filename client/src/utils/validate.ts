@@ -5,6 +5,7 @@ export const checkActiveLink = (
   pathName: string
 ): boolean => {
   return activeLinks.some((pattern) => {
+    if (!pattern) return false;
     const matcher = match(pattern, { decode: decodeURIComponent });
     return matcher(pathName);
   });

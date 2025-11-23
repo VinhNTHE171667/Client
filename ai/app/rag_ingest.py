@@ -33,6 +33,8 @@ def load_state() -> Dict[str, str]:
 
 
 def save_state(state: Dict[str, str]) -> None:
+    # ensure parent directory exists
+    STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
     with STATE_PATH.open("w", encoding="utf-8") as fp:
         json.dump(state, fp, indent=2)
 

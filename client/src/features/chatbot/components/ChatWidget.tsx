@@ -77,6 +77,11 @@ export function ChatWidget() {
   const {
     auth: { accountId },
   } = useAuthStore();
+
+  useEffect(() => {
+    console.log("🔥 [ChatWidget v2.0] Loaded (Feature). AccountId:", accountId);
+  }, [accountId]);
+
   const sessionKey = useMemo(() => buildStorageKey("session", accountId ?? null), [accountId]);
   const historyKey = useMemo(() => buildStorageKey("history", accountId ?? null), [accountId]);
   const [sessionId, setSessionId] = useState(() => {
@@ -180,6 +185,7 @@ export function ChatWidget() {
       const response = await sendMessage({
         session_id: sessionId,
         query: value,
+        customer_id: accountId,
       });
       const assistantMessage: ChatMessage = {
         id: uuid(),
