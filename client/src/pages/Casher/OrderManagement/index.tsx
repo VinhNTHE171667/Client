@@ -8,7 +8,7 @@ import {
   Table,
   Divider,
   Select,
-  message,
+  message
 } from "antd";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
@@ -18,11 +18,12 @@ import { configRoutes } from "@/constants/route";
 import {
   useCreateLinkPaymentMutation,
   useGetAppointmentsForManagementMutation,
-  useUpdatePaymentStatusPaidMutation,
+  useUpdatePaymentStatusPaidMutation, // Assume mutation for paid
   type AppointmentProps,
 } from "@/services/appointment";
 import type { AppointmentTableProps } from "./_components/type";
 import { appointmentStatusEnum } from "@/common/types/auth";
+import { useAuthStore } from "@/hooks/UseAuth"; // For staff ID
 
 const { RangePicker } = DatePicker;
 
@@ -35,10 +36,15 @@ export default function OrderManagementCasher() {
     null
   );
 
-  const [getAppointmentsForManagement] =
-    useGetAppointmentsForManagementMutation();
-
   const [statusFilter, setStatusFilter] = useState<string[] | null>(null);
+
+  const { auth } = useAuthStore(); 
+  const staffId = auth.accountId || "";
+
+  const [getAppointmentsForManagement] = useGetAppointmentsForManagementMutation();
+
+  const [createPaymentLink] = useCreateLinkPaymentMutation();
+  const [updatePaymentStatusPaid] = useUpdatePaymentStatusPaidMutation();
 
   const handleGetAppointments = async () => {
     setIsLoading(true);
@@ -46,7 +52,6 @@ export default function OrderManagementCasher() {
       const res = await getAppointmentsForManagement();
       const tempRes = res.data ?? [];
       setAppointments(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         tempRes.map((appointment: any) => ({
           ...appointment,
           onPaymentByCash: () => handlePaymentByCash(appointment),
@@ -81,13 +86,17 @@ export default function OrderManagementCasher() {
     return matchSearch && matchDate && matchStatus;
   });
 
-  const [createPaymentLink] = useCreateLinkPaymentMutation();
-  const [paymentCash] = useUpdatePaymentStatusPaidMutation();
-
   const handlePaymentByCash = async (item: AppointmentProps) => {
+    if (!staffId) {
+      showError("Lỗi", "Không tìm thấy ID nhân viên. Vui lòng đăng nhập lại.");
+      return;
+    }
+
     try {
-      await paymentCash({
+      await updatePaymentStatusPaid({
         orderCode: item.orderCode || "",
+        paymentMethod: 'cash',
+        staffId, // Send staff ID
       }).unwrap();
 
       showSuccess(
@@ -104,6 +113,11 @@ export default function OrderManagementCasher() {
   };
 
   const handlePaymentByQR = async (item: AppointmentProps) => {
+    if (!staffId) {
+      showError("Lỗi", "Không tìm thấy ID nhân viên. Vui lòng đăng nhập lại.");
+      return;
+    }
+
     try {
       const totalAmount = Math.ceil(item.totalAmount - item.depositAmount);
 
@@ -124,7 +138,6 @@ export default function OrderManagementCasher() {
       } else {
         throw new Error("Không nhận được liên kết thanh toán từ máy chủ.");
       }
-      handleEvent();
     } catch (err) {
       const msg =
         err instanceof Error ? err.message : "Đã xảy ra lỗi khi tạo đặt cọc.";
@@ -212,7 +225,10 @@ export default function OrderManagementCasher() {
         <Table
           loading={isLoading}
           rowKey="id"
-          columns={AppointmentColumn()}
+          columns={AppointmentColumn({ 
+            onPaymentByCash: handlePaymentByCash,
+            onPaymentByQR: handlePaymentByQR,
+          })}
           dataSource={filteredAppointments}
           scroll={{ x: "max-content" }}
           tableLayout="fixed"

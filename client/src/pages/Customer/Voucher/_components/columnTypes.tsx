@@ -39,7 +39,7 @@ export const VoucherColumn = (): ColumnsType<voucherData> => [
     dataIndex: "discountPercent",
     align: "right",
     width: 100,
-    render: (value) => `${value}%`,
+      render: (value) => (value != null && value !== "" ? `${value}%` : "-"),
   },
   {
     title: "Giảm tối đa",

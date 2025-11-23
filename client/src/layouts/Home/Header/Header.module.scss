@@ -16,8 +16,6 @@
     z-index: 1000;
 }
 
-
-
 .nav-link {
     position: relative;
     text-decoration: none;
@@ -58,4 +56,12 @@
             width: 0;
         }
     }
+}
+
+.btnCustomLogin {
+    background-color: var(--color-primary);
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
 }

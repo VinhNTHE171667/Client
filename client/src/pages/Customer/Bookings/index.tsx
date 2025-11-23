@@ -199,7 +199,7 @@ const BookingCalendar: React.FC = () => {
 
       const payload: CreateAppointmentProps = {
         customerId: auth.accountId!,
-        doctorId: doctorId || null,
+        doctorId: (doctorId == null || doctorId == "no-doctor") ? null : doctorId,
         staffId: null,
         appointment_date: dayjs(selectedSlot.start).toISOString(),
         startTime: dayjs(selectedSlot.start).toISOString(),

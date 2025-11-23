@@ -45,7 +45,7 @@ export const cartApi = createApi({
       {
         customerId: string;
         itemData: { itemId: string; quantity?: number };
-        doctorId: string;
+        doctorId?: string | null;
       }
     >({
       query: ({ customerId, itemData, doctorId }) => ({

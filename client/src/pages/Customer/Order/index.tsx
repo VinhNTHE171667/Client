@@ -1,107 +1,83 @@
-import React, { useEffect, useState, useMemo } from "react";
-import {
-  Card,
-  List,
-  Avatar,
-  Tag,
-  Spin,
-  Empty,
-  Button,
-  Modal,
-  message,
-  DatePicker,
-  Select,
-  Input,
-  Form,
-  Rate,
-} from "antd";
-import {
-  Calendar,
-  dateFnsLocalizer,
-  type SlotInfo,
-  type Event as RBCEvent,
-  type View,
-} from "react-big-calendar";
-import { format, parse, startOfWeek, getDay } from "date-fns";
-import { vi } from "date-fns/locale";
-import dayjs from "dayjs";
-import { Container, Row, Col } from "react-bootstrap";
-import styles from "./Order.module.scss";
+"use client"
+
+import type React from "react"
+import { useEffect, useState, useMemo } from "react"
+import { Card, Avatar, Tag, Spin, Empty, Button, Modal, message, DatePicker, Select, Input, Rate } from "antd"
+import { Calendar, dateFnsLocalizer, type SlotInfo, type Event as RBCEvent, type View } from "react-big-calendar"
+import { format, parse, startOfWeek, getDay } from "date-fns"
+import { vi } from "date-fns/locale"
+import dayjs from "dayjs"
+import styles from "./Order.module.scss"
 import {
   useCreateLinkPaymentMutation,
   useGetAppointmentsByCustomerMutation,
   useUpdateAppointmentMutationCancelMutation,
   type AppointmentProps,
-} from "@/services/appointment";
-import { useAuthStore } from "@/hooks/UseAuth";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { configRoutes } from "@/constants/route";
-import NoImage from "@/assets/img/NoImage/NoImage.jpg";
-import { useNavigate } from "react-router-dom";
-import { appointmentStatusEnum } from "@/common/types/auth";
-import { showError, showSuccess } from "@/libs/toast";
-import { handleError, statusTagColor, translateStatus } from "@/utils/format";
+} from "@/services/appointment"
+import { useAuthStore } from "@/hooks/UseAuth"
 import {
-  useCreateFeedbacksMutation,
-  useFindByAppointmentMutation,
-  type FeedbackResponse,
-} from "@/services/feedback";
-import FancyButton from "@/components/FancyButton";
+  EditOutlined,
+  DeleteOutlined,
+  CalendarOutlined,
+  UnorderedListOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  TeamOutlined,
+  PhoneOutlined,
+} from "@ant-design/icons"
+import { configRoutes } from "@/constants/route"
+import NoImage from "@/assets/img/NoImage/NoImage.jpg"
+import { useNavigate } from "react-router-dom"
+import { appointmentStatusEnum } from "@/common/types/auth"
+import { showError, showSuccess } from "@/libs/toast"
+import { handleError, statusTagColor, translateStatus } from "@/utils/format"
+import { useCreateFeedbacksMutation, useFindByAppointmentMutation, type FeedbackResponse } from "@/services/feedback"
 
-const locales = { vi };
+const locales = { vi }
 const localizer = dateFnsLocalizer({
   format,
   parse,
   startOfWeek,
   getDay,
   locales,
-});
+})
 
 const CustomerOrders: React.FC = () => {
-  const { auth } = useAuthStore();
-  const [getAppointments, { isLoading }] =
-    useGetAppointmentsByCustomerMutation();
-  const [appointments, setAppointments] = useState<AppointmentProps[]>([]);
-  const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  const [currentView, setCurrentView] = useState<View>("week");
-  const [editModal, setEditModal] = useState(false);
-  const [cancelModal, setCancelModal] = useState(false);
-  const [detailModal, setDetailModal] = useState(false);
+  const { auth } = useAuthStore()
+  const [getAppointments, { isLoading }] = useGetAppointmentsByCustomerMutation()
+  const [appointments, setAppointments] = useState<AppointmentProps[]>([])
+  const [currentDate, setCurrentDate] = useState<Date>(new Date())
+  const [currentView, setCurrentView] = useState<View>("week")
+  const [editModal, setEditModal] = useState(false)
+  const [cancelModal, setCancelModal] = useState(false)
+  const [detailModal, setDetailModal] = useState(false)
+  const [selectedAppointment, setSelectedAppointment] = useState<AppointmentProps>()
+  const [feedbackModal, setFeedbackModal] = useState(false)
+  const [feedbacks, setFeedbacks] = useState<{ serviceId: string; rating?: number; comment?: string }[]>([])
+  const [viewFeedbackModal, setViewFeedbackModal] = useState(false)
+  const [viewFeedbacks, setViewFeedbacks] = useState<FeedbackResponse[]>([])
+  const [getFeedbackByAppointment, { isLoading: isLoadingFeedback }] = useFindByAppointmentMutation()
+  const [statusFilter, setStatusFilter] = useState<string[] | null>(null)
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null)
+  const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar")
 
-  const [rejectModal, setRejectModal] = useState(false);
-  const [rejectReason, setRejectReason] = useState<string | null>(null);
-
-  const [selectedAppointment, setSelectedAppointment] =
-    useState<AppointmentProps>();
-
-  const navigate = useNavigate();
-  const [feedbackModal, setFeedbackModal] = useState(false);
-  const [feedbacks, setFeedbacks] = useState<
-    { serviceId: string; rating?: number; comment?: string }[]
-  >([]);
-
-  const [viewFeedbackModal, setViewFeedbackModal] = useState(false);
-  const [viewFeedbacks, setViewFeedbacks] = useState<FeedbackResponse[]>([]);
-  const [getFeedbackByAppointment, { isLoading: isLoadingFeedback }] =
-    useFindByAppointmentMutation();
+  const navigate = useNavigate()
+  const [updateCancelAppointment] = useUpdateAppointmentMutationCancelMutation()
+  const [createPaymentLink] = useCreateLinkPaymentMutation()
+  const [createFeedbacks] = useCreateFeedbacksMutation()
 
   const handleEvent = () => {
     if (auth?.accountId) {
       getAppointments({ customerId: auth.accountId })
         .unwrap()
         .then(setAppointments)
-        .catch(() => setAppointments([]));
+        .catch(() => setAppointments([]))
     }
-  };
+  }
 
   useEffect(() => {
-    handleEvent();
-  }, [auth]);
-
-  const [statusFilter, setStatusFilter] = useState<string[] | null>(null);
-  const [dateRange, setDateRange] = useState<
-    [dayjs.Dayjs | null, dayjs.Dayjs | null] | null
-  >(null);
+    handleEvent()
+  }, [auth])
 
   const events: RBCEvent[] = useMemo(
     () =>
@@ -112,7 +88,7 @@ const CustomerOrders: React.FC = () => {
             a.status !== appointmentStatusEnum.Rejected &&
             a.status !== appointmentStatusEnum.Completed &&
             a.status !== appointmentStatusEnum.Paid
-          );
+          )
         })
         .map((a) => ({
           id: a.id,
@@ -121,70 +97,58 @@ const CustomerOrders: React.FC = () => {
           end: new Date(a.endTime ?? a.startTime ?? new Date()),
           resource: a,
         })),
-    [appointments]
-  );
+    [appointments],
+  )
 
   const filteredAppointments = useMemo(() => {
     if (!statusFilter?.length && !dateRange) {
-      return appointments;
+      return appointments
     }
 
     return appointments.filter((item) => {
-      const matchStatus =
-        !statusFilter?.length || statusFilter.includes(item.status || "");
-
+      const matchStatus = !statusFilter?.length || statusFilter.includes(item.status || "")
       const matchDate =
         !dateRange ||
-        (dayjs(item.startTime).isAfter(dateRange[0], "day") &&
-          dayjs(item.startTime).isBefore(dateRange[1], "day")) ||
+        (dayjs(item.startTime).isAfter(dateRange[0], "day") && dayjs(item.startTime).isBefore(dateRange[1], "day")) ||
         dayjs(item.startTime).isSame(dateRange[0], "day") ||
-        dayjs(item.startTime).isSame(dateRange[1], "day");
+        dayjs(item.startTime).isSame(dateRange[1], "day")
 
-      return matchStatus && matchDate;
-    });
-  }, [appointments, statusFilter, dateRange]);
+      return matchStatus && matchDate
+    })
+  }, [appointments, statusFilter, dateRange])
 
   const handleSelectSlot = (slotInfo: SlotInfo) => {
-    console.log("Slot selected:", slotInfo);
-  };
+    console.log("Slot selected:", slotInfo)
+  }
 
   const handleSelectEvent = (event: RBCEvent) => {
-    const appointment = event.resource as AppointmentProps;
-    setSelectedAppointment(appointment);
-
-    // form.setFieldsValue({
-    //   note: appointment.note,
-    //   date: dayjs(appointment.startTime),
-    // });
-    setEditModal(true);
-  };
-
-  const [updateCancelAppointment] =
-    useUpdateAppointmentMutationCancelMutation();
+    const appointment = event.resource as AppointmentProps
+    setSelectedAppointment(appointment)
+    setEditModal(true)
+  }
 
   const handleCancelAppointment = async (values: { cancelReason: string }) => {
     try {
       const res = await updateCancelAppointment({
         appointmentId: selectedAppointment?.id || "",
         reason: values.cancelReason || "Khách hàng huỷ lịch hẹn",
-      });
+      })
 
       if (res) {
-        showSuccess("Huỷ lịch hẹn thành công.");
+        showSuccess("Huỷ lịch hẹn thành công.")
       } else {
-        showError("Huỷ lịch hẹn thất bại.");
+        showError("Huỷ lịch hẹn thất bại.")
       }
 
-      setCancelModal(false);
+      setCancelModal(false)
+      handleEvent()
     } catch (err) {
-      const msg =
-        err instanceof Error ? err.message : "Đã xảy ra lỗi khi huỷ lịch hẹn.";
-      showError(msg);
+      const msg = err instanceof Error ? err.message : "Đã xảy ra lỗi khi huỷ lịch hẹn."
+      showError(msg)
     }
-  };
+  }
 
   const handleSaveEdit = () => {
-    console.log(selectedAppointment);
     navigate(configRoutes.bookings, {
       state: {
         oldSlot: {
@@ -194,32 +158,25 @@ const CustomerOrders: React.FC = () => {
         appointmentId: selectedAppointment?.id || null,
         doctorId: selectedAppointment?.doctorId || null,
         services: selectedAppointment?.details?.map((d) => d.service) || [],
-
         full_name: selectedAppointment?.customer?.full_name || null,
         phone: selectedAppointment?.customer?.phone || null,
         note: selectedAppointment?.note || null,
         totalAmount: selectedAppointment?.totalAmount || null,
         voucherId: selectedAppointment?.voucherId || null,
       },
-    });
-  };
-  const [createPaymentLink] = useCreateLinkPaymentMutation();
+    })
+  }
 
   const handleDeposit = async (item: AppointmentProps) => {
     try {
-      // const total = (item.details ?? []).reduce(
-      //   (sum, d) => sum + Number(d.price ?? 0),
-      //   0
-      // );
-      const total = Number(item.totalAmount);
+      const total = Number(item.totalAmount)
 
       if (total <= 0) {
-        message.error("Không có giá trị dịch vụ để đặt cọc.");
-        return;
+        message.error("Không có giá trị dịch vụ để đặt cọc.")
+        return
       }
 
-      const depositAmount = Math.ceil(total * 0.5);
-
+      const depositAmount = Math.ceil(total * 0.5)
       const payload = {
         appointmentId: item.id,
         amount: depositAmount,
@@ -227,24 +184,21 @@ const CustomerOrders: React.FC = () => {
         returnUrl: `${window.location.origin}${configRoutes.paymentSuccessDeposit}`,
         cancelUrl: `${window.location.origin}${configRoutes.paymentFailDeposit}`,
         customerName: item.customer?.full_name || "Khách hàng",
-      };
+      }
 
-      const res = await createPaymentLink(payload).unwrap();
+      const res = await createPaymentLink(payload).unwrap()
 
       if (res?.checkoutUrl) {
-        message.success("Tạo liên kết thanh toán thành công!");
-        window.location.href = res.checkoutUrl;
+        message.success("Tạo liên kết thanh toán thành công!")
+        window.location.href = res.checkoutUrl
       } else {
-        throw new Error("Không nhận được liên kết thanh toán từ máy chủ.");
+        throw new Error("Không nhận được liên kết thanh toán từ máy chủ.")
       }
     } catch (err) {
-      const msg =
-        err instanceof Error ? err.message : "Đã xảy ra lỗi khi tạo đặt cọc.";
-      message.error(msg);
+      const msg = err instanceof Error ? err.message : "Đã xảy ra lỗi khi tạo đặt cọc."
+      message.error(msg)
     }
-  };
-
-  const [createFeedbacks] = useCreateFeedbacksMutation();
+  }
 
   const handleCreateFeedbacks = async () => {
     try {
@@ -256,43 +210,64 @@ const CustomerOrders: React.FC = () => {
           rating: f.rating!,
           comment: f.comment,
         })),
-      }).unwrap();
-      showSuccess("Gửi feedback thành công!");
-      setFeedbackModal(false);
-      handleEvent();
+      }).unwrap()
+      showSuccess("Gửi feedback thành công!")
+      setFeedbackModal(false)
+      handleEvent()
     } catch (err) {
-      handleError(err);
+      handleError(err)
     }
-  };
+  }
 
   const handleViewFeedback = async (appointment: AppointmentProps) => {
     try {
-      const res = await getFeedbackByAppointment(appointment.id).unwrap();
-      setViewFeedbacks(res);
-      setSelectedAppointment(appointment);
-      setViewFeedbackModal(true);
+      const res = await getFeedbackByAppointment(appointment.id).unwrap()
+      setViewFeedbacks(res)
+      setSelectedAppointment(appointment)
+      setViewFeedbackModal(true)
     } catch (err) {
-      handleError(err);
+      handleError(err)
     }
-  };
+  }
 
   return (
-    <Container className={styles.ordersPage}>
-      <Row>
-        <Col xs={12}>
-          <Card className={styles.calendarCard}>
-            <h3 className={`${styles.sectionTitle} cus-text-primary`}>
-              Lịch hẹn của bạn
-            </h3>
+    <div className={styles.ordersPageWrapper}>
+      {/* Header Section */}
+      <div className={styles.pageHeader}>
+        <div className={styles.headerContent}>
+          <h1 className={styles.pageTitle}>Quản Lí Lịch Hẹn</h1>
+          <p className={styles.pageSubtitle}>Theo dõi và quản lí tất cả các cuộc hẹn của bạn một cách dễ dàng</p>
+        </div>
+        <div className={styles.viewToggle}>
+          <button
+            className={`${styles.toggleBtn} ${viewMode === "calendar" ? styles.active : ""}`}
+            onClick={() => setViewMode("calendar")}
+            aria-label="View calendar"
+          >
+            <CalendarOutlined className={styles.toggleIcon} /> Lịch
+          </button>
+          <button
+            className={`${styles.toggleBtn} ${viewMode === "list" ? styles.active : ""}`}
+            onClick={() => setViewMode("list")}
+            aria-label="View list"
+          >
+            <UnorderedListOutlined className={styles.toggleIcon} /> Danh Sách
+          </button>
+        </div>
+      </div>
 
-            <div style={{ height: "75vh" }}>
+      {/* Calendar View */}
+      {viewMode === "calendar" && (
+        <div className={styles.calendarContainer}>
+          <Card className={styles.calendarCard}>
+            <div className={styles.calendarWrapper}>
               <Calendar
                 localizer={localizer}
                 events={events}
                 timeslots={1}
                 startAccessor="start"
                 endAccessor="end"
-                style={{ height: "100%", backgroundColor: "#fff" }}
+                style={{ height: "100%" }}
                 step={60}
                 selectable
                 popup={true}
@@ -316,702 +291,419 @@ const CustomerOrders: React.FC = () => {
                 defaultView="week"
                 formats={{
                   timeGutterFormat: (date, culture, localizer) =>
-                    localizer
-                      ? localizer.format(date, "HH:mm", culture)
-                      : format(date, "HH:mm"),
+                    localizer ? localizer.format(date, "HH:mm", culture) : format(date, "HH:mm"),
                 }}
                 eventPropGetter={(event) => ({
                   style: {
                     backgroundColor:
                       event.resource?.status === "CANCELLED"
-                        ? "#f87171"
+                        ? "#dc2626"
                         : event.resource?.status === "COMPLETED"
-                        ? "#4ade80"
-                        : "#60a5fa",
+                          ? "#16a34a"
+                          : "#0ea5e9",
                     borderRadius: "8px",
                     color: "#fff",
                     border: "none",
-                    padding: "4px 8px",
+                    padding: "6px 10px",
+                    fontSize: "13px",
+                    fontWeight: "500",
                   },
                 })}
                 slotPropGetter={(date) => {
-                  const now = new Date();
+                  const now = new Date()
 
                   if (date < now) {
                     return {
                       style: {
-                        backgroundColor: "#e0e0e0",
-                        opacity: 0.6,
-                        pointerEvents: "none",
+                        backgroundColor: "#f3f4f6",
+                        opacity: 0.5,
                       },
-                    };
+                    }
                   }
 
                   return {
                     style: {
-                      backgroundColor: "#f0f8ff",
+                      backgroundColor: "#f0f9ff",
                       cursor: "pointer",
                     },
-                  };
+                  }
                 }}
               />
             </div>
           </Card>
-        </Col>
-      </Row>
-      <Row>
-        <Col xs={12}>
-          <Card className={styles.listCard}>
-            <h3 className={`${styles.sectionTitle} cus-text-primary`}>
-              Danh sách lịch hẹn
-            </h3>
+        </div>
+      )}
 
-            <div className={styles.filterBar}>
+      {/* List View */}
+      {viewMode === "list" && (
+        <div className={styles.listContainer}>
+          {/* Filter Section */}
+          <div className={styles.filterSection}>
+            <div className={styles.filterGroup}>
+              <label className={styles.filterLabel}>Khoảng thời gian</label>
               <DatePicker.RangePicker
                 format="DD/MM/YYYY"
                 onChange={(range) => setDateRange(range)}
-                style={{ marginRight: 12 }}
+                placeholder={["Từ ngày", "Đến ngày"]}
+                className={styles.filterInput}
               />
+            </div>
 
+            <div className={styles.filterGroup}>
+              <label className={styles.filterLabel}>Trạng thái</label>
               <Select
                 allowClear
                 placeholder="Chọn trạng thái"
                 value={statusFilter ?? undefined}
                 onChange={(value) => setStatusFilter(value)}
-                style={{ width: 200 }}
                 mode="multiple"
+                className={styles.filterInput}
                 options={[
-                  {
-                    label: "Chờ xác nhận",
-                    value: appointmentStatusEnum.Pending,
-                  },
-                  {
-                    label: "Đã xác nhận",
-                    value: appointmentStatusEnum.Confirmed,
-                  },
-                  {
-                    label: "Đã đặt cọc",
-                    value: appointmentStatusEnum.Deposited,
-                  },
+                  { label: "Chờ xác nhận", value: appointmentStatusEnum.Pending },
+                  { label: "Đã xác nhận", value: appointmentStatusEnum.Confirmed },
+                  { label: "Đã đặt cọc", value: appointmentStatusEnum.Deposited },
                   { label: "Đã duyệt", value: appointmentStatusEnum.Approved },
-                  {
-                    label: "Bị từ chối",
-                    value: appointmentStatusEnum.Rejected,
-                  },
+                  { label: "Bị từ chối", value: appointmentStatusEnum.Rejected },
                   { label: "Đã thanh toán", value: appointmentStatusEnum.Paid },
                   { label: "Đã huỷ", value: appointmentStatusEnum.Cancelled },
                 ]}
               />
-
-              <Button
-                onClick={() => {
-                  setDateRange(null);
-                  setStatusFilter(null);
-                }}
-              >
-                Xoá bộ lọc
-              </Button>
             </div>
 
-            {isLoading ? (
-              <Spin size="large" className="d-block mx-auto my-5" />
-            ) : appointments.length === 0 ? (
-              <Empty description="Không có lịch hẹn nào." />
-            ) : (
-              <List
-                itemLayout="vertical"
-                dataSource={filteredAppointments}
-                renderItem={(item) => {
-                  // const totalPrice = item.details
-                  //   ?.reduce((sum, d) => sum + Number(d.price ?? 0), 0)
-                  //   .toLocaleString("vi-VN");
-                  const totalPrice = Number(item.totalAmount).toLocaleString(
-                    "vi-VN"
-                  );
-                  const isPending =
-                    item.status === appointmentStatusEnum.Pending;
-                  const isConfirmed =
-                    item.status === appointmentStatusEnum.Confirmed;
-                  const isRejected =
-                    item.status === appointmentStatusEnum.Rejected;
-                  const isPay = item.status === appointmentStatusEnum.Paid;
+            <Button
+              className={styles.clearBtn}
+              onClick={() => {
+                setDateRange(null)
+                setStatusFilter(null)
+              }}
+            >
+              Xoá Bộ Lọc
+            </Button>
+          </div>
 
-                  // const isCancelled =
-                  //   item.status === appointmentStatusEnum.Cancelled;
+          {/* Appointments List */}
+          {isLoading ? (
+            <div className={styles.loadingContainer}>
+              <Spin size="large" />
+            </div>
+          ) : filteredAppointments.length === 0 ? (
+            <Empty description="Không có lịch hẹn nào" className={styles.emptyState} />
+          ) : (
+            <div className={styles.appointmentsList}>
+              {filteredAppointments.map((item) => {
+                const totalPrice = Number(item.totalAmount).toLocaleString("vi-VN")
+                const isPending = item.status === appointmentStatusEnum.Pending
+                const isConfirmed = item.status === appointmentStatusEnum.Confirmed
+                const isPay = item.status === appointmentStatusEnum.Paid
 
-                  return (
-                    <Card
-                      className={styles.orderCard}
-                      key={item.id}
-                      bordered={false}
-                    >
-                      <List.Item>
-                        <List.Item.Meta
-                          avatar={
-                            <Avatar
-                              shape="square"
-                              size={72}
-                              src={item.customer?.avatar || NoImage}
-                            />
-                          }
-                          title={
-                            <div className={styles.header}>
-                              <h5>
-                                {item.customer?.full_name || "Khách hàng"}{" "}
-                              </h5>
-                              <Tag color={statusTagColor(item.status)}>
-                                {translateStatus(item.status)}
-                              </Tag>
-                            </div>
-                          }
-                          description={
-                            <>
-                              <p>
-                                <strong>Ngày:</strong>{" "}
-                                {dayjs(item.startTime).format(
-                                  "DD/MM/YYYY HH:mm"
-                                )}
-                              </p>
-                              <p>
-                                <strong>Bác sĩ:</strong>{" "}
-                                {item.doctor
-                                  ? item.doctor.full_name
-                                  : "Chưa có"}
-                              </p>
-                              <p>
-                                <strong>Ghi chú:</strong>{" "}
-                                {item.note || "Không có"}
-                              </p>
-                              <p>
-                                <strong>Dịch vụ:</strong>{" "}
-                                {item.details
-                                  ?.map((d) => d.service?.name || "Dịch vụ")
-                                  .join(", ")}
-                              </p>
-                            </>
-                          }
-                        />
-                        <div className={styles.footer}>
-                          <div
-                            className={`${styles.totalPrice} cus-text-primary`}
-                          >
-                            {totalPrice}₫
-                          </div>
-                          <div className={styles.actions}>
-                            <Button
-                              onClick={() => {
-                                setSelectedAppointment(item);
-                                setDetailModal(true);
-                              }}
-                            >
-                              Xem chi tiết
-                            </Button>
-
-                            {isPending && (
-                              <>
-                                <Button
-                                  icon={<EditOutlined />}
-                                  onClick={() =>
-                                    handleSelectEvent({
-                                      ...item,
-                                      resource: item,
-                                      start: new Date(item.startTime),
-                                      end: new Date(
-                                        item.endTime ?? item.startTime
-                                      ),
-                                    })
-                                  }
-                                >
-                                  Chỉnh sửa
-                                </Button>
-
-                                <Button
-                                  icon={<DeleteOutlined />}
-                                  danger
-                                  onClick={() => {
-                                    setSelectedAppointment(item);
-                                    setCancelModal(true);
-                                  }}
-                                >
-                                  Huỷ
-                                </Button>
-                              </>
-                            )}
-                            {isConfirmed && (
-                              <Button
-                                type="primary"
-                                onClick={() => handleDeposit(item)}
-                                style={{ marginLeft: 8 }}
-                              >
-                                Đặt cọc 50%
-                              </Button>
-                            )}
-
-                            {isPay && (
-                              <>
-                                <Button
-                                  type="primary"
-                                  onClick={() => {
-                                    setSelectedAppointment(item);
-                                    setFeedbacks(
-                                      item.details?.map((d) => ({
-                                        serviceId: d.serviceId,
-                                        rating: undefined,
-                                        comment: "",
-                                      })) || []
-                                    );
-                                    setFeedbackModal(true);
-                                  }}
-                                  disabled={item.isFeedbackGiven}
-                                >
-                                  Đánh giá
-                                </Button>
-
-                                {item.isFeedbackGiven && (
-                                  <Button
-                                    onClick={() => handleViewFeedback(item)}
-                                    style={{ marginLeft: 8 }}
-                                  >
-                                    Xem đánh giá
-                                  </Button>
-                                )}
-                              </>
-                            )}
-
-                            {isRejected && (
-                              <Button
-                                onClick={() => {
-                                  setRejectReason(
-                                    item.rejectionReason ??
-                                      "Không có lý do được cung cấp"
-                                  );
-                                  setRejectModal(true);
-                                }}
-                              >
-                                Xem lý do
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </List.Item>
-                    </Card>
-                  );
-                }}
-              />
-            )}
-          </Card>
-        </Col>
-      </Row>
-      <Modal
-        title="Chi tiết lịch hẹn"
-        open={editModal}
-        onCancel={() => setEditModal(false)}
-        onOk={handleSaveEdit}
-        okText="Chỉnh sửa"
-        okButtonProps={{
-          disabled:
-            selectedAppointment?.status !== appointmentStatusEnum.Pending,
-        }}
-        cancelText="Huỷ"
-      >
-        {selectedAppointment ? (
-          <>
-            <p>
-              <strong>Trạng thái:</strong>{" "}
-              <Tag color={statusTagColor(selectedAppointment.status)}>
-                {translateStatus(selectedAppointment.status)}
-              </Tag>
-            </p>
-
-            <p>
-              <strong>Ngày:</strong>{" "}
-              {dayjs(selectedAppointment.startTime).format("DD/MM/YYYY HH:mm")}
-            </p>
-
-            <p>
-              <strong>Bác sĩ:</strong>{" "}
-              {selectedAppointment.doctor?.full_name || "Chưa có"}
-            </p>
-
-            <p>
-              <strong>Ghi chú:</strong> {selectedAppointment.note || "Không có"}
-            </p>
-
-            <div style={{ marginTop: 12 }}>
-              <strong>Dịch vụ:</strong>
-              {selectedAppointment.details?.map((detail) => {
-                const svc = detail.service;
-                const img = svc?.images?.[0]?.url || NoImage;
                 return (
-                  <div
-                    key={detail.id}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      marginTop: 8,
-                      borderBottom: "1px solid #eee",
-                      paddingBottom: 8,
-                    }}
-                  >
-                    <img
-                      src={img}
-                      alt={svc?.name}
-                      style={{
-                        width: 60,
-                        height: 60,
-                        objectFit: "cover",
-                        borderRadius: 8,
-                      }}
-                    />
-                    <div style={{ flex: 1 }}>
-                      <p style={{ margin: 0, fontWeight: 600 }}>
-                        {svc?.name || "Dịch vụ"}
-                      </p>
-                      <p style={{ margin: 0 }}>
-                        Giá: {Number(detail.price ?? 0).toLocaleString("vi-VN")}
-                        ₫
-                      </p>
+                  <div key={item.id} className={styles.appointmentCard}>
+                    {/* Card Header */}
+                    <div className={styles.cardHeader}>
+                      <div className={styles.customerSection}>
+                        <Avatar size={56} src={item.customer?.avatar || NoImage} className={styles.avatar} />
+                        <div className={styles.customerInfo}>
+                          <h3 className={styles.customerName}>{item.customer?.full_name || "Khách hàng"}</h3>
+                          <Tag color={statusTagColor(item.status)} className={styles.statusTag}>
+                            {translateStatus(item.status)}
+                          </Tag>
+                        </div>
+                      </div>
+                      <div className={styles.priceSection}>
+                        <span className={styles.priceLabel}>Tổng tiền</span>
+                        <span className={styles.priceValue}>{totalPrice}₫</span>
+                      </div>
+                    </div>
+
+                    {/* Card Details */}
+                    <div className={styles.cardDetails}>
+                      <div className={styles.detailItem}>
+                        <ClockCircleOutlined className={styles.detailIcon} />
+                        <div className={styles.detailContent}>
+                          <span className={styles.detailLabel}>Ngày & Giờ</span>
+                          <span className={styles.detailValue}>{dayjs(item.startTime).format("DD/MM/YYYY HH:mm")}</span>
+                        </div>
+                      </div>
+
+                      <div className={styles.detailItem}>
+                        <TeamOutlined className={styles.detailIcon} />
+                        <div className={styles.detailContent}>
+                          <span className={styles.detailLabel}>Bác sĩ</span>
+                          <span className={styles.detailValue}>{item.doctor?.full_name || "Chưa có"}</span>
+                        </div>
+                      </div>
+
+                      <div className={styles.detailItem}>
+                        <PhoneOutlined className={styles.detailIcon} />
+                        <div className={styles.detailContent}>
+                          <span className={styles.detailLabel}>Dịch vụ</span>
+                          <span className={styles.detailValue}>
+                            {item.details?.map((d) => d.service?.name).join(", ") || "Không có"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {item.note && (
+                        <div className={styles.noteSection}>
+                          <span className={styles.noteLabel}>Ghi chú:</span>
+                          <span className={styles.noteValue}>{item.note}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Card Actions */}
+                    <div className={styles.cardActions}>
+                      <Button
+                        type="text"
+                        size="small"
+                        onClick={() => {
+                          setSelectedAppointment(item)
+                          setDetailModal(true)
+                        }}
+                        className={styles.actionBtn}
+                      >
+                        Chi Tiết
+                      </Button>
+
+                      {isPending && (
+                        <>
+                          <Button
+                            type="text"
+                            size="small"
+                            icon={<EditOutlined />}
+                            onClick={() =>
+                              handleSelectEvent({
+                                ...item,
+                                resource: item,
+                                start: new Date(item.startTime),
+                                end: new Date(item.endTime ?? item.startTime),
+                              })
+                            }
+                            className={styles.actionBtn}
+                          >
+                            Chỉnh Sửa
+                          </Button>
+
+                          <Button
+                            type="text"
+                            size="small"
+                            danger
+                            icon={<DeleteOutlined />}
+                            onClick={() => {
+                              setSelectedAppointment(item)
+                              setCancelModal(true)
+                            }}
+                            className={styles.actionBtn}
+                          >
+                            Huỷ
+                          </Button>
+                        </>
+                      )}
+
+                      {isConfirmed && (
+                        <Button
+                          type="primary"
+                          size="small"
+                          onClick={() => handleDeposit(item)}
+                          className={styles.actionBtn}
+                        >
+                          Đặt Cọc 50%
+                        </Button>
+                      )}
+
+                      {isPay && (
+                        <>
+                          <Button
+                            type="primary"
+                            size="small"
+                            onClick={() => {
+                              setSelectedAppointment(item)
+                              setFeedbacks(
+                                item.details?.map((d) => ({
+                                  serviceId: d.serviceId,
+                                  rating: undefined,
+                                  comment: "",
+                                })) || [],
+                              )
+                              setFeedbackModal(true)
+                            }}
+                            disabled={item.isFeedbackGiven}
+                            className={styles.actionBtn}
+                          >
+                            {item.isFeedbackGiven ? "Đã Đánh Giá" : "Đánh Giá"}
+                          </Button>
+
+                          {item.isFeedbackGiven && (
+                            <Button
+                              type="text"
+                              size="small"
+                              icon={<CheckCircleOutlined />}
+                              onClick={() => handleViewFeedback(item)}
+                              className={styles.actionBtn}
+                            >
+                              Xem Đánh Giá
+                            </Button>
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
-                );
+                )
               })}
             </div>
+          )}
+        </div>
+      )}
 
-            <p style={{ marginTop: 12, fontWeight: 600 }}>
-              Tổng tiền:{" "}
-              {/* {selectedAppointment.details
-                ?.reduce((sum, d) => sum + Number(d.price ?? 0), 0)
-                .toLocaleString("vi-VN")}
-              ₫ */}
-              {Number(selectedAppointment.totalAmount).toLocaleString("vi-VN")}₫
-            </p>
-          </>
-        ) : (
-          <p>Không có thông tin lịch hẹn.</p>
-        )}
-        {/* <div className={styles.selectedList}>
-          {selectedAppointment?.details.map((detail) => {
-            const svc = detail.service;
-            const imgSrc = svc?.images?.[0]?.url ? svc.images[0].url : NoImage;
-            const name = svc?.name ?? "Dịch vụ";
-            const doctorName =
-              selectedAppointment?.doctor?.full_name ?? "Chưa có";
-            const price = Number(
-              detail.price ?? svc?.price ?? 0
-            ).toLocaleString("vi-VN");
-            return (
-              <div key={detail.id} className={styles.serviceItem}>
-                <img src={imgSrc} alt={name} className={styles.serviceImage} />
-                <div className={styles.serviceInfo}>
-                  <h4>{name}</h4>
-                  <p className={styles.doctorName}>
-                    Bác sĩ: <span>{doctorName}</span>
-                  </p>
-                  <p className={styles.price}>{price}₫</p>
-                </div>
-              </div>
-            );
-          })}
-        </div> */}
+      {/* Modals */}
+      <Modal
+        title="Chỉnh Sửa Lịch Hẹn"
+        open={editModal}
+        onOk={handleSaveEdit}
+        onCancel={() => setEditModal(false)}
+        okText="Lưu"
+        cancelText="Huỷ"
+        wrapClassName={styles.modal}
+      >
+        <p>Bạn sắp chỉnh sửa lịch hẹn: {selectedAppointment?.customer?.full_name}</p>
+        <p>Ngày: {dayjs(selectedAppointment?.startTime).format("DD/MM/YYYY HH:mm")}</p>
       </Modal>
 
       <Modal
-        title="Huỷ lịch hẹn"
+        title="Huỷ Lịch Hẹn"
         open={cancelModal}
+        onOk={() => handleCancelAppointment({ cancelReason: "Khách hàng huỷ lịch hẹn" })}
         onCancel={() => setCancelModal(false)}
-        footer={null}
+        okText="Xác Nhận Huỷ"
+        cancelText="Đóng"
+        wrapClassName={styles.modal}
       >
-        <Form layout="vertical" onFinish={handleCancelAppointment}>
-          <Form.Item
-            label="Lý do huỷ"
-            name="cancelReason"
-            rules={[{ required: true, message: "Vui lòng nhập lý do huỷ" }]}
-          >
-            <Input.TextArea rows={4} placeholder="Nhập lý do huỷ lịch hẹn..." />
-          </Form.Item>
-
-          <Form.Item>
-            <div className="d-flex justify-content-center gap-4">
-              <Button onClick={() => setCancelModal(false)}>Huỷ</Button>
-              <Button type="primary" htmlType="submit">
-                Xác nhận huỷ
-              </Button>
-            </div>
-          </Form.Item>
-        </Form>
+        <p>Bạn có chắc chắn muốn huỷ lịch hẹn với {selectedAppointment?.customer?.full_name}?</p>
+        <p className={styles.cautionText}>Hành động này không thể hoàn tác.</p>
       </Modal>
 
       <Modal
-        title="Lý do từ chối lịch hẹn"
-        open={rejectModal}
-        onCancel={() => setRejectModal(false)}
-        footer={[
-          <Button
-            key="close"
-            type="primary"
-            onClick={() => setRejectModal(false)}
-          >
-            Đóng
-          </Button>,
-        ]}
-      >
-        <p style={{ whiteSpace: "pre-wrap", fontSize: 15 }}>{rejectReason}</p>
-      </Modal>
-
-      <Modal
-        title="Chi tiết lịch hẹn"
+        title="Chi Tiết Lịch Hẹn"
         open={detailModal}
-        onCancel={() => setDetailModal(false)}
         footer={[
           <Button key="close" onClick={() => setDetailModal(false)}>
             Đóng
           </Button>,
         ]}
+        wrapClassName={styles.modal}
       >
-        {selectedAppointment ? (
-          <>
-            <p>
-              <strong>Trạng thái:</strong>{" "}
-              <Tag color={statusTagColor(selectedAppointment.status)}>
-                {translateStatus(selectedAppointment.status)}
-              </Tag>
-            </p>
-
-            <p>
-              <strong>Ngày:</strong>{" "}
-              {dayjs(selectedAppointment.startTime).format("DD/MM/YYYY HH:mm")}
-            </p>
-
-            <p>
-              <strong>Bác sĩ:</strong>{" "}
-              {selectedAppointment.doctor?.full_name || "Chưa có"}
-            </p>
-
-            <p>
-              <strong>Ghi chú:</strong> {selectedAppointment.note || "Không có"}
-            </p>
-
-            <div style={{ marginTop: 12 }}>
-              <strong>Dịch vụ:</strong>
-              {selectedAppointment.details?.map((detail) => {
-                const svc = detail.service;
-                const img = svc?.images?.[0]?.url || NoImage;
-                return (
-                  <div
-                    key={detail.id}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      marginTop: 8,
-                      borderBottom: "1px solid #eee",
-                      paddingBottom: 8,
-                    }}
-                  >
-                    <img
-                      src={img}
-                      alt={svc?.name}
-                      style={{
-                        width: 60,
-                        height: 60,
-                        objectFit: "cover",
-                        borderRadius: 8,
-                      }}
-                    />
-                    <div style={{ flex: 1 }}>
-                      <p style={{ margin: 0, fontWeight: 600 }}>
-                        {svc?.name || "Dịch vụ"}
-                      </p>
-                      <p style={{ margin: 0 }}>
-                        Giá: {Number(detail.price ?? 0).toLocaleString("vi-VN")}
-                        ₫
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
+        {selectedAppointment && (
+          <div className={styles.detailsModal}>
+            <div className={styles.detailGroup}>
+              <span className={styles.label}>Khách hàng:</span>
+              <span>{selectedAppointment.customer?.full_name}</span>
             </div>
-
-            <p style={{ marginTop: 12, fontWeight: 600 }}>
-              Tổng tiền:{" "}
-              {/* {selectedAppointment.details
-                ?.reduce((sum, d) => sum + Number(d.price ?? 0), 0)
-                .toLocaleString("vi-VN")}
-              ₫ */}
-              {Number(selectedAppointment.totalAmount).toLocaleString("vi-VN")}₫
-            </p>
-          </>
-        ) : (
-          <p>Không có thông tin lịch hẹn.</p>
+            <div className={styles.detailGroup}>
+              <span className={styles.label}>Ngày:</span>
+              <span>{dayjs(selectedAppointment.startTime).format("DD/MM/YYYY HH:mm")}</span>
+            </div>
+            <div className={styles.detailGroup}>
+              <span className={styles.label}>Bác sĩ:</span>
+              <span>{selectedAppointment.doctor?.full_name || "Chưa có"}</span>
+            </div>
+            <div className={styles.servicesSection}>
+              <h4>Dịch vụ</h4>
+              {selectedAppointment.details?.map((detail) => (
+                <div key={detail.serviceId} className={styles.serviceItem}>
+                  {detail.service?.image && (
+                    <img
+                      src={detail.service.image || "/placeholder.svg"}
+                      alt={detail.service.name}
+                      className={styles.serviceImage}
+                    />
+                  )}
+                  <div className={styles.serviceContent}>
+                    <p className={styles.serviceName}>{detail.service?.name}</p>
+                    <p className={styles.servicePrice}>{Number(detail.price).toLocaleString("vi-VN")}₫</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className={styles.totalAmount}>
+              <span>Tổng cộng:</span>
+              <span>{Number(selectedAppointment.totalAmount).toLocaleString("vi-VN")}₫</span>
+            </div>
+          </div>
         )}
       </Modal>
 
       <Modal
+        title="Đánh Giá Dịch Vụ"
         open={feedbackModal}
+        onOk={handleCreateFeedbacks}
         onCancel={() => setFeedbackModal(false)}
-        footer={null}
-        width={800}
+        okText="Gửi Đánh Giá"
+        cancelText="Huỷ"
+        wrapClassName={styles.modal}
       >
-        <div>
-          <h3 className="cus-text-primary text-center">Đánh giá dịch vụ</h3>
-        </div>
-        <div className={styles.feedbackModalContent}>
-          <div className={styles.appointmentInfo}>
-            <p>
-              <strong>Khách hàng:</strong>{" "}
-              {selectedAppointment?.customer?.full_name}
-            </p>
-            <p>
-              <strong>Ngày:</strong>{" "}
-              {dayjs(selectedAppointment?.startTime).format("DD/MM/YYYY HH:mm")}
-            </p>
-            <p>
-              <strong>Bác sĩ:</strong>{" "}
-              {selectedAppointment?.doctor?.full_name || "Chưa có"}
-            </p>
-            <p>
-              <strong>Tổng tiền:</strong>{" "}
-              {selectedAppointment?.details
-                ?.reduce((sum, d) => sum + Number(d.price ?? 0), 0)
-                .toLocaleString("vi-VN")}
-              ₫
-            </p>
-          </div>
-
+        <div className={styles.feedbackModal}>
           <div className={styles.feedbackList}>
-            {feedbacks.map((f, idx) => {
-              const detail = selectedAppointment?.details[idx];
-              const svc = detail?.service;
-              const img = svc?.images?.[0]?.url || NoImage;
-
-              return (
-                <div key={f.serviceId} className={styles.feedbackCard}>
-                  <div className={styles.feedbackLeft}>
-                    <img
-                      src={img}
-                      alt={svc?.name}
-                      className={styles.feedbackImage}
-                    />
-                    <div>
-                      <p className={styles.feedbackServiceName}>{svc?.name}</p>
-                      <p className={styles.feedbackServicePrice}>
-                        {Number(detail?.price ?? 0).toLocaleString("vi-VN")} đ
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className={styles.feedbackRight}>
+            {feedbacks.map((feedback, index) => (
+              <div key={index} className={styles.feedbackItem}>
+                <div className={styles.feedbackContent}>
+                  <h5>{selectedAppointment?.details?.[index]?.service?.name}</h5>
+                  <div className={styles.ratingControl}>
                     <Rate
-                      allowHalf
-                      value={f.rating}
-                      onChange={(val) => {
-                        const copy = [...feedbacks];
-                        copy[idx].rating = val;
-                        setFeedbacks(copy);
-                      }}
-                    />
-                    <Input.TextArea
-                      rows={3}
-                      placeholder="Cảm nhận của bạn..."
-                      value={f.comment}
-                      onChange={(e) => {
-                        const copy = [...feedbacks];
-                        copy[idx].comment = e.target.value;
-                        setFeedbacks(copy);
+                      value={feedback.rating}
+                      onChange={(value) => {
+                        const newFeedbacks = [...feedbacks]
+                        newFeedbacks[index].rating = value
+                        setFeedbacks(newFeedbacks)
                       }}
                     />
                   </div>
+                  <Input.TextArea
+                    placeholder="Nhận xét của bạn..."
+                    value={feedback.comment}
+                    onChange={(e) => {
+                      const newFeedbacks = [...feedbacks]
+                      newFeedbacks[index].comment = e.target.value
+                      setFeedbacks(newFeedbacks)
+                    }}
+                    className={styles.feedbackTextarea}
+                  />
                 </div>
-              );
-            })}
-          </div>
-
-          <div className={styles.feedbackFooter}>
-            <FancyButton
-              onClick={handleCreateFeedbacks}
-              variant="primary"
-              size="middle"
-              label="Gửi đánh giá"
-            />
+              </div>
+            ))}
           </div>
         </div>
       </Modal>
 
       <Modal
+        title="Xem Đánh Giá"
         open={viewFeedbackModal}
-        onCancel={() => setViewFeedbackModal(false)}
         footer={[
           <Button key="close" onClick={() => setViewFeedbackModal(false)}>
             Đóng
           </Button>,
         ]}
-        width={800}
+        wrapClassName={styles.modal}
       >
-        <div>
-          <h3 className="cus-text-primary text-center">Đánh giá của bạn</h3>
-        </div>
-
         {isLoadingFeedback ? (
-          <Spin className="d-block mx-auto my-4" />
-        ) : viewFeedbacks.length === 0 ? (
-          <Empty description="Chưa có đánh giá nào." />
+          <Spin />
         ) : (
-          <div className={styles.feedbackModalContent}>
-            <div className={styles.appointmentInfo}>
-              <p>
-                <strong>Khách hàng:</strong>{" "}
-                {selectedAppointment?.customer?.full_name}
-              </p>
-              <p>
-                <strong>Ngày:</strong>{" "}
-                {dayjs(selectedAppointment?.startTime).format(
-                  "DD/MM/YYYY HH:mm"
-                )}
-              </p>
-              <p>
-                <strong>Bác sĩ:</strong>{" "}
-                {selectedAppointment?.doctor?.full_name || "Chưa có"}
-              </p>
-            </div>
-
-            <div className={styles.feedbackList}>
-              {viewFeedbacks.map((f) => {
-                const svc = f.service;
-                const img = svc?.images?.[0]?.url || NoImage;
-                return (
-                  <div key={f.id} className={styles.feedbackCard}>
-                    <div className={styles.feedbackLeft}>
-                      <img
-                        src={img}
-                        alt={svc?.name}
-                        className={styles.feedbackImage}
-                      />
-                      <div>
-                        <p className={styles.feedbackServiceName}>
-                          {svc?.name}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className={styles.feedbackRight}>
-                      <Rate allowHalf disabled value={Number(f.rating)} />
-                      <Input.TextArea
-                        rows={3}
-                        value={f.comment}
-                        disabled
-                        style={{ backgroundColor: "#f9f9f9" }}
-                      />
-                    </div>
+          <div className={styles.feedbackList}>
+            {viewFeedbacks.map((feedback) => (
+              <div key={feedback.id} className={styles.feedbackItem}>
+                <div className={styles.feedbackContent}>
+                  <h5>{feedback.service?.name}</h5>
+                  <div className={styles.ratingControl}>
+                    <Rate value={feedback.rating} disabled />
                   </div>
-                );
-              })}
-            </div>
+                  {feedback.comment && <p>{feedback.comment}</p>}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </Modal>
-    </Container>
-  );
-};
+    </div>
+  )
+}
 
-export default CustomerOrders;
+export default CustomerOrders

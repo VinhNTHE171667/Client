@@ -24,6 +24,8 @@ import {
 } from './dto/customer.dto';
 import { MailService } from '../mail/mail.service';
 import { Spa } from '@/entities/spa.entity';
+import { NotificationType } from '@/entities/enums/notification-type.enum';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class AuthService {
@@ -48,6 +50,7 @@ export class AuthService {
     private configService: ConfigService,
     private jwtService: JwtService,
     private readonly mailService: MailService,
+    private readonly notificationService: NotificationService,
   ) {
     this.loadSpa();
   }
@@ -231,11 +234,25 @@ export class AuthService {
     }
 
     const newCustomer = this.customerRepository.create(customerData);
-    return await this.customerRepository.save({
+    const savedCustomer = await this.customerRepository.save({
       ...newCustomer,
       password: await hashPassword(newCustomer.password),
       refreshToken: '',
+      isEmailVerified: false,
     });
+
+    await this.sendEmailVerification(savedCustomer);
+
+    await this.notificationService.create({
+      title: 'Chào mừng đến với GenSpa!',
+      content: `Tài khoản của bạn đã được tạo thành công. Vui lòng kiểm tra email để xác minh và kích hoạt tài khoản.`,
+      type: NotificationType.Success,
+      userId: savedCustomer.id,
+      userType: 'customer',
+      actionUrl: `${this.configService.get<string>('CLIENT_URL')}/verify-email?token=${savedCustomer.emailVerificationToken}`,
+    });
+
+    return savedCustomer;
   }
 
   async login(data: LoginDto): Promise<any> {
@@ -288,6 +305,13 @@ export class AuthService {
         if (!user.isActive) {
           throw new HttpException(
             'Tài khoản của bạn đã bị vô hiệu hóa.',
+            HttpStatus.UNAUTHORIZED,
+          );
+        }
+
+        if (source.roleResolver(user) === RoleEnum.Customer && !user.isEmailVerified) {
+          throw new HttpException(
+            'Tài khoản chưa được xác minh email. Vui lòng kiểm tra email để xác minh.',
             HttpStatus.UNAUTHORIZED,
           );
         }
@@ -497,7 +521,10 @@ export class AuthService {
   async sendEmailVerification(customer: Customer) {
     const token = await this.jwtService.signAsync(
       { email: customer.email },
-      { secret: process.env.JWT_SECRET, expiresIn: '24h' }, // 24h token
+      { 
+        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: '24h' 
+      },
     );
 
     customer.emailVerificationToken = token;
@@ -533,9 +560,19 @@ export class AuthService {
     }
 
     customer.isEmailVerified = true;
+    customer.isVerified = true;
     customer.emailVerificationToken = null;
     customer.emailVerificationTokenExpire = null;
     await this.customerRepository.save(customer);
+
+    // Tạo thông báo sau khi xác minh email thành công
+    await this.notificationService.create({
+      title: 'Xác minh email thành công!',
+      content: 'Email của bạn đã được xác minh. Bây giờ bạn có thể đăng nhập và sử dụng đầy đủ các tính năng của GenSpa.',
+      type: NotificationType.Success,
+      userId: customer.id,
+      userType: 'customer',
+    });
 
     return { message: 'Email đã được xác thực thành công' };
   }

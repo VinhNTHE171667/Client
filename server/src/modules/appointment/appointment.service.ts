@@ -23,6 +23,9 @@ import { CustomerVoucher } from '@/entities/customerVoucher.entity';
 import { Invoice } from '@/entities/invoice.entity';
 import { InvoiceDetail } from '@/entities/invoiceDetail.entity';
 import { DoctorCancelRequest } from '@/entities/doctorCancelRequest.entity';
+import { NotificationType } from '@/entities/enums/notification-type.enum';
+import { NotificationService } from '../notification/notification.service';
+import { VoucherService } from '../voucher/voucher.service';
 
 @Injectable()
 export class AppointmentService {
@@ -65,6 +68,9 @@ export class AppointmentService {
 
     private readonly mailService: MailService,
     private readonly dataSource: DataSource,
+
+    private readonly notificationService: NotificationService, 
+    private readonly voucherService: VoucherService
   ) {
     this.loadSpa();
   }
@@ -215,12 +221,21 @@ export class AppointmentService {
       relations: ['details'],
     });
 
+
     if (cart && cart.details?.length) {
-      const deleteConditions = dto.details.map((d) => ({
-        cartId: cart.id,
-        serviceId: d.serviceId,
-        doctorId: dto.doctorId,
-      }));
+     const deleteConditions = dto.details.map((d) => {
+        const cond: any = {
+          cartId: cart.id,
+          serviceId: d.serviceId,
+        };
+
+        if (dto.doctorId) {
+          cond.doctorId = dto.doctorId;
+        }
+
+      return cond;
+    });
+
 
       await this.cartDetailRepo.delete(deleteConditions);
 
@@ -408,7 +423,7 @@ export class AppointmentService {
     return appointment;
   }
 
-  async cancel(id: string, reason: string) {
+    async cancel(id: string, reason: string) {
     const appointment = await this.findOne(id);
 
     appointment.status = AppointmentStatus.Cancelled;
@@ -435,11 +450,14 @@ export class AppointmentService {
     return appointment;
   }
 
+
   async reject(id: string, reason: string) {
     const appointment = await this.findOne(id);
     appointment.status = AppointmentStatus.Rejected;
     appointment.rejectionReason = reason;
     await this.appointmentRepo.save(appointment);
+
+    
     return appointment;
   }
 
@@ -576,7 +594,35 @@ export class AppointmentService {
       cancelReason: `${req.reason} (Hủy bởi hệ thống sau khi bác sĩ duyệt)`,
     });
 
-    
+    const appointment = await this.findOne(req.appointmentId);
+
+    await this.notificationService.create({
+      title: 'Lịch hẹn của bạn đã bị hủy',
+      content: `Lịch hẹn của bạn đã bị hủy. Chúng tôi xin lỗi vì sự bất tiện này. Để bù đắp, chúng tôi đã tạo voucher giảm ${appointment.depositAmount} cho bạn. Voucher sẽ được gửi qua email và thông báo.`,
+      type: NotificationType.Warning,
+      userId: appointment.customer.id,
+      userType: 'customer',
+      actionUrl: '/customer/orders',
+      relatedId: appointment.id,
+      relatedType: 'appointment',
+    });
+
+    const voucherCode = `CANCEL_${appointment.id.slice(0, 8).toUpperCase()}_${Date.now()}`;
+    const createVoucherDto = {
+      code: voucherCode,
+      description: 'Voucher bù đắp do hủy lịch hẹn',
+      discountAmount: appointment.depositAmount,
+      validFrom: new Date(),
+      validTo: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 
+      isActive: true,
+      customerIds: [appointment.customer.id], 
+    };
+
+    try {
+      await this.voucherService.createForCustomers(createVoucherDto);
+    } catch (error) {
+      console.log(error)
+    }
 
     // await this.historyRepo.save({
     //   appointmentId: req.appointmentId,

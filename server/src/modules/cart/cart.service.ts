@@ -8,7 +8,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import omit from 'lodash/omit';
 import { Doctor } from '@/entities/doctor.entity';
 
@@ -31,39 +31,46 @@ export class CartService {
     private readonly doctorRepo: Repository<Doctor>,
   ) {}
 
-  async getCartById(customerId: string) {
-    const cart = await this.cartRepo.findOne({
-      where: { customerId },
-      relations: ['details', 'details.service'],
+ async getCartById(customerId: string) {
+  const cart = await this.cartRepo.findOne({
+    where: { customerId },
+    relations: ['details', 'details.service'],
+  });
+
+  if (!cart) {
+    const newCart = this.cartRepo.create({
+      customerId,
+      details: [],
     });
 
-    if (!cart) {
-      const newCart = this.cartRepo.create({
-        customerId,
-        details: [],
-      });
+    return this.cartRepo.save(newCart);
+  }
 
-      return this.cartRepo.save(newCart);
-    }
-
-    const items = await Promise.all(
-      cart.details.map(async (detail) => {
-        const doctor = await this.doctorRepo.findOne({
-          where: { id: detail.doctorId },
+  const items = await Promise.all(
+    cart.details.map(async (detail) => {
+      let doctor: Doctor | null = null;
+      if (detail.doctorId) {
+        doctor = await this.doctorRepo.findOne({
+          where: { id: detail.doctorId }, 
         });
+        // If doctor not found, set null (no throw, skip gracefully)
+      }
 
-        if (!doctor) {
-          throw new NotFoundException('Không tìm thấy bác sĩ');
-        }
+      // Base item data
+      const item = {
+        id: detail.service.id,
+        name: detail.service.name,
+        description: detail.service.description,
+        price: detail.service.price,
+        quantity: detail.quantity,
+        images: detail.service.images,
+        categoryId: detail.service.categoryId,
+      };
 
+      // Conditionally add doctor if exists
+      if (doctor) {
         return {
-          id: detail.service.id,
-          name: detail.service.name,
-          description: detail.service.description,
-          price: detail.service.price,
-          quantity: detail.quantity,
-          images: detail.service.images,
-          categoryId: detail.service.categoryId,
+          ...item,
           doctor: {
             id: doctor.id,
             name: doctor.full_name,
@@ -73,80 +80,82 @@ export class CartService {
             experience_years: doctor.experience_years,
           },
         };
-      }),
-    );
+      }
 
-    const cartResponse = {
-      id: cart.id,
-      items,
-    };
+      // If no doctor (or not found), return without doctor field
+      return item;
+    }),
+  );
 
-    return omit(cartResponse, ['createdAt', 'updatedAt']);
+  const cartResponse = {
+    id: cart.id,
+    items,
+  };
+
+  return omit(cartResponse, ['createdAt', 'updatedAt']);
+}
+
+   async addItemToCart(
+  customerId: string,
+  itemData: { itemId: string; quantity?: number },
+  doctorId?: string | null, // Optional, allow null
+) {
+  const { itemId, quantity = 1 } = itemData;
+
+  let cart = await this.cartRepo.findOne({
+    where: { customerId },
+    relations: ['details', 'details.service'],
+  });
+
+  if (!cart) {
+    cart = this.cartRepo.create({
+      customerId,
+      details: [],
+    });
+    cart = await this.cartRepo.save(cart);
   }
 
-  async addItemToCart(
-    customerId: string,
-    itemData: { itemId: string; quantity?: number },
-    doctorId: string,
-  ) {
-    const { itemId, quantity = 1 } = itemData;
+  const service = await this.serviceRepo.findOne({
+    where: { id: itemId },
+    relations: ['doctors'],
+  });
+  if (!service) throw new NotFoundException('Không tìm thấy dịch vụ');
 
-    let cart = await this.cartRepo.findOne({
-      where: { customerId },
-      relations: ['details', 'details.service'],
-    });
-
-    if (!cart) {
-      cart = this.cartRepo.create({
-        customerId,
-        details: [],
-      });
-      cart = await this.cartRepo.save(cart);
-    }
-
-    const service = await this.serviceRepo.findOne({
-      where: { id: itemId },
-      relations: ['doctors'],
-    });
-    if (!service) throw new NotFoundException('Không tìm thấy dịch vụ');
-
-    const existingDetail = cart.details.find(
-      (d) => d.service.id === service.id,
-    );
-
+  if (doctorId) {
     const doctors = service.doctors || [];
     if (!doctors.find((doc) => doc.id === doctorId)) {
       throw new BadRequestException(
         'Bác sĩ không được phép thêm dịch vụ này vào giỏ hàng',
       );
     }
-
-    if (existingDetail && existingDetail.doctorId === doctorId) {
-      throw new BadRequestException('Dịch vụ này đã có trong giỏ hàng');
-    }
-
-    const newDetail = this.cartDetailRepo.create({
-      cart,
-      service,
-      quantity,
-      doctorId,
-    });
-    await this.cartDetailRepo.save(newDetail);
-
-    // if (existingDetail) {
-    //   existingDetail.quantity += quantity;
-    //   await this.cartDetailRepo.save(existingDetail);
-    // } else {
-    //   const newDetail = this.cartDetailRepo.create({
-    //     cart,
-    //     service,
-    //     quantity,
-    //   });
-    //   await this.cartDetailRepo.save(newDetail);
-    // }
-
-    return this.getCartById(customerId);
   }
+
+  const whereClause = doctorId 
+    ? { serviceId: service.id, doctorId } 
+    : { serviceId: service.id, doctorId: IsNull() }; 
+
+  const existingDetail = await this.cartDetailRepo.findOne({
+    where: whereClause,
+    relations: ['cart'],
+  });
+
+  if (existingDetail) {
+    throw new BadRequestException('Dịch vụ này đã có trong giỏ hàng');
+  }
+
+  const newDetailData = {
+    cartId: cart.id,
+    serviceId: service.id, 
+    quantity,
+    doctorId: doctorId || null,
+  };
+
+  const newDetail = this.cartDetailRepo.create(newDetailData);
+  await this.cartDetailRepo.save(newDetail);
+
+  return this.getCartById(customerId);
+}
+
 
   async removeItemFromCart(customerId: string, itemId: string) {
     const cart = await this.cartRepo.findOne({
