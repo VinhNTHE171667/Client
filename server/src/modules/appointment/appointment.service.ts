@@ -131,7 +131,7 @@ export class AppointmentService {
     return this.appointmentRepo.find({
       where: { customerId },
       relations: ['doctor', 'details', 'details.service', 'customer'],
-      order: { appointment_date: 'ASC' },
+      order: { createdAt: 'DESC' },
     });
   }
 

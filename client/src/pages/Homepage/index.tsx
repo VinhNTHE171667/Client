@@ -15,6 +15,9 @@ import ContactSection from "./_components/ContactSection";
 import TestimonialsSection from "./_components/TestimonialsSection";
 import GallerySection from "./_components/GallerySection";
 import { configRoutes } from "@/constants/route";
+import FeaturedServices from "./_components/FeaturedServices/FeaturedServices";
+import FeaturedDoctors from "./_components/FeaturedDoctors/FeaturedDoctors";
+import MultiVideoBackground from "./_components/MultiVideoBackground/MultiVideoBackground";
 
 const cx = classNames.bind(styles);
 
@@ -81,6 +84,10 @@ const Homepage = () => {
           ))}
         </Slider>
       </section>
+
+      <FeaturedServices />
+      <MultiVideoBackground />
+      <FeaturedDoctors />
 
       <ServiceSection />
 

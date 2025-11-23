@@ -45,6 +45,9 @@ import VoucherCustomer from "@/pages/Customer/Voucher";
 import DoctorList from "@/pages/Services/DoctorList";
 import DoctorCancelRequestManagementStaff from "@/pages/Staff/RequestDoctor";
 import DataAnalysisDashboard from "@/pages/Admin/DataAnalysisDashboard";
+import VerifyEmailPage from "@/pages/Auth/VerifyEmailPage";
+import NotificationCustomer from "@/pages/Customer/Notification";
+import PaymentStatsPage from "@/pages/Casher/PaymentStats";
 
 const router = createBrowserRouter([
   {
@@ -62,7 +65,7 @@ const router = createBrowserRouter([
     element: <LoginPage />,
     // children: [{ index: true, element: <LoginPage /> }],
   },
-   {
+  {
     path: configRoutes.verified,
     element: <VerifyEmailPage />,
     // children: [{ index: true, element: <LoginPage /> }],
@@ -385,7 +388,7 @@ const router = createBrowserRouter([
       },
     ],
   },
-  
+
   {
     path: configRoutes.staffFeedback,
     element: <ProtectedRoute allowedRoles={[RoleEnum.Staff, RoleEnum.Admin]} />,
@@ -470,12 +473,12 @@ const router = createBrowserRouter([
     ],
   },
 
-   {
+  {
     path: configRoutes.casherStats,
     element: (
       <ProtectedRoute allowedRoles={[RoleEnum.Casher, RoleEnum.Admin]} />
     ),
-     children: [
+    children: [
       {
         element: <SystemLayoutReposive />,
         children: [

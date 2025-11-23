@@ -380,6 +380,7 @@ export class PaymentService {
   async getInvoices() {
     return this.invoiceRepo.find({
       relations: ['customer', 'appointment', 'details', 'details.service', 'cashier'],
+      order: { createdAt: 'DESC' },
     });
   }
 }

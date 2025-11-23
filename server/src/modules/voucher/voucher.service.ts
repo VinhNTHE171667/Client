@@ -166,6 +166,7 @@ export class VoucherService {
   async findVouchersByCustomer(customerId: string): Promise<Voucher[]> {
     const customerVouchers = await this.customerVoucherRepo.find({
       where: { customerId, isUsed: false },
+      order: { createdAt: 'DESC' },
     });
 
     const voucherIds = customerVouchers.map((cv) => cv.voucherId);
@@ -175,6 +176,7 @@ export class VoucherService {
     }
     const vouchers = await this.voucherRepo.find({
       where: { id: In(voucherIds), deletedAt: IsNull() },
+       order: { createdAt: 'DESC' }, 
     });
     return vouchers;
   }
