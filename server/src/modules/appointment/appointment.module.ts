@@ -1,8 +1,4 @@
-import { Customer } from '@/entities/customer.entity';
-import { Doctor } from '@/entities/doctor.entity';
-import { Internal } from '@/entities/internal.entity';
-import { Role } from '@/entities/role.entity';
-import { Service } from '@/entities/service.entity';
+// src/modules/appointment/appointment.module.ts (Updated with VoucherModule import)
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
@@ -23,6 +19,13 @@ import { Invoice } from '@/entities/invoice.entity';
 import { InvoiceDetail } from '@/entities/invoiceDetail.entity';
 import { AppointmentCronReminderService } from './appointment.cron';
 import { DoctorCancelRequest } from '@/entities/doctorCancelRequest.entity';
+import { Customer } from '@/entities/customer.entity';
+import { Internal } from '@/entities/internal.entity';
+import { Role } from '@/entities/role.entity';
+import { Doctor } from '@/entities/doctor.entity';
+import { Service } from '@/entities/service.entity';
+import { VoucherModule } from '../voucher/voucher.module';
+import { NotificationModule } from '../notification/notification.module'; 
 
 @Module({
   imports: [
@@ -52,6 +55,8 @@ import { DoctorCancelRequest } from '@/entities/doctorCancelRequest.entity';
       signOptions: { expiresIn: process.env.EXPIRE_TIME_ACCESS },
     }),
     MailModule,
+    VoucherModule,
+    NotificationModule, 
   ],
   controllers: [AppointmentController],
   providers: [AppointmentCronReminderService, AppointmentService],

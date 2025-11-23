@@ -531,7 +531,7 @@ const CartPage = () => {
                           <Title level={4}>{doctor?.name || "Không rõ bác sĩ"}</Title>
                           <span className={styles.doctorSub}>{items.length} dịch vụ • Tổng: {doctorTotal.toLocaleString()}đ</span>
                         </div>
-                        <FancyButton variant={isSelected ? "primary" : "outline"} size="small" icon={<CheckOutlined />} onClick={() => handleSelectDoctor(doctorId)} label={isSelected ? "Đã chọn" : "Chọn bác sĩ này"} />
+                        <FancyButton variant={isSelected ? "primary" : "outline"} size="small" icon={<CheckOutlined />} onClick={() => handleSelectDoctor(doctorId)} label={isSelected ? "Đã chọn" : "Chọn dịch vụ này"} />
                       </div>
                       
                       <Row gutter={[16, 16]} style={{ marginTop: 20 }}>

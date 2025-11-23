@@ -40,6 +40,7 @@ export class CreateAppointmentDto {
     description: 'ID của bác sĩ phụ trách (nếu có)',
     required: false,
   })
+  
   @IsOptional()
   @IsUUID()
   doctorId?: string;

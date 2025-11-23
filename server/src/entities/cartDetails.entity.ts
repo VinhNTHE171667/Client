@@ -1,3 +1,4 @@
+// src/entities/cartDetails.entity.ts (Update entity to allow null explicitly)
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -30,8 +31,8 @@ export class CartDetail {
   @Column({ default: 1 })
   quantity: number;
 
-  @Column()
-  doctorId: string;
+  @Column({ nullable: true, type: 'varchar', length: 255 }) 
+  doctorId?: string | null; 
 
   // @Column({ type: 'decimal', precision: 10, scale: 2 })
   // price: number;

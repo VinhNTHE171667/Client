@@ -62,6 +62,11 @@ const router = createBrowserRouter([
     element: <LoginPage />,
     // children: [{ index: true, element: <LoginPage /> }],
   },
+   {
+    path: configRoutes.verified,
+    element: <VerifyEmailPage />,
+    // children: [{ index: true, element: <LoginPage /> }],
+  },
   {
     path: configRoutes.register,
     element: <RegisterPage />,
@@ -235,6 +240,16 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <CustomerOrders />,
+      },
+    ],
+  },
+  {
+    path: configRoutes.customerNotifications,
+    element: <HomeLayouts />,
+    children: [
+      {
+        index: true,
+        element: <NotificationCustomer />,
       },
     ],
   },
@@ -455,6 +470,23 @@ const router = createBrowserRouter([
     ],
   },
 
+   {
+    path: configRoutes.casherStats,
+    element: (
+      <ProtectedRoute allowedRoles={[RoleEnum.Casher, RoleEnum.Admin]} />
+    ),
+     children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <PaymentStatsPage />,
+          },
+        ],
+      },
+    ],
+  },
   {
     path: configRoutes.customerVouchers,
     element: <ProtectedRoute allowedRoles={[RoleEnum.Customer]} />,

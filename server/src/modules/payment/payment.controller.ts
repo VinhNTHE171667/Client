@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Appointment } from '@/entities/appointment.entity';
@@ -6,6 +6,7 @@ import { AppointmentDetail } from '@/entities/appointmentDetails.entity';
 import { Repository } from 'typeorm';
 import { Internal } from '@/entities/internal.entity';
 import { Service } from '@/entities/service.entity';
+import { PaymentStatsDto } from './dto/payment-stats.dto';
 
 @Controller('payment')
 export class PaymentController {
@@ -67,6 +68,8 @@ export class PaymentController {
     @Body()
     body: {
       orderCode: string;
+      paymentMethod: string;
+      staffId: string
     },
   ) {
     return this.payosService.updatePaymentStatusPaid(body);
@@ -75,6 +78,13 @@ export class PaymentController {
   @Get('invoice/')
   async getInvoice() {
     return this.payosService.getInvoices();
+  }
+
+  @Get('stats')
+  async getStats(
+    @Query() dto: PaymentStatsDto, 
+  ) {
+    return this.payosService.getPaymentStats(dto);
   }
 
   // @Post('webhook')

@@ -11,6 +11,8 @@ import { MailService } from '../mail/mail.service';
 import { Doctor } from '@/entities/doctor.entity';
 import { Invoice } from '@/entities/invoice.entity';
 import { InvoiceDetail } from '@/entities/invoiceDetail.entity';
+import { PaymentStatsDto } from './dto/payment-stats.dto'; 
+import { Between, LessThanOrEqual, MoreThan } from 'typeorm';
 
 @Injectable()
 export class PaymentService {
@@ -155,6 +157,7 @@ export class PaymentService {
       status: 'completed',
       payment_status: 'paid',
       invoice_type: 'deposit',
+      payment_method: "qr",
       voucherId: appointment.voucherId ?? undefined,
       details: invoiceDetails,
     });
@@ -182,7 +185,8 @@ export class PaymentService {
     return appointment;
   }
 
-  async updatePaymentStatusPaid(body: { orderCode: string }) {
+  async updatePaymentStatusPaid(body: { orderCode: string, paymentMethod: string,
+      staffId: string }) {
     const appointment = await this.appointmentRepo.findOne({
       where: { orderCode: parseInt(body.orderCode, 10) },
       relations: ['details', 'details.service', 'customer', 'staff'],
@@ -236,9 +240,10 @@ export class PaymentService {
       status: 'completed',
       payment_status: 'paid',
       invoice_type: 'final',
-      payment_method: 'qr',
+      payment_method: body.paymentMethod,
       voucherId: appointment.voucherId ?? undefined,
       details: invoiceDetails,
+      cashierId: body.staffId
     });
 
     await this.invoiceRepo.save(invoice);
@@ -291,9 +296,90 @@ export class PaymentService {
   //   }
   // }
 
+ async getPaymentStats(dto: PaymentStatsDto) {
+  const { fromDate, toDate } = dto;
+  const whereClause: any = {};
+
+  if (fromDate) {
+    whereClause.createdAt = fromDate ? MoreThan(fromDate) : undefined;
+  }
+  if (toDate) {
+    whereClause.createdAt = whereClause.createdAt 
+      ? Between(fromDate, toDate) 
+      : LessThanOrEqual(toDate);
+  }
+  if (!fromDate && !toDate) {
+    whereClause.createdAt = MoreThan(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)); // Default last 30 days
+  }
+
+  // Total cash vs transfer
+  const [cashStats, transferStats] = await Promise.all([
+    this.invoiceRepo
+      .createQueryBuilder('invoice')
+      .select('SUM(invoice.finalAmount)', 'totalCash')
+      .where('invoice.payment_method = :method', { method: 'cash' })
+      .andWhere(whereClause)
+      .getRawOne(),
+    this.invoiceRepo
+      .createQueryBuilder('invoice')
+      .select('SUM(invoice.finalAmount)', 'totalTransfer')
+      .where('invoice.payment_method = :method', { method: 'qr' })
+      .andWhere(whereClause)
+      .getRawOne(),
+  ]);
+
+  const totalCash = parseFloat(cashStats?.totalCash || '0');
+  const totalTransfer = parseFloat(transferStats?.totalTransfer || '0');
+  const totalCollected = totalCash + totalTransfer;
+
+  // Per cashier totals - Fix: Use 'cashier.full_name' not 'invoice.cashier.full_name'
+  const cashierStats = await this.invoiceRepo
+    .createQueryBuilder('invoice')
+    .leftJoinAndSelect('invoice.cashier', 'cashier')
+    .select('invoice.cashierId', 'cashierId')
+    .addSelect('cashier.full_name', 'cashierName') // Fix: cashier.full_name
+    .addSelect('SUM(invoice.finalAmount)', 'totalPerCashier')
+    .where(whereClause)
+    .andWhere('invoice.cashierId IS NOT NULL')
+    .groupBy('invoice.cashierId, cashier.full_name') // Fix: group by cashier.full_name
+    .getRawMany();
+
+  const cashiers = cashierStats.map((stat) => ({
+    cashierId: stat.cashierId,
+    name: stat.cashierName,
+    total: parseFloat(stat.totalPerCashier || '0'),
+  }));
+
+  // Null cashier
+  const nullCashierTotal = await this.invoiceRepo
+    .createQueryBuilder('invoice')
+    .select('SUM(invoice.finalAmount)', 'totalNullCashier')
+    .where(whereClause)
+    .andWhere('invoice.cashierId IS NULL')
+    .getRawOne();
+
+  if (parseFloat(nullCashierTotal?.totalNullCashier || '0') > 0) {
+    cashiers.unshift({
+      cashierId: null,
+      name: 'Không có thu ngân',
+      total: parseFloat(nullCashierTotal?.totalNullCashier || '0'),
+    });
+  }
+
+  return {
+    totalCash,
+    totalTransfer,
+    totalCollected,
+    cashiers,
+    fromDate: fromDate || null,
+    toDate: toDate || null,
+    countInvoices: await this.invoiceRepo.count({ where: whereClause }),
+  };
+}
+
   async getInvoices() {
     return this.invoiceRepo.find({
-      relations: ['customer', 'appointment', 'details', 'details.service'],
+      relations: ['customer', 'appointment', 'details', 'details.service', 'cashier'],
     });
   }
 }

@@ -25,5 +25,6 @@ import { CacheModule } from '@nestjs/cache-manager';
   ],
   controllers: [VoucherController],
   providers: [VoucherService],
+  exports: [VoucherService]
 })
 export class VoucherModule {}
