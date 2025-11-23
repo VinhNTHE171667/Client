@@ -101,14 +101,17 @@ export default function PaymentStatsPage() {
       {},
       { "Tổng thu tiền mặt": stats.totalCash.toLocaleString("vi-VN") + " ₫" },
       {
-        "Tổng thu chuyển khoản": stats.totalTransfer.toLocaleString("vi-VN") + " ₫",
+        "Tổng thu chuyển khoản":
+          stats.totalTransfer.toLocaleString("vi-VN") + " ₫",
       },
       { "Tổng thu": stats.totalCollected.toLocaleString("vi-VN") + " ₫" },
       { "Số hóa đơn": stats.countInvoices },
       {},
       ...stats.cashiers.map((c) => ({
         "Thu ngân":
-          c.name || c.cashierId === "" ? "Khách lẻ / Chuyển khoản trực tiếp" : c.name,
+          c.name || c.cashierId === ""
+            ? "Khách lẻ / Chuyển khoản trực tiếp"
+            : c.name,
         "Tổng thu": c.total.toLocaleString("vi-VN") + " ₫",
       })),
     ];
@@ -120,10 +123,7 @@ export default function PaymentStatsPage() {
     const data = new Blob([excelBuffer], {
       type: "application/octet-stream",
     });
-    saveAs(
-      data,
-      `ThongKeThanhToan_${dayjs().format("YYYYMMDD_HHmmss")}.xlsx`
-    );
+    saveAs(data, `ThongKeThanhToan_${dayjs().format("YYYYMMDD_HHmmss")}.xlsx`);
     showSuccess("Thành công", "Đã xuất file Excel");
   };
 
@@ -197,7 +197,7 @@ export default function PaymentStatsPage() {
       <Row className="mb-4">
         <Col span={24}>
           <Title level={2} className="text-center text-primary mb-1">
-            Thống kê Thanh toán
+            Thống kê Tài chính
           </Title>
           <Text type="secondary" className="d-block text-center">
             Theo dõi doanh thu theo phương thức và thu ngân
@@ -329,8 +329,13 @@ export default function PaymentStatsPage() {
           <Col span={12}>
             <Card title="Doanh thu theo thu ngân">
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={stats.cashiers.filter(c => c.total > 0)}>
-                  <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
+                <BarChart data={stats.cashiers.filter((c) => c.total > 0)}>
+                  <XAxis
+                    dataKey="name"
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
                   <YAxis
                     tickFormatter={(v) => `${(v / 1000000).toFixed(1)}tr`}
                   />
@@ -345,7 +350,6 @@ export default function PaymentStatsPage() {
         </Row>
       )}
 
-      {/* Bảng chi tiết */}
       {stats ? (
         stats.cashiers.length > 0 ? (
           <Card title="Chi tiết thu theo thu ngân">

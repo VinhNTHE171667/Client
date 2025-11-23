@@ -21,6 +21,8 @@ import {
 } from "@/services/account";
 import { showError } from "@/libs/toast";
 import { useAuthStore } from "@/hooks/UseAuth";
+import FancyButton from "@/components/FancyButton";
+import AddCustomer from "@/pages/Admin/AccountCustomer/add";
 
 type Props = {
   isOpen: boolean;
@@ -39,6 +41,7 @@ const CreateAppointmentModal: React.FC<Props> = ({
   const [getAllPublicDoctors] = useGetDoctorsMutation();
   const [doctors, setDoctors] = useState<DoctorDatas[]>([]);
   const [doctorSelected, setDoctorSelected] = useState<string>("");
+  const [createState, setCreateState] = useState<boolean>(false);
 
   const [getServiceByDoctor] = useGetPublicDoctorProfileMutation();
   const [services, setServices] = useState<
@@ -165,6 +168,10 @@ const CreateAppointmentModal: React.FC<Props> = ({
     }
   };
 
+  const handleEvent = () => {
+    handleGetCustomers();
+  };
+
   return (
     <Modal
       title="Tạo lịch hẹn mới"
@@ -193,7 +200,19 @@ const CreateAppointmentModal: React.FC<Props> = ({
             }))}
           />
         </Form.Item>
-
+        <Space>
+          <FancyButton
+            label="Thêm khách hàng"
+            size="middle"
+            onClick={() => setCreateState(true)}
+            variant="primary"
+          />
+          <AddCustomer
+            isOpen={createState}
+            onClose={() => setCreateState(false)}
+            onReload={handleEvent}
+          />
+        </Space>
         <Form.Item
           label="Chọn bác sĩ"
           name="doctorId"
