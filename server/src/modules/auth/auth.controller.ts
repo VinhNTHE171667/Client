@@ -72,6 +72,11 @@ export class AuthController {
     return this.authService.updateStaffProfile(id, dto);
   }
 
+  @Post('verify-email')
+  async verifyEmail(@Body('token') token: string) {
+    return this.authService.verifyEmail(token);
+  }
+
   @Patch('avatar/:role/:id')
   @ApiParam({ name: 'role', type: String })
   @ApiParam({ name: 'id', type: String })

@@ -11,6 +11,9 @@ import { Doctor } from '@/entities/doctor.entity';
 import { MailModule } from '../mail/mail.module';
 import { Spa } from '@/entities/spa.entity';
 import { CacheModule } from '@nestjs/cache-manager';
+import { NotificationModule } from '../notification/notification.module';
+
+
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -22,8 +25,10 @@ import { CacheModule } from '@nestjs/cache-manager';
       signOptions: { expiresIn: process.env.EXPIRE_TIME_ACCESS },
     }),
     MailModule,
+    NotificationModule, 
   ],
   controllers: [AuthController],
   providers: [AuthService],
+  exports: [AuthService],
 })
 export class AuthModule {}

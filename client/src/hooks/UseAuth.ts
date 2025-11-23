@@ -13,7 +13,7 @@ export const useAuthStore = () => {
   const auth = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
+  console.log(auth)
   return {
     auth,
     isLoggedIn: !!auth.accountId,

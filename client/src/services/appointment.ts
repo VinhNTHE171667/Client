@@ -268,6 +268,27 @@ export type DoctorRequestCancelProps = {
   };
 };
 
+export type PaymentStatsDto = {
+  fromDate?: string; 
+  toDate?: string;
+};
+
+export type CashierStats = {
+  cashierId: string | null;
+  name: string;
+  total: number;
+};
+
+export type PaymentStatsResponse = {
+  totalCash: number;
+  totalTransfer: number;
+  totalCollected: number;
+  cashiers: CashierStats[];
+  fromDate: string | null;
+  toDate: string | null;
+  countInvoices: number;
+};
+
 export const appointmentApi = createApi({
   reducerPath: "appointmentApi",
   baseQuery: axiosBaseQuery({
@@ -522,6 +543,14 @@ export const appointmentApi = createApi({
         method: "POST",
       }),
     }),
+
+    getPaymentStats: build.mutation<PaymentStatsResponse, PaymentStatsDto>({
+      query: (dto) => ({
+        url: `/payment/stats`,
+        method: "GET",
+        params: dto, 
+      })
+   }),
   }),
 });
 
@@ -552,4 +581,5 @@ export const {
   useGetDoctorCancelRequestsMutation,
   useApproveDoctorCancelRequestMutation,
   useRejectDoctorCancelRequestMutation,
+  useGetPaymentStatsMutation
 } = appointmentApi;

@@ -12,6 +12,7 @@ import { Appointment } from './appointment.entity';
 import { Customer } from './customer.entity';
 import { InvoiceDetail } from './invoiceDetail.entity';
 import { Voucher } from './voucher.entity';
+import { Internal } from './internal.entity';
 
 @Entity()
 export class Invoice {
@@ -57,6 +58,13 @@ export class Invoice {
 
   @Column({ nullable: true })
   payment_method?: string;
+
+  @ManyToOne(() => Internal, { nullable: true }) 
+  @JoinColumn({ name: 'cashierId' })
+  cashier?: Internal;
+
+  @Column({ nullable: true })
+  cashierId?: string; 
 
   @CreateDateColumn()
   createdAt: Date;

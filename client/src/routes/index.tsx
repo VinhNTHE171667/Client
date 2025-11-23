@@ -44,6 +44,9 @@ import InvoiceCasher from "@/pages/Casher/Invoice";
 import VoucherCustomer from "@/pages/Customer/Voucher";
 import DoctorList from "@/pages/Services/DoctorList";
 import DoctorCancelRequestManagementStaff from "@/pages/Staff/RequestDoctor";
+import VerifyEmailPage from "@/pages/Auth/VerifyEmailPage";
+import NotificationCustomer from "@/pages/Customer/Notification";
+import PaymentStatsPage from "@/pages/Casher/PaymentStats";
 
 const router = createBrowserRouter([
   {
@@ -59,6 +62,11 @@ const router = createBrowserRouter([
   {
     path: configRoutes.login,
     element: <LoginPage />,
+    // children: [{ index: true, element: <LoginPage /> }],
+  },
+   {
+    path: configRoutes.verified,
+    element: <VerifyEmailPage />,
     // children: [{ index: true, element: <LoginPage /> }],
   },
   {
@@ -234,6 +242,16 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <CustomerOrders />,
+      },
+    ],
+  },
+  {
+    path: configRoutes.customerNotifications,
+    element: <HomeLayouts />,
+    children: [
+      {
+        index: true,
+        element: <NotificationCustomer />,
       },
     ],
   },
@@ -438,6 +456,23 @@ const router = createBrowserRouter([
     ],
   },
 
+   {
+    path: configRoutes.casherStats,
+    element: (
+      <ProtectedRoute allowedRoles={[RoleEnum.Casher, RoleEnum.Admin]} />
+    ),
+     children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <PaymentStatsPage />,
+          },
+        ],
+      },
+    ],
+  },
   {
     path: configRoutes.customerVouchers,
     element: <ProtectedRoute allowedRoles={[RoleEnum.Customer]} />,

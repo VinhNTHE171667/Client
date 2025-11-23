@@ -2,6 +2,7 @@ export const configRoutes = {
   home: "/",
   about: "/about",
   login: "/login",
+   verified: "/verify-email",
   register: "/register",
   services: "/services",
   serviceDetail: "/services/:id",
@@ -14,6 +15,7 @@ export const configRoutes = {
   doctorProfile: "/services/doctor/:id",
   doctocList: "/services/doctors",
   customerOrders: "/customer/orders",
+   customerNotifications: "/customer/notifications",
   customerPayments: "/customer/payments",
   customerVouchers: "/customer/vouchers",
 
@@ -46,6 +48,7 @@ export const configRoutes = {
   casherOrderManagement: "/casher/orders",
   casherProfile: "/casher/profile",
   casherInvoice: "/casher/invoices",
+    casherStats: "/casher/stats",
 };
 
 export const configError = {
