@@ -12,6 +12,7 @@ python-dotenv>=1.0
 streamlit>=1.37
 plotly>=5.22
 scipy>=1.10
-implicit>=0.9
+# `implicit` versions >=0.9 are not available on PyPI; pin to latest published release.
+implicit==0.7.2
 # Note: `implicit` may require a C compiler or pre-built wheel on Windows. If pip fails,
 # prefer installing a compatible wheel or use WSL / Linux container for model training.

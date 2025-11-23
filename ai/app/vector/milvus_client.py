@@ -83,7 +83,7 @@ class MilvusVectorStore:
         results = self.collection.search(
             data=[query],
             anns_field="embedding",
-            param={"metric_type": "IP", "params": {"nprobe": 16}},
+            params={"metric_type": "IP", "params": {"nprobe": 16}},
             limit=top_k,
             output_fields=["metadata"],
         )

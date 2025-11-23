@@ -13,7 +13,7 @@ IntentType = Literal["book_slot", "rag_query", "smalltalk"]
 class IntentClassifier:
     def __init__(self) -> None:
         self._heuristics = {
-            "book_slot": {"đặt", "dat", "lịch", "lich", "book", "slot", "hẹn", "hen"},
+            "book_slot": {"đặt", "dat", "lịch", "lich", "book", "slot", "hẹn", "hen", "bắt đầu", "bat dau"},
             "rag_query": {"giá", "bao nhiêu", "khuyến mãi", "chính sách", "policy", "dịch vụ"},
         }
         self._prompt = ChatPromptTemplate.from_messages(
