@@ -369,7 +369,6 @@ const ServicesComp = () => {
                   description={
                     <div>
                       <p>{doctor.specialization || "Chuyên khoa tổng quát"}</p>
-                      <Rate disabled allowHalf value={doctor.rating || 0} />
                       <span className={styles.experienceText}>{doctor.experience_years || 0} năm kinh nghiệm</span>
                     </div>
                   }

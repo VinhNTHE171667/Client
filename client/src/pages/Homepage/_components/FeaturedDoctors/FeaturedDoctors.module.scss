@@ -1,0 +1,172 @@
+.featuredDoctors {
+  padding: 80px 0;
+  background: linear-gradient(135deg, #f8fdff 0%, #f0faff 100%);
+
+  .subTitle {
+    text-transform: uppercase;
+    color: var(--color-primary);
+    font-weight: 600;
+    letter-spacing: 2px;
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+
+  .heading {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: #1a2332;
+    margin-bottom: 16px;
+  }
+
+  .desc {
+    font-size: 1.1rem;
+    color: #555;
+    max-width: 700px;
+    margin: 0 auto 50px;
+    line-height: 1.6;
+  }
+
+  // ĐÃ FIX: Grid đẹp dù 1, 2, 3 hay 4 bác sĩ
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+    justify-content: center; // Căn giữa khi ít item
+    padding: 0 20px;
+  }
+
+  .skeletonCard {
+    height: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  }
+
+  .doctorCard {
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s ease;
+    max-width: 320px; // Giới hạn chiều rộng tối đa
+    margin: 0 auto;   // Căn giữa từng card
+
+    &:hover {
+      transform: translateY(-12px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+
+      .overlay { opacity: 1; }
+      .avatar { transform: scale(1.08); }
+    }
+  }
+
+  .cardHeader {
+    position: relative;
+    height: 200px;
+    background: linear-gradient(135deg, var(--color-primary), #00c4cc);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .avatar {
+    border: 6px solid white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    transition: transform 0.4s ease;
+  }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .viewBtn {
+    background: white;
+    color: var(--color-primary);
+    font-weight: 600;
+    border-radius: 30px;
+    padding: 12px 32px;
+
+    &:hover {
+      background: #000;
+      color: white;
+    }
+  }
+
+  .cardBody {
+    padding: 28px 24px;
+    text-align: center;
+  }
+
+  .name {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #1a2332;
+    margin: 0 0 10px;
+    cursor: pointer;
+    transition: color 0.3s;
+
+    &:hover { color: var(--color-primary); }
+  }
+
+  .specialty {
+    background: linear-gradient(135deg, #e0f7ff, #f0faff);
+    color: var(--color-primary);
+    padding: 8px 20px;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 12px;
+  }
+
+  .rating {
+    font-size: 1.3rem;
+    color: #ffa800;
+    font-weight: 700;
+    margin: 10px 0;
+  }
+
+  .experience {
+    color: #666;
+    font-size: 0.95rem;
+    margin: 12px 0 16px;
+  }
+
+  .bookBtn {
+    height: 50px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--color-primary), #00c4cc);
+    border: none;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0, 199, 234, 0.3);
+    }
+  }
+
+  .viewAll {
+    margin-top: 60px;
+  }
+
+  .viewAllBtn {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-primary);
+
+    &:hover { color: #000; }
+  }
+}

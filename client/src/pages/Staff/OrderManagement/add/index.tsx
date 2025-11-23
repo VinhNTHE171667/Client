@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   Form,
-  Input,
   Button,
   DatePicker,
   TimePicker,
@@ -9,6 +8,7 @@ import {
   message,
   Space,
   Modal,
+  Input,
 } from "antd";
 import dayjs from "dayjs";
 import { useCreateAppointmentMutation } from "@/services/appointment";
@@ -37,118 +37,149 @@ const CreateAppointmentModal: React.FC<Props> = ({
 }) => {
   const [form] = Form.useForm();
   const [createAppointment, { isLoading }] = useCreateAppointmentMutation();
-
   const [getAllPublicDoctors] = useGetDoctorsMutation();
-  const [doctors, setDoctors] = useState<DoctorDatas[]>([]);
+  const [getServiceByDoctor] = useGetPublicDoctorProfileMutation();
+  const [getAllCustomers] = useGetCustomersMutation();
+
+  // Dữ liệu gốc (tải 1 lần)
+  const [allDoctors, setAllDoctors] = useState<DoctorDatas[]>([]);
+  const [allCustomers, setAllCustomers] = useState<
+    { id: string; full_name: string; email: string; phone: string }[]
+  >([]);
+  const [services, setServices] = useState<
+    { id: string; name: string; price: number }[]
+  >([]);
+
+  // Dữ liệu đang hiển thị (sau khi filter)
+  const [filteredDoctors, setFilteredDoctors] = useState<DoctorDatas[]>([]);
+  const [filteredCustomers, setFilteredCustomers] = useState(allCustomers);
+  const [filteredServices, setFilteredServices] = useState(services);
+
   const [doctorSelected, setDoctorSelected] = useState<string>("");
   const [createState, setCreateState] = useState<boolean>(false);
 
-  const [getServiceByDoctor] = useGetPublicDoctorProfileMutation();
-  const [services, setServices] = useState<
-    {
-      id: string;
-      name: string;
-      description: string;
-      price: number;
-      images:
-        | {
-            alt: string;
-            url: string;
-          }[]
-        | [];
-    }[]
-  >([]);
-
-  const [getAllCustomers] = useGetCustomersMutation();
-  const [customers, setCustomers] = useState<
-    {
-      id: string;
-      full_name: string;
-      email: string;
-      phone: string;
-    }[]
-  >([]);
-
-  const handleGetDoctors = async () => {
-    try {
-      const response = await getAllPublicDoctors().unwrap();
-      setDoctors(response.filter((a) => a.isActive));
-    } catch {
-      showError("Không thể tải danh sách bác sĩ");
-    }
-  };
-
-  const handleGetServicesByDoctor = async (doctorId: string) => {
-    try {
-      const response = await getServiceByDoctor(doctorId).unwrap();
-
-      if (!response.services) {
-        setServices([]);
-        return;
-      }
-
-      setServices(
-        response.services.map((s) => ({
-          id: s.id,
-          name: s.name,
-          description: s.description,
-          price: s.price,
-          images: s.images || [],
-        }))
-      );
-    } catch {
-      showError("Không thể tải dịch vụ của bác sĩ này");
-    }
-  };
-
-  const handleGetCustomers = async () => {
-    try {
-      const response = await getAllCustomers().unwrap();
-      setCustomers(response);
-    } catch {
-      showError("Không thể tải danh sách khách hàng");
-    }
-  };
-
-  useEffect(() => {
-    if (doctorSelected) {
-      handleGetServicesByDoctor(doctorSelected);
-    }
-  }, [doctorSelected]);
-
-  useEffect(() => {
-    if (isOpen) {
-      handleGetDoctors();
-      handleGetCustomers();
-    }
-  }, [isOpen]);
-
   const { auth } = useAuthStore();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // Tải toàn bộ dữ liệu khi mở modal
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const loadData = async () => {
+      try {
+        // Tải bác sĩ
+        const doctorsRes = await getAllPublicDoctors({}).unwrap();
+        const activeDoctors = doctorsRes.filter((d: DoctorDatas) => d.isActive);
+        setAllDoctors(activeDoctors);
+        setFilteredDoctors(activeDoctors);
+
+        // Tải khách hàng
+        const customersRes = await getAllCustomers({}).unwrap();
+        setAllCustomers(customersRes);
+        setFilteredCustomers(customersRes);
+      } catch (err) {
+        showError("Không thể tải dữ liệu");
+      }
+    };
+
+    loadData();
+    form.resetFields();
+    setDoctorSelected("");
+    setServices([]);
+    setFilteredServices([]);
+  }, [isOpen]);
+
+  // Tải dịch vụ khi chọn bác sĩ
+  useEffect(() => {
+    if (!doctorSelected) {
+      setServices([]);
+      setFilteredServices([]);
+      return;
+    }
+
+    const loadServices = async () => {
+      try {
+        const res = await getServiceByDoctor(doctorSelected).unwrap();
+        const list = (res.services || []).map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          price: s.price || 0,
+        }));
+        setServices(list);
+        setFilteredServices(list);
+      } catch {
+        showError("Không tải được dịch vụ");
+        setServices([]);
+        setFilteredServices([]);
+      }
+    };
+
+    loadServices();
+  }, [doctorSelected]);
+
+  // Tìm kiếm khách hàng (tên, email, sđt)
+  const handleSearchCustomer = (value: string) => {
+    const lower = value.toLowerCase().trim();
+    if (!lower) {
+      setFilteredCustomers(allCustomers);
+      return;
+    }
+
+    const filtered = allCustomers.filter((c) =>
+      [c.full_name, c.email, c.phone].some(
+        (field) => field && field.toLowerCase().includes(lower)
+      )
+    );
+    setFilteredCustomers(filtered);
+  };
+
+  // Tìm kiếm bác sĩ (tên + chuyên môn)
+  const handleSearchDoctor = (value: string) => {
+    const lower = value.toLowerCase().trim();
+    if (!lower) {
+      setFilteredDoctors(allDoctors);
+      return;
+    }
+
+    const filtered = allDoctors.filter((d) =>
+      [d.full_name, d.specialty].some(
+        (field) => field && field.toLowerCase().includes(lower)
+      )
+    );
+    setFilteredDoctors(filtered);
+  };
+
+  // Tìm kiếm dịch vụ
+  const handleSearchService = (value: string) => {
+    const lower = value.toLowerCase().trim();
+    if (!lower) {
+      setFilteredServices(services);
+      return;
+    }
+
+    const filtered = services.filter((s) =>
+      s.name.toLowerCase().includes(lower)
+    );
+    setFilteredServices(filtered);
+  };
+
   const handleSubmit = async (values: any) => {
     try {
-      const appointmentDate = values.date;
-      const startTime = values.time[0];
-      const endTime = values.time[1];
+      const date = values.date;
+      const [start, end] = values.time;
 
-      const startDateTime = appointmentDate
-        .hour(startTime.hour())
-        .minute(startTime.minute())
+      const startTime = date
+        .hour(start.hour())
+        .minute(start.minute())
         .second(0);
-
-      const endDateTime = appointmentDate
-        .hour(endTime.hour())
-        .minute(endTime.minute())
-        .second(0);
+      const endTime = date.hour(end.hour()).minute(end.minute()).second(0);
 
       const payload = {
         customerId: values.customerId,
         doctorId: values.doctorId,
         staffId: auth.accountId,
-        appointment_date: values.date.format("YYYY-MM-DD"),
-        startTime: startDateTime.toISOString(),
-        endTime: endDateTime.toISOString(),
+        appointment_date: date.format("YYYY-MM-DD"),
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
         details: values.services.map((id: string) => ({
           serviceId: id,
           price: services.find((s) => s.id === id)?.price || 0,
@@ -162,14 +193,9 @@ const CreateAppointmentModal: React.FC<Props> = ({
       form.resetFields();
       onClose();
       onReload?.();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      message.error(err?.data?.message || "Không thể tạo lịch hẹn");
+      message.error(err?.data?.message || "Tạo lịch hẹn thất bại");
     }
-  };
-
-  const handleEvent = () => {
-    handleGetCustomers();
   };
 
   return (
@@ -179,30 +205,42 @@ const CreateAppointmentModal: React.FC<Props> = ({
       onCancel={onClose}
       footer={null}
       centered
-      width={600}
+      width={680}
+      destroyOnClose
     >
-      <Form
-        layout="vertical"
-        form={form}
-        onFinish={handleSubmit}
-        className={styles.form}
-      >
+      <Form layout="vertical" form={form} onFinish={handleSubmit}>
+        {/* Khách hàng */}
         <Form.Item
-          label="Chọn khách hàng"
+          label="Khách hàng"
           name="customerId"
           rules={[{ required: true, message: "Vui lòng chọn khách hàng" }]}
         >
           <Select
-            placeholder="Chọn khách hàng"
-            options={customers.map((customer) => ({
-              label: customer.full_name,
-              value: customer.id,
-            }))}
-          />
+            showSearch
+            placeholder="Tìm tên, email, số điện thoại..."
+            filterOption={false}
+            onSearch={handleSearchCustomer}
+            notFoundContent="Không tìm thấy khách hàng"
+            optionLabelProp="label"
+          >
+            {filteredCustomers.map((c) => (
+              <Select.Option key={c.id} value={c.id} label={c.full_name}>
+                <div>
+                  <div>
+                    <strong>{c.full_name}</strong>
+                  </div>
+                  <div style={{ fontSize: 12, color: "#888" }}>
+                    {c.phone} • {c.email}
+                  </div>
+                </div>
+              </Select.Option>
+            ))}
+          </Select>
         </Form.Item>
-        <Space>
+
+        <Space className="mb-4">
           <FancyButton
-            label="Thêm khách hàng"
+            label="Thêm khách hàng mới"
             size="middle"
             onClick={() => setCreateState(true)}
             variant="primary"
@@ -210,99 +248,105 @@ const CreateAppointmentModal: React.FC<Props> = ({
           <AddCustomer
             isOpen={createState}
             onClose={() => setCreateState(false)}
-            onReload={handleEvent}
+            onReload={() => getAllCustomers({}).unwrap().then(setAllCustomers)}
           />
         </Space>
+
+        {/* Bác sĩ */}
         <Form.Item
-          label="Chọn bác sĩ"
+          label="Bác sĩ"
           name="doctorId"
           rules={[{ required: true, message: "Vui lòng chọn bác sĩ" }]}
         >
           <Select
-            placeholder="Chọn bác sĩ"
-            options={doctors.map((doctor) => ({
-              label: doctor.full_name,
-              value: doctor.id,
-            }))}
-            onChange={(value) => setDoctorSelected(value)}
-            value={doctorSelected}
-          />
+            showSearch
+            placeholder="Tìm tên bác sĩ hoặc chuyên môn..."
+            filterOption={false}
+            onSearch={handleSearchDoctor}
+            onChange={(val) => {
+              setDoctorSelected(val as string);
+              form.setFieldsValue({ services: [] });
+            }}
+            notFoundContent="Không tìm thấy bác sĩ"
+            optionLabelProp="label"
+          >
+            {filteredDoctors.map((d) => (
+              <Select.Option key={d.id} value={d.id} label={d.full_name}>
+                <div>
+                  <strong>{d.full_name}</strong>
+                  {d.specialty && (
+                    <span style={{ color: "#1890ff", marginLeft: 8 }}>
+                      ({d.specialty})
+                    </span>
+                  )}
+                </div>
+              </Select.Option>
+            ))}
+          </Select>
         </Form.Item>
 
+        {/* Dịch vụ */}
         <Form.Item
           label="Dịch vụ"
           name="services"
-          rules={[
-            { required: true, message: "Vui lòng chọn ít nhất 1 dịch vụ" },
-          ]}
+          rules={[{ required: true, message: "Chọn ít nhất 1 dịch vụ" }]}
         >
           <Select
             mode="multiple"
-            placeholder="Chọn dịch vụ"
-            options={services.map((service) => ({
-              label: `${service.name} - ${service.price.toLocaleString()} VND`,
-              value: service.id,
-            }))}
-          />
+            showSearch
+            placeholder="Tìm tên dịch vụ..."
+            disabled={!doctorSelected}
+            filterOption={false}
+            onSearch={handleSearchService}
+            notContent={
+              doctorSelected
+                ? filteredServices.length === 0
+                  ? "Không có dịch vụ nào"
+                  : null
+                : "Vui lòng chọn bác sĩ trước"
+            }
+          >
+            {filteredServices.map((s) => (
+              <Select.Option key={s.id} value={s.id}>
+                {s.name} - <strong>{s.price.toLocaleString()}₫</strong>
+              </Select.Option>
+            ))}
+          </Select>
         </Form.Item>
 
-        <Form.Item
-          label="Ngày hẹn"
-          name="date"
-          rules={[{ required: true, message: "Vui lòng chọn ngày hợp lệ" }]}
-        >
+        {/* Ngày & Giờ */}
+        <Form.Item label="Ngày hẹn" name="date" rules={[{ required: true }]}>
           <DatePicker
             style={{ width: "100%" }}
-            disabledDate={(current) => {
-              return current && current < dayjs().startOf("day");
-            }}
+            disabledDate={(d) => d.isBefore(dayjs().startOf("day"))}
           />
         </Form.Item>
 
         <Form.Item
-          label="Giờ hẹn"
+          label="Giờ hẹn (09:00 - 17:00)"
           name="time"
-          rules={[
-            { required: true, message: "Vui lòng chọn giờ từ 09:00 đến 17:00" },
-          ]}
+          rules={[{ required: true, message: "Chọn giờ hẹn" }]}
         >
           <TimePicker.RangePicker
             format="HH:mm"
-            style={{ width: "100%" }}
             minuteStep={15}
-            disabledTime={() => {
-              const disabledHours = Array.from(
-                { length: 24 },
-                (_, i) => i
-              ).filter((h) => h < 9 || h > 16);
-              return {
-                disabledHours: () => disabledHours,
-                disabledMinutes: () => [],
-                disabledSeconds: () => [],
-              };
-            }}
-            onChange={(times) => {
-              if (times && times[0]) {
-                const start = times[0];
-                const end = start.clone().add(1, "hour");
-                const endHour = end.hour() > 17 ? 17 : end.hour();
-                const endMinute = end.hour() > 17 ? 0 : end.minute();
-                const finalEnd = end.clone().hour(endHour).minute(endMinute);
-                form.setFieldsValue({ time: [start, finalEnd] });
-              }
-            }}
+            style={{ width: "100%" }}
+            disabledHours={() => [
+              0, 1, 2, 3, 4, 5, 6, 7, 8, 17, 18, 19, 20, 21, 22, 23,
+            ]}
+            hideDisabledOptions
           />
         </Form.Item>
 
         <Form.Item label="Ghi chú" name="note">
-          <Input.TextArea rows={3} placeholder="Nhập ghi chú (nếu có)" />
+          <Input.TextArea rows={3} placeholder="Ghi chú (nếu có)" />
         </Form.Item>
 
         <Form.Item className={styles.actions}>
           <Space>
-            <Button onClick={onClose}>Huỷ</Button>
+            <Button onClick={onClose}>Hủy</Button>
             <Button type="primary" htmlType="submit" loading={isLoading}>
-              Xác nhận
+              Tạo lịch hẹn
             </Button>
           </Space>
         </Form.Item>

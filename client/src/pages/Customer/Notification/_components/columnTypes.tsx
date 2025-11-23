@@ -3,6 +3,8 @@ import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { Link } from "react-router-dom";
 import type { NotificationProps, NotificationType } from "@/services/auth";
+import { BiInfoCircle } from "react-icons/bi";
+import { IoLinkOutline } from "react-icons/io5";
 
 type HandleMarkAsRead = (id: string) => void;
 type LoadingState = boolean;
@@ -10,9 +12,14 @@ type LoadingState = boolean;
 interface NotificationColumnProps {
   handleMarkAsRead: HandleMarkAsRead;
   isLoading: LoadingState;
+  openDetailModal: (record: NotificationProps) => void;
 }
 
-export const NotificationColumn = ({ handleMarkAsRead, isLoading }: NotificationColumnProps): ColumnsType<NotificationProps> => [
+export const NotificationColumn = ({
+  handleMarkAsRead,
+  isLoading,
+  openDetailModal,
+}: NotificationColumnProps): ColumnsType<NotificationProps> => [
   {
     title: "STT",
     dataIndex: "index",
@@ -32,7 +39,8 @@ export const NotificationColumn = ({ handleMarkAsRead, isLoading }: Notification
     dataIndex: "content",
     ellipsis: true,
     width: 300,
-    render: (content: string) => content.length > 100 ? `${content.substring(0, 100)}...` : content,
+    render: (content: string) =>
+      content.length > 100 ? `${content.substring(0, 100)}...` : content,
   },
   {
     title: "Loại",
@@ -74,33 +82,43 @@ export const NotificationColumn = ({ handleMarkAsRead, isLoading }: Notification
     align: "center",
     width: 120,
     render: (isRead: boolean) => (
-      <Tag color={isRead ? "green" : "red"}>{isRead ? "Đã đọc" : "Chưa đọc"}</Tag>
+      <Tag color={isRead ? "green" : "red"}>
+        {isRead ? "Đã đọc" : "Chưa đọc"}
+      </Tag>
     ),
   },
   {
     title: "Hành động",
     key: "action",
     align: "center",
-    width: 150,
+    width: 180,
     render: (_, record: NotificationProps) => (
-      <Space size="middle">
+      <Space size="small">
         {!record.isRead && (
           <Button
             size="small"
             type="primary"
-            onClick={() => handleMarkAsRead(record.id)} 
+            onClick={() => handleMarkAsRead(record.id)}
             loading={isLoading}
           >
-            Đánh dấu đã đọc
+            Đã đọc
           </Button>
         )}
-        {record.actionUrl && (
+        <Button
+          size="small"
+          type="default"
+          onClick={() => openDetailModal(record)}
+          icon={<BiInfoCircle />}
+        >
+          Xem chi tiết
+        </Button>
+        {/* {record.actionUrl && (
           <Link to={record.actionUrl} target="_blank" rel="noopener noreferrer">
-            <Button size="small" type="link">
-              Xem chi tiết
+            <Button size="small" type="link" icon={<IoLinkOutline />}>
+              Mở link
             </Button>
           </Link>
-        )}
+        )} */}
       </Space>
     ),
   },
