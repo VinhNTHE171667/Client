@@ -15,6 +15,14 @@ from app.rag_ingest import embed_and_upsert
 from app.vector.milvus_client import MilvusUnavailable, MilvusVectorStore
 from app.utils.full_context import FullContextManager
 
+import pymysql
+import pandas as pd
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+# from dataanalyze.rfm_analysis import run_rfm_clustering
+# from dataanalyze.combo_analysis import run_apriori_analysis
+# from dataanalyze.churn_analysis import run_churn_prediction
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -95,9 +103,69 @@ def _ensure_knowledge_base() -> None:
         logger.exception("Ingest knowledge base thất bại khi khởi động: %s", exc)
 
 
-def _activate_booking(session_id: str) -> ChatResponse:
+def _fetch_rfm_data():
+    DB_CONFIG = {
+        "host": os.getenv("MYSQL_HOST", "host.docker.internal"),
+        "port": int(os.getenv("MYSQL_PORT", 3306)),
+        "user": os.getenv("MYSQL_USER", "root"),
+        "password": os.getenv("MYSQL_PASSWORD", "root"),
+        "database": os.getenv("MYSQL_DB", "gen_spa"),
+        "charset": "utf8mb4",
+    }
+    conn = pymysql.connect(**DB_CONFIG)
+    query = """
+    SELECT
+        c.id AS customer_id,
+        c.full_name,
+        DATEDIFF(NOW(), MAX(a.appointment_date)) AS recency,
+        COUNT(a.id) AS frequency,
+        c.total_spent AS monetary
+    FROM
+        customer c
+    JOIN
+        appointment a ON c.id = a.customerId
+    WHERE
+        a.status IN ('completed', 'paid')
+    GROUP BY
+        c.id, c.full_name, c.total_spent
+    HAVING
+        monetary > 0;
+    """
+    df = pd.read_sql(query, conn)
+    conn.close()
+    return df
+
+
+def _run_rfm_clustering():
+    """Chạy phân tích RFM clustering"""
+    # return run_rfm_clustering()
+    return {"status": "disabled", "message": "RFM analysis temporarily disabled"}
+
+
+def _run_combo_analysis():
+    """Chạy phân tích Apriori combo"""
+    # return run_apriori_analysis(min_support=0.05, min_confidence=0.3)
+    return {"status": "disabled", "message": "Combo analysis temporarily disabled"}
+
+
+def _activate_booking(session_id: str, query: str = "") -> ChatResponse:
+    query_lower = query.lower().strip()
+
+    # Nếu người dùng nói "không đặt lịch" hoặc tương tự, hỏi lại thay vì vào flow đặt lịch
+    if any(phrase in query_lower for phrase in ["không đặt lịch", "khong dat lich", "không muốn đặt", "khong muon dat"]):
+        return ChatResponse(
+            answer="Bạn muốn đặt lịch hay tìm hiểu dịch vụ? Vui lòng nhập 'đặt lịch' hoặc 'tìm hiểu dịch vụ'.",
+            intent="idle"
+        )
+
     sessions.set(session_id, "book_slot")
     booking_agent.reset_session(session_id)
+    
+    # Nếu người dùng đã nói "bắt đầu" ngay từ đầu (hoặc khi session bị mất),
+    # chúng ta chuyển thẳng vào xử lý thay vì hiện prompt chào mừng.
+    if query_lower in ["bắt đầu", "bat dau", "start", "begin", "ok"]:
+        return booking_agent.handle(session_id, query)
+        
     return ChatResponse(answer=BOOKING_ENTRY_PROMPT, intent="idle")
 
 
@@ -108,7 +176,7 @@ def _activate_rag(session_id: str) -> ChatResponse:
 
 def _handle_new_session(session_id: str, predicted_intent: str, query: str) -> ChatResponse:
     if predicted_intent == "book_slot":
-        return _activate_booking(session_id)
+        return _activate_booking(session_id, query)
     if predicted_intent == "rag_query":
         return _activate_rag(session_id)
     sessions.clear(session_id)
@@ -118,7 +186,7 @@ def _handle_new_session(session_id: str, predicted_intent: str, query: str) -> C
 
 def _switch_intent(session_id: str, predicted_intent: str, query: str) -> ChatResponse:
     if predicted_intent == "book_slot":
-        return _activate_booking(session_id)
+        return _activate_booking(session_id, query)
     if predicted_intent == "rag_query":
         return _activate_rag(session_id)
     sessions.clear(session_id)
@@ -178,7 +246,7 @@ def _answer_full_context_then_rag(
 
     rag_response: Optional[ChatResponse] = None
     try:
-        rag_response = knowledge_agent.handle(query, session_id=session_id)
+        rag_response = knowledge_agent.handle(query)
     except Exception as exc:  # noqa: BLE001
         logger.warning("KnowledgeAgent error: %s", exc)
 
@@ -205,6 +273,14 @@ def chat(request: ChatRequest) -> ChatResponse:
         raise HTTPException(status_code=400, detail="query is required")
 
     session_id = request.session_id or "default"
+    
+    # Set customer_id vào booking session nếu có trong request
+    if request.customer_id:
+        logger.info(f"Setting customer_id={request.customer_id} for session={session_id}")
+        booking_agent.set_customer_id(session_id, request.customer_id)
+    else:
+        logger.warning(f"No customer_id in request for session={session_id}")
+    
     active_intent = sessions.get(session_id)
     predicted_intent = intent_classifier.predict(query)
 
@@ -248,6 +324,40 @@ def clear_session(session_id: str) -> dict[str, str]:
     booking_agent.reset_session(session_id)
     logger.info("Cleared chatbot session %s", session_id)
     return {"status": "cleared"}
+
+
+@app.get("/rfm-clusters")
+def get_rfm_clusters() -> list[dict]:
+    """Endpoint để lấy dữ liệu RFM clusters cho Dashboard"""
+    try:
+        result = _run_rfm_clustering()
+        return result
+    except Exception as exc:
+        logger.exception("RFM clustering failed: %s", exc)
+        raise HTTPException(status_code=500, detail="RFM analysis failed")
+
+
+@app.get("/combo-recommendations")
+def get_combo_recommendations() -> dict:
+    """Endpoint để lấy gợi ý combo cho Dashboard"""
+    try:
+        result = _run_combo_analysis()
+        return result
+    except Exception as exc:
+        logger.exception("Combo analysis failed: %s", exc)
+        raise HTTPException(status_code=500, detail="Combo analysis failed")
+
+
+@app.get("/churn-prediction")
+def get_churn_prediction() -> list[dict]:
+    """Endpoint để lấy dự đoán churn cho Dashboard"""
+    try:
+        # result = run_churn_prediction()
+        result = {"status": "disabled", "message": "Churn prediction temporarily disabled"}
+        return result
+    except Exception as exc:
+        logger.exception("Churn prediction failed: %s", exc)
+        raise HTTPException(status_code=500, detail="Churn prediction failed")
 
 
 @app.on_event("startup")

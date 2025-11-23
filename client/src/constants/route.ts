@@ -32,6 +32,7 @@ export const configRoutes = {
   adminMemberships: "/admin/memberships",
   adminSpaProfile: "/admin/spa-profile",
   adminRecommendation: "/admin/recommendation",
+  adminDataAnalysis: "/admin/dataanalysis",
   
   staffOrders: "/staff/orders",
   staffFeedback: "/staff/feedback",

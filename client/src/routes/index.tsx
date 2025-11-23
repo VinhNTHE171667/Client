@@ -44,6 +44,7 @@ import InvoiceCasher from "@/pages/Casher/Invoice";
 import VoucherCustomer from "@/pages/Customer/Voucher";
 import DoctorList from "@/pages/Services/DoctorList";
 import DoctorCancelRequestManagementStaff from "@/pages/Staff/RequestDoctor";
+import DataAnalysisDashboard from "@/pages/Admin/DataAnalysisDashboard";
 
 const router = createBrowserRouter([
   {
@@ -348,6 +349,22 @@ const router = createBrowserRouter([
           {
             index: true,
             element: <Membership />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.adminDataAnalysis,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Admin]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <DataAnalysisDashboard />,
           },
         ],
       },

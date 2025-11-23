@@ -11,6 +11,7 @@ export interface ChatMessage {
 export interface ChatRequestPayload {
   session_id?: string;
   query: string;
+  customer_id?: string | null;
 }
 
 export interface ChatResponsePayload {
