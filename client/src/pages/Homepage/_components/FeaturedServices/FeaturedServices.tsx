@@ -24,13 +24,8 @@ const FeaturedServices = () => {
       try {
         setLoading(true);
         const response = await getServices().unwrap();
-
+        console.log(response)
         const latestServices = response
-          .sort(
-            (a: unknown, b: unknown) =>
-              new Date(b?.createdAt || 0).getTime() -
-              new Date(a?.createdAt || 0).getTime()
-          )
           .slice(0, 4);
 
         setServices(latestServices);

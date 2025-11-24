@@ -246,10 +246,8 @@ const CreateAppointmentModal: React.FC<Props> = ({
             {filteredCustomers.map((c) => (
               <Option key={c.id} value={c.id} label={c.full_name}>
                 <div>
-                  <strong>{c.full_name}</strong>
-                  <div style={{ fontSize: 12, color: "#888" }}>
-                    {c.phone || "Chưa có SĐT"} • {c.email}
-                  </div>
+                  <strong>{c.full_name}-{c.phone || "Chưa có SĐT"} • {c.email}</strong>
+                  
                 </div>
               </Option>
             ))}
