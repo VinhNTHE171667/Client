@@ -99,6 +99,194 @@ export type CreateAppointmentProps = {
   note: string;
   voucherId: string | null;
   totalAmount: number | 0;
+  membershipDiscount?: number;
+};
+
+export type InvoiceProps = {
+  id: string;
+  customerId: string;
+  appointmentId: string;
+  total_amount: number;
+  status: "confirmed" | "pending" | "cancelled";
+  payment_status: "paid";
+  invoice_type: "final" | "deposit";
+  payment_method: "qr";
+  createdAt: string;
+  updatedAt: string;
+  voucherId: string;
+  total: number;
+  discount: number;
+  finalAmount: number;
+  customer: {
+    id: string;
+    avatar: string | null;
+    full_name: string;
+    gender: "male" | "female" | "other";
+    birth_date: string;
+    password: string;
+    refreshToken: string;
+    email: string;
+    phone: string;
+    address: string;
+    customer_type: string;
+    total_spent: number;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+    membershipId: string | null;
+    isActive: boolean;
+    isVerified: boolean;
+    resetToken: string | null;
+    resetTokenExpire: string | null;
+    emailVerificationToken: string | null;
+    emailVerificationTokenExpire: string | null;
+    isEmailVerified: boolean;
+  };
+  appointment: {
+    id: string;
+    customerId: string;
+    doctorId: string;
+    staffId: string;
+    appointment_date: string;
+    status: "paid";
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+    voucherId: string;
+    cancelledAt: string | null;
+    cancelReason: string | null;
+    rejectionReason: string | null;
+    startTime: string;
+    endTime: string;
+    note: string;
+    orderCode: number;
+    appointmentType: "online" | "offline";
+    paymentMethod: "qr" | "cash";
+    totalAmount: number;
+    depositAmount: number;
+    isFeedbackGiven: boolean;
+    staff: {
+      id: string;
+      avatar: string;
+      full_name: string;
+      gender: "male" | "female" | "other";
+      email: string;
+      phone: string;
+      password: string;
+      refreshToken: string;
+      createdAt: string;
+      updatedAt: string;
+      deletedAt: string | null;
+      isActive: boolean;
+      isVerified: boolean;
+    };
+  };
+  details: {
+    id: string;
+    invoiceId: string;
+    serviceId: string;
+    quantity: number;
+    price: number;
+    service: {
+      id: string;
+      name: string;
+      price: number;
+      images: { url: string }[];
+      description: string;
+      categoryId: string;
+      createdAt: string;
+      updatedAt: string;
+      deletedAt: string | null;
+      isActive: boolean;
+    };
+  }[];
+};
+
+export type DoctorRequestCancelProps = {
+  id: string;
+  doctorId: string;
+  appointmentId: string;
+  reason: string;
+  status: "pending" | "approved" | "rejected";
+  createdAt: string;
+  appointment: {
+    id: string;
+    customerId: string;
+    doctorId: string;
+    staffId: string | null;
+    appointment_date: string;
+    status: keyof AppointmentProps["status"];
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+    voucherId: string | null;
+    cancelledAt: string | null;
+    cancelReason: string | null;
+    rejectionReason: string | null;
+    startTime: string;
+    endTime: string;
+    note: string;
+    orderCode: number;
+    appointmentType: "online" | "offline";
+    paymentMethod: "qr" | "cash";
+    totalAmount: string;
+    depositAmount: string;
+    isFeedbackGiven: false;
+    staff: {
+      id: string;
+      avatar: string | null;
+      full_name: string;
+      gender: string;
+      email: string;
+      phone: string | null;
+      password: string;
+      refreshToken: string;
+      createdAt: string;
+      updatedAt: string;
+      deletedAt: string | null;
+      isActive: boolean;
+      isVerified: boolean;
+    };
+  };
+  doctor: {
+    id: string;
+    avatar: string | null;
+    full_name: string;
+    gender: string;
+    email: string;
+    phone: string | null;
+    password: string;
+    refreshToken: string;
+    biography: string | null;
+    specialization: string;
+    experience_years: number;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+    isActive: boolean;
+    isVerified: boolean;
+  };
+};
+
+export type PaymentStatsDto = {
+  fromDate?: string; 
+  toDate?: string;
+};
+
+export type CashierStats = {
+  cashierId: string | null;
+  name: string;
+  total: number;
+};
+
+export type PaymentStatsResponse = {
+  totalCash: number;
+  totalTransfer: number;
+  totalCollected: number;
+  cashiers: CashierStats[];
+  fromDate: string | null;
+  toDate: string | null;
+  countInvoices: number;
 };
 
 export const appointmentApi = createApi({
@@ -316,6 +504,53 @@ export const appointmentApi = createApi({
         body: data,
       }),
     }),
+
+    getInvoice: build.mutation<InvoiceProps[], void>({
+      query: () => ({
+        url: `/payment/invoice`,
+        method: "GET",
+      }),
+    }),
+
+    doctorRequestCancelBulk: build.mutation<
+      void,
+      { appointmentIds: string[]; doctorId: string; reason: string }
+    >({
+      query: ({ appointmentIds, doctorId, reason }) => ({
+        url: `/appointment/request-cancel`,
+        method: "POST",
+        body: { appointmentIds, doctorId, reason },
+      }),
+    }),
+
+    getDoctorCancelRequests: build.mutation<DoctorRequestCancelProps[], void>({
+      query: () => ({
+        url: `/appointment/request-cancel/pending`,
+        method: "GET",
+      }),
+    }),
+
+    approveDoctorCancelRequest: build.mutation<void, { requestId: string }>({
+      query: ({ requestId }) => ({
+        url: `/appointment/request-cancel/approve/${requestId}`,
+        method: "POST",
+      }),
+    }),
+
+    rejectDoctorCancelRequest: build.mutation<void, { requestId: string }>({
+      query: ({ requestId }) => ({
+        url: `/appointment/request-cancel/reject/${requestId}`,
+        method: "POST",
+      }),
+    }),
+
+    getPaymentStats: build.mutation<PaymentStatsResponse, PaymentStatsDto>({
+      query: (dto) => ({
+        url: `/payment/stats`,
+        method: "GET",
+        params: dto, 
+      })
+   }),
   }),
 });
 
@@ -339,4 +574,12 @@ export const {
   useGetAppointmentsBookedByDoctorMutation,
   useGetAppointmentsBookedByCustomerMutation,
   useGetAppointmentsForManagementMutation,
+
+  useGetInvoiceMutation,
+
+  useDoctorRequestCancelBulkMutation,
+  useGetDoctorCancelRequestsMutation,
+  useApproveDoctorCancelRequestMutation,
+  useRejectDoctorCancelRequestMutation,
+  useGetPaymentStatsMutation
 } = appointmentApi;

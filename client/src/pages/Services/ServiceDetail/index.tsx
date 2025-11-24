@@ -12,7 +12,7 @@ import {
   Avatar,
   Rate,
 } from "antd";
-import { ArrowLeftOutlined, ShoppingCartOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import styles from "./ServiceDetail.module.scss";
 
 import NoImage from "@/assets/img/NoImage/NoImage.jpg";
@@ -28,15 +28,6 @@ import { useAddToCartMutation } from "@/services/cart";
 import { showError, showSuccess } from "@/libs/toast";
 
 const { Title, Paragraph } = Typography;
-
-// type Service = {
-//   id: string;
-//   name: string;
-//   price: number;
-//   images: { url: string }[];
-//   description: string;
-//   category: { id: string; name: string };
-// };
 
 const ServiceDetail = () => {
   const { id } = useParams();
@@ -73,8 +64,8 @@ const ServiceDetail = () => {
   const [addToCart] = useAddToCartMutation();
 
   const handleConfirmDoctor = async () => {
-    if (!selectedService || !selectedDoctorId) {
-      showError("Vui lòng chọn bác sĩ trước khi thêm vào giỏ hàng!");
+    if (!selectedService) {
+      showError("Vui lòng chọn dịch vụ!");
       return;
     }
 
@@ -83,18 +74,54 @@ const ServiceDetail = () => {
       await addToCart({
         customerId: auth?.accountId || "",
         itemData: { itemId: selectedService.id, quantity: 1 },
-        doctorId: selectedDoctorId,
+        doctorId: selectedDoctorId || null, 
       }).unwrap();
 
       showSuccess("Thêm vào giỏ hàng thành công!");
       setIsModalVisible(false);
       setSelectedDoctorId(null);
+      setSelectedService(null);
     } catch (error: unknown) {
       if (error && typeof error === "object" && "message" in error) {
         showError(
           "Thêm vào giỏ hàng thất bại!",
-          (error as { message?: string }).message
+          (error as { message?: string }).message || "Lỗi không xác định"
         );
+      } else {
+        showError("Thêm vào giỏ hàng thất bại!", "Lỗi không xác định");
+      }
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
+  const handleSkipDoctor = async () => {
+    // Directly add without doctor
+    if (!selectedService) {
+      showError("Vui lòng chọn dịch vụ!");
+      return;
+    }
+
+    try {
+      setIsAdding(true);
+      await addToCart({
+        customerId: auth?.accountId || "",
+        itemData: { itemId: selectedService.id, quantity: 1 },
+        doctorId: null, // Explicit null for no doctor
+      }).unwrap();
+
+      showSuccess("Thêm vào giỏ hàng thành công (không chọn bác sĩ)!");
+      setIsModalVisible(false);
+      setSelectedDoctorId(null);
+      setSelectedService(null);
+    } catch (error: unknown) {
+      if (error && typeof error === "object" && "message" in error) {
+        showError(
+          "Thêm vào giỏ hàng thất bại!",
+          (error as { message?: string }).message || "Lỗi không xác định"
+        );
+      } else {
+        showError("Thêm vào giỏ hàng thất bại!", "Lỗi không xác định");
       }
     } finally {
       setIsAdding(false);
@@ -109,7 +136,7 @@ const ServiceDetail = () => {
     );
   }
 
-  const { name, price, images, description, category } = serviceData;
+  const { name, price, images, description, category, doctors } = serviceData; // Assume doctors in data
 
   const relatedServices = servicesData
     ?.filter((s) => s.category?.id === category?.id && s.id !== id)
@@ -216,11 +243,6 @@ const ServiceDetail = () => {
                     setSelectedService(serviceData);
                     setIsModalVisible(true);
                   }}
-                />
-                <FancyButton
-                  label="Đặt lịch ngay"
-                  size="middle"
-                  onClick={() => navigate("/cart")}
                 />
               </div>
             </div>
@@ -338,10 +360,6 @@ const ServiceDetail = () => {
                               Chưa có đánh giá
                             </div>
                           )}
-
-                          {/* <span className={styles.cardDesc}>
-                            {srv.description}
-                          </span> */}
                         </div>
                       }
                     />
@@ -354,12 +372,7 @@ const ServiceDetail = () => {
                           size="small"
                           variant="primary"
                           label="Đặt lịch"
-                          onClick={() => navigate(`/services/${srv.id}`)}
-                        />
-                        <ShoppingCartOutlined
-                          className={styles.addToCartIcon}
-                          onClick={(e) => {
-                            e.stopPropagation();
+                          onClick={() => {
                             setSelectedService(srv);
                             setIsModalVisible(true);
                           }}
@@ -372,44 +385,76 @@ const ServiceDetail = () => {
             </Row>
           </div>
         )}
-      </div>
 
-      <Modal
-        title={`Chọn bác sĩ cho dịch vụ "${selectedService?.name || ""}"`}
-        open={isModalVisible}
-        onCancel={() => {
-          setIsModalVisible(false);
-          setSelectedDoctorId(null);
-        }}
-        onOk={handleConfirmDoctor}
-        okText="Xác nhận"
-        cancelText="Hủy"
-        confirmLoading={isAdding}
-        width={600}
-      >
-        {!selectedService?.doctors || selectedService.doctors.length === 0 ? (
-          <Empty description="Không có bác sĩ nào khả dụng cho dịch vụ này" />
-        ) : (
-          <List
-            dataSource={selectedService.doctors}
-            renderItem={(doctor) => (
-              <List.Item
-                className={`${styles.doctorItem} ${
-                  selectedDoctorId === doctor.id ? styles.selectedDoctor : ""
-                }`}
-                onClick={() => setSelectedDoctorId(doctor.id)}
-                style={{ cursor: "pointer" }}
-              >
-                <List.Item.Meta
-                  avatar={<Avatar src={doctor.avatar} />}
-                  title={doctor.name}
-                  description="Bác sĩ chuyên khoa"
-                />
-              </List.Item>
-            )}
-          />
-        )}
-      </Modal>
+        <Modal
+          title={`Chọn bác sĩ cho dịch vụ "${selectedService?.name || ""}" (Tùy chọn)`}
+          open={isModalVisible}
+          onCancel={() => {
+            setIsModalVisible(false);
+            setSelectedDoctorId(null);
+          }}
+          footer={[
+            <Button
+              key="skip"
+              onClick={handleSkipDoctor}
+              loading={isAdding}
+            >
+              Tiếp tục không chọn bác sĩ
+            </Button>,
+            <Button
+              key="confirm"
+              type="primary"
+              onClick={handleConfirmDoctor}
+              disabled={!selectedDoctorId && doctors && doctors.length > 0} // Disable if no selection but doctors available
+              loading={isAdding}
+            >
+              Xác nhận với bác sĩ đã chọn
+            </Button>,
+          ]}
+          width={600}
+          destroyOnClose // Clean up on close
+        >
+          <p style={{ marginBottom: 16, fontStyle: 'italic' }}>
+            Lưu ý: Bạn có thể chọn bác sĩ hoặc bỏ qua để thêm vào giỏ hàng (sẽ được gán bác sĩ sau).
+          </p>
+          {!doctors || doctors.length === 0 ? (
+            <Empty 
+              description="Không có bác sĩ nào khả dụng cho dịch vụ này. Bạn có thể tiếp tục mà không chọn." 
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            />
+          ) : (
+            <List
+              dataSource={doctors}
+              renderItem={(doctor) => (
+                <List.Item
+                  className={`${styles.doctorItem} ${
+                    selectedDoctorId === doctor.id ? styles.selectedDoctor : ""
+                  }`}
+                  onClick={() => setSelectedDoctorId(doctor.id)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <List.Item.Meta
+                    avatar={<Avatar src={doctor.avatar || NoImage} size="large" />}
+                    title={<strong>{doctor.name}</strong>}
+                    description={
+                      <div>
+                        <p>{doctor.specialization || "Chuyên khoa tổng quát"}</p>
+                        <Rate disabled allowHalf value={doctor.rating || 0} style={{ fontSize: 12 }} />
+                        <span style={{ fontSize: 12, color: '#666' }}>
+                          ({doctor.experience_years || 0} năm kinh nghiệm)
+                        </span>
+                      </div>
+                    }
+                  />
+                </List.Item>
+              )}
+              locale={{
+                emptyText: "Không có bác sĩ khả dụng",
+              }}
+            />
+          )}
+        </Modal>
+      </div>
     </section>
   );
 };

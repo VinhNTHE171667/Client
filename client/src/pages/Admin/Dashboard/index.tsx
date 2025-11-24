@@ -20,36 +20,22 @@ import {
   ShoppingOutlined,
   StarOutlined,
   FireOutlined,
-  ClockCircleOutlined,
 } from "@ant-design/icons";
 import FancyIconBox from "@/components/FancyIconBox";
 import FancyCounting from "@/components/FancyCounting";
 import { motion } from "framer-motion";
+import { useDashboardMutation } from "@/services/auth";
 
 const { Title } = Typography;
 const { useBreakpoint } = Grid;
 
-type StatictisAdminProps = {
-  month: number;
-  totalInvoices: number;
-  totalAmount: number;
-  totalCustomers: number;
-};
-
 const currentYear = new Date().getFullYear();
-
-const generateMockData = (): StatictisAdminProps[] =>
-  Array.from({ length: 12 }, (_, i) => ({
-    month: i + 1,
-    totalInvoices: Math.floor(Math.random() * 500 + 200),
-    totalAmount: Math.floor(Math.random() * 50_000_000 + 10_000_000),
-    totalCustomers: Math.floor(Math.random() * 100 + 50),
-  }));
 
 export default function AdminDashboardPage() {
   const [year, setYear] = useState(currentYear);
-  const [month, setMonth] = useState<string | number>("all");
-  const [data, setData] = useState<StatictisAdminProps[]>(generateMockData());
+  const [month, setMonth] = useState<number>(0);
+  const [getDashboard] = useDashboardMutation();
+  const [loading, setLoading] = useState(false);
 
   const [dataTop, setDataTop] = useState({
     totalInvoices: 0,
@@ -57,39 +43,69 @@ export default function AdminDashboardPage() {
     totalCustomers: 0,
   });
 
+  const [chartData, setChartData] = useState<
+    { month: number; total: number }[]
+  >([]);
+  const [topServices, setTopServices] = useState<
+    { name: string; count: number }[]
+  >([]);
+  const [topCustomers, setTopCustomers] = useState<
+    { name: string; total: number }[]
+  >([]);
+
   const screens = useBreakpoint();
+  const isMobile = !screens.md;
 
   const monthOptions = [
-    { label: "Tất cả", value: "all" },
+    { label: "Tất cả", value: 0 },
     ...Array.from({ length: 12 }, (_, i) => ({
       label: `Tháng ${i + 1}`,
       value: i + 1,
     })),
   ];
 
-  const isMobile = !screens.md;
+  const handleGetData = async () => {
+    setLoading(true);
+    try {
+      const res = await getDashboard({
+        year,
+        month,
+      }).unwrap();
+
+      console.log(month, year, "DASHBOARD DATA", res);
+
+      setDataTop({
+        totalInvoices: res.totalInvoices,
+        totalAmount: res.totalAmount,
+        totalCustomers: res.totalCustomers,
+      });
+
+      setTopServices(res.topServices || []);
+      setTopCustomers(res.topCustomers || []);
+
+      const invoices = res.invoices || [];
+      const monthlyTotals: Record<number, number> = {};
+
+      invoices.forEach((inv) => {
+        const m = new Date(inv.createdAt).getMonth() + 1;
+        monthlyTotals[m] = (monthlyTotals[m] || 0) + Number(inv.total_amount);
+      });
+
+      const chartArr = Array.from({ length: 12 }, (_, i) => ({
+        month: i + 1,
+        total: monthlyTotals[i + 1] || 0,
+      }));
+
+      setChartData(chartArr);
+    } catch (error) {
+      console.error("Lỗi lấy dữ liệu dashboard:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const allData = generateMockData();
-      setData(allData);
-
-      const filtered =
-        month === "all"
-          ? allData
-          : allData.filter((item) => item.month === Number(month));
-
-      const totals = filtered.reduce(
-        (acc, item) => ({
-          totalInvoices: acc.totalInvoices + item.totalInvoices,
-          totalAmount: acc.totalAmount + item.totalAmount,
-          totalCustomers: acc.totalCustomers + item.totalCustomers,
-        }),
-        { totalInvoices: 0, totalAmount: 0, totalCustomers: 0 }
-      );
-      setDataTop(totals);
-    }, 500);
-    return () => clearTimeout(timer);
+    handleGetData();
   }, [year, month]);
 
   const chartOptions = {
@@ -104,7 +120,7 @@ export default function AdminDashboardPage() {
       style: { color: "#000" },
     },
     xAxis: {
-      categories: data.map((d) => `Tháng ${d.month}`),
+      categories: chartData.map((d) => `Tháng ${d.month}`),
       labels: { style: { color: "#555" } },
     },
     yAxis: {
@@ -120,31 +136,33 @@ export default function AdminDashboardPage() {
     series: [
       {
         name: "Doanh thu",
-        data: data.map((d) => d.totalAmount),
+        data: chartData.map((d) => d.total),
         color: "#1677ff",
       },
     ],
     plotOptions: {
-      series: {
-        animation: { duration: 800 },
-      },
+      series: { animation: { duration: 800 } },
     },
   };
 
   const pieOptions = {
-    chart: { type: "pie", backgroundColor: "transparent" },
+    chart: {
+      type: "pie",
+      backgroundColor: "transparent",
+    },
     title: {
-      text: "Số lượng dịch vụ",
+      text: "Top 5 dịch vụ được đặt nhiều nhất",
       style: { fontWeight: "bold" },
     },
     credits: { enabled: false },
     tooltip: {
-      pointFormat: "<b>{point.percentage:.1f}%</b>",
+      pointFormat: "<b>{point.y} lượt đặt</b> ({point.percentage:.1f}%)",
     },
     plotOptions: {
       pie: {
         allowPointSelect: true,
         cursor: "pointer",
+        borderRadius: 5,
         dataLabels: {
           enabled: true,
           distance: 20,
@@ -153,25 +171,23 @@ export default function AdminDashboardPage() {
             fontSize: "13px",
             textOutline: "none",
           },
-          format: "<b>{point.name}</b>: {point.percentage:.1f} %",
-          filter: {
-            property: "percentage",
-            operator: ">",
-            value: 1,
-          },
+          format: "<b>{point.name}</b>: {point.y} lượt",
         },
         showInLegend: true,
       },
     },
     series: [
       {
-        name: "Tỉ lệ",
+        type: "pie",
+        name: "Lượt đặt",
         colorByPoint: true,
-        data: [
-          { name: "Spa", y: 45 },
-          { name: "Clinic", y: 30 },
-          { name: "Salon", y: 25 },
-        ],
+        data:
+          topServices && topServices.length > 0
+            ? topServices.map((item) => ({
+                name: item.name,
+                y: item.count,
+              }))
+            : [{ name: "Không có dữ liệu", y: 1, color: "#d9d9d9" }],
       },
     ],
   };
@@ -193,9 +209,7 @@ export default function AdminDashboardPage() {
       <Row gutter={[16, 16]} align="middle" className="mb-4">
         <Col>
           <Space align="center">
-            <Typography.Text strong style={{ whiteSpace: "nowrap" }}>
-              Tháng:
-            </Typography.Text>
+            <Typography.Text strong>Tháng:</Typography.Text>
             {isMobile ? (
               <Select
                 value={month}
@@ -214,9 +228,7 @@ export default function AdminDashboardPage() {
         </Col>
         <Col>
           <Space align="center">
-            <Typography.Text strong style={{ whiteSpace: "nowrap" }}>
-              Năm:
-            </Typography.Text>
+            <Typography.Text strong>Năm:</Typography.Text>
             <Select
               value={year}
               style={{ width: 120 }}
@@ -284,11 +296,11 @@ export default function AdminDashboardPage() {
           <Card className="bg-gradient-warning" style={{ borderRadius: 12 }}>
             <FancyIconBox icon={<ShoppingOutlined />} className="mb-3" />
             <Title level={5} className="text-light m-0">
-              Dịch vụ mới
+              Dịch vụ
             </Title>
             <FancyCounting
               className="text-light"
-              to={Math.floor(Math.random() * 100 + 20)}
+              to={topServices.length}
               duration={2}
               style={{ fontSize: 24, fontWeight: "bold" }}
             />
@@ -314,130 +326,90 @@ export default function AdminDashboardPage() {
           <Card
             title={
               <span>
-                <FireOutlined style={{ color: "#ff4d4f", marginRight: 8 }} />
-                Top dịch vụ được đặt nhiều nhất
-              </span>
-            }
-          >
-            {[
-              { name: "Gội đầu dưỡng sinh", count: 145 },
-              { name: "Chăm sóc da mặt", count: 120 },
-              { name: "Massage toàn thân", count: 95 },
-              { name: "Cắt tóc cao cấp", count: 80 },
-              { name: "Giảm béo công nghệ", count: 60 },
-            ].map((item, idx, arr) => {
-              const max = arr[0].count;
-              return (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  style={{ marginBottom: 12 }}
-                >
-                  <div className="d-flex justify-content-between font-medium mb-1">
-                    <span>{item.name}</span>
-                    <span>{item.count}</span>
-                  </div>
-                  <div
-                    style={{
-                      height: 8,
-                      borderRadius: 6,
-                      background: "#f5f5f5",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: `${(item.count / max) * 100}%`,
-                        height: "100%",
-                        background: "linear-gradient(90deg, #1890ff, #36cfc9)",
-                      }}
-                    />
-                  </div>
-                </motion.div>
-              );
-            })}
-          </Card>
-        </Col>
-
-        <Col xs={24} lg={12}>
-          <Card
-            title={
-              <span>
                 <StarOutlined style={{ color: "#faad14", marginRight: 8 }} />
                 Khách hàng thân thiết
               </span>
             }
           >
-            {[
-              { name: "Nguyễn Thị Lan", total: 12 },
-              { name: "Trần Minh Quân", total: 10 },
-              { name: "Lê Hoàng Anh", total: 9 },
-              { name: "Phạm Thảo Vy", total: 7 },
-              { name: "Đỗ Nhật Nam", total: 6 },
-            ].map((item, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                className="d-flex justify-content-between align-items-center py-2 border-b border-gray-100"
-              >
-                <div className="d-flex align-items-center gap-2">
-                  <Avatar
-                    icon={<UserOutlined />}
-                    style={{
-                      backgroundColor: [
-                        "#1890ff",
-                        "#52c41a",
-                        "#faad14",
-                        "#eb2f96",
-                        "#722ed1",
-                      ][idx],
-                    }}
-                  />
-                  <span>{item.name}</span>
-                </div>
-                <Tag color="blue">{item.total} lượt</Tag>
-              </motion.div>
-            ))}
+            {topCustomers.length === 0 ? (
+              <Typography.Text>Không có dữ liệu</Typography.Text>
+            ) : (
+              topCustomers.map((item, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="d-flex justify-content-between align-items-center py-2 border-b border-gray-100"
+                >
+                  <div className="d-flex align-items-center gap-2">
+                    <Avatar
+                      icon={<UserOutlined />}
+                      style={{
+                        backgroundColor: [
+                          "#1890ff",
+                          "#52c41a",
+                          "#faad14",
+                          "#eb2f96",
+                          "#722ed1",
+                        ][idx % 5],
+                      }}
+                    />
+                    <span>{item.name}</span>
+                  </div>
+                  <Tag color="blue">{item.total} lượt</Tag>
+                </motion.div>
+              ))
+            )}
           </Card>
         </Col>
-      </Row>
-
-      <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
-        <Col xs={24}>
+        <Col xs={24} lg={12}>
           <Card
             title={
               <span>
-                <ClockCircleOutlined
-                  style={{ color: "#52c41a", marginRight: 8 }}
-                />
-                Hoạt động gần đây
+                <FireOutlined style={{ color: "#ff4d4f", marginRight: 8 }} />
+                Top dịch vụ được đặt nhiều nhất
               </span>
             }
           >
-            {[
-              "Khách hàng Trần Văn A đã đặt lịch mới.",
-              "Dịch vụ 'Massage toàn thân' được thêm vào hệ thống.",
-              "Nhân viên Lê Minh cập nhật trạng thái đơn hàng.",
-              "Khách hàng Nguyễn Thị B hoàn tất thanh toán.",
-            ].map((text, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                className="d-flex align-items-center justify-content-between py-2"
-                style={{ borderBottomWidth: "1px", borderColor: "#F3F4F6" }}
-              >
-                <span>{text}</span>
-                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                  {`${Math.floor(Math.random() * 60)} phút trước`}
-                </Typography.Text>
-              </motion.div>
-            ))}
+            {topServices.length === 0 ? (
+              <Typography.Text>Không có dữ liệu</Typography.Text>
+            ) : (
+              topServices.map((item, idx, arr) => {
+                const max = arr[0].count;
+                return (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    style={{ marginBottom: 12 }}
+                  >
+                    <div className="d-flex justify-content-between font-medium mb-1">
+                      <span>{item.name}</span>
+                      <span>{item.count}</span>
+                    </div>
+                    <div
+                      style={{
+                        height: 8,
+                        borderRadius: 6,
+                        background: "#f5f5f5",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${(item.count / max) * 100}%`,
+                          height: "100%",
+                          background:
+                            "linear-gradient(90deg, #1890ff, #36cfc9)",
+                        }}
+                      />
+                    </div>
+                  </motion.div>
+                );
+              })
+            )}
           </Card>
         </Col>
       </Row>

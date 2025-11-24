@@ -9,18 +9,26 @@ import { Internal } from '@/entities/internal.entity';
 import { Role } from '@/entities/role.entity';
 import { Doctor } from '@/entities/doctor.entity';
 import { MailModule } from '../mail/mail.module';
+import { Spa } from '@/entities/spa.entity';
+import { CacheModule } from '@nestjs/cache-manager';
+import { NotificationModule } from '../notification/notification.module';
+
+
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    TypeOrmModule.forFeature([Customer, Internal, Doctor, Role]),
+    CacheModule.register(),
+    TypeOrmModule.forFeature([Customer, Internal, Doctor, Role, Spa]),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: process.env.EXPIRE_TIME_ACCESS },
     }),
     MailModule,
+    NotificationModule, 
   ],
   controllers: [AuthController],
   providers: [AuthService],
+  exports: [AuthService],
 })
 export class AuthModule {}

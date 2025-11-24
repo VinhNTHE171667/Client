@@ -21,9 +21,9 @@ import {
 import dayjs from "dayjs";
 import styles from "./Profile.module.scss";
 import {
-  useChangePasswordMutation,
+  useChangePasswordCustomerMutation,
   useGetCustomerProfileMutation,
-  useUpdateAvatarMutation,
+  useUpdateAvatarCustomerMutation,
   useUpdateCustomerProfileMutation,
   type CustomerProfileProps,
 } from "@/services/auth";
@@ -40,9 +40,9 @@ const Profile = () => {
   const [customer, setCustomer] = useState<CustomerProfileProps | null>(null);
 
   const [getProfile] = useGetCustomerProfileMutation();
-  const [updateAvatar] = useUpdateAvatarMutation();
+  const [updateAvatar] = useUpdateAvatarCustomerMutation();
   const [updateProfile] = useUpdateCustomerProfileMutation();
-  const [updatePassword] = useChangePasswordMutation();
+  const [updatePassword] = useChangePasswordCustomerMutation();
   const { auth, setCredentials } = useAuthStore();
   const [form] = Form.useForm();
   const [passwordForm] = Form.useForm();

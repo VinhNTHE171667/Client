@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Customer } from '@/entities/customer.entity';
 import { Membership } from '@/entities/membership.entity';
+import { Invoice } from '@/entities/invoice.entity'; // chắc chắn bạn có entity này
 
 @Injectable()
 export class MembershipCronService {
@@ -15,6 +16,9 @@ export class MembershipCronService {
 
     @InjectRepository(Membership)
     private readonly membershipRepo: Repository<Membership>,
+
+    @InjectRepository(Invoice)
+    private readonly invoiceRepo: Repository<Invoice>,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_2AM)
@@ -25,7 +29,7 @@ export class MembershipCronService {
       order: { minSpent: 'ASC' },
     });
 
-    if (memberships.length === 0) {
+    if (!memberships.length) {
       this.logger.warn('Không tìm thấy dữ liệu Membership nào.');
       return;
     }
@@ -38,14 +42,20 @@ export class MembershipCronService {
     let updatedCount = 0;
 
     for (const customer of customers) {
-      const totalSpent = Number(customer.total_spent);
+      const invoices = await this.invoiceRepo.find({
+        where: { customerId: customer.id, payment_status: 'paid' },
+      });
+
+      const totalSpent = invoices.reduce(
+        (sum, inv) => sum + Number(inv.finalAmount),
+        0,
+      );
+
+      customer.total_spent = totalSpent;
 
       const newMembership = memberships.find((m) => {
         const min = Number(m.minSpent);
-        const max =
-          m.maxSpent !== null && m.maxSpent !== undefined
-            ? Number(m.maxSpent)
-            : Infinity;
+        const max = m.maxSpent !== null ? Number(m.maxSpent) : Infinity;
         return totalSpent >= min && totalSpent <= max;
       });
 

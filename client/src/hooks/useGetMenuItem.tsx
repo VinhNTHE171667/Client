@@ -14,8 +14,9 @@ import { RoleEnum } from "@/common/types/auth";
 // import { FaChalkboardTeacher, FaUser } from "react-icons/fa";
 import { configRoutes } from "@/constants/route";
 import { RiUser3Fill } from "react-icons/ri";
-import { FaTags, FaUserDoctor } from "react-icons/fa6";
+import { FaFileInvoiceDollar, FaTags, FaUserDoctor } from "react-icons/fa6";
 import { GiFlowerEmblem } from "react-icons/gi";
+import { BiAnalyse } from "react-icons/bi";
 // import { IoChatboxEllipses } from "react-icons/io5";
 
 export type SiderItem = {
@@ -75,6 +76,36 @@ export const getSidebarItemsByRole = (role: string): SiderItem[] => {
       icon: <MdCardMembership className="ml-3" />,
       activeLink: [configRoutes.adminMemberships],
     },
+    {
+      name: "Phân tích dữ liệu",
+      link: configRoutes.adminDataAnalysis,
+      icon: <BiAnalyse className="ml-3" />,
+      activeLink: [configRoutes.adminDataAnalysis],
+    },
+    {
+      name: "Hoá đơn",
+      link: configRoutes.casherInvoice,
+      icon: <FaFileInvoiceDollar className="ml-3" />,
+      activeLink: [configRoutes.casherInvoice],
+    },
+    {
+      name: "Tài chính",
+      link: configRoutes.casherStats,
+      icon: <FaFileInvoiceDollar className="ml-3" />,
+      activeLink: [configRoutes.casherInvoice],
+    },
+    {
+      name: "Đơn hàng",
+      link: configRoutes.staffOrders,
+      icon: <MdPeopleAlt className="ml-3" />,
+      activeLink: [configRoutes.staffOrders],
+    },
+    {
+      name: "Feedback",
+      link: configRoutes.staffFeedback,
+      icon: <MdFeedback className="ml-3" />,
+      activeLink: [configRoutes.staffFeedback],
+    },
   ];
 
   const StaffSidebar = (): SiderItem[] => [
@@ -89,6 +120,12 @@ export const getSidebarItemsByRole = (role: string): SiderItem[] => {
       link: configRoutes.staffFeedback,
       icon: <MdFeedback className="ml-3" />,
       activeLink: [configRoutes.staffFeedback],
+    },
+    {
+      name: "Yêu cầu hủy của bác sĩ",
+      link: configRoutes.staffRequestDoctor,
+      icon: <FaUserDoctor className="ml-3" />,
+      activeLink: [configRoutes.staffRequestDoctor],
     },
     // {
     //   name: "Khách hàng",
@@ -119,6 +156,12 @@ export const getSidebarItemsByRole = (role: string): SiderItem[] => {
       link: configRoutes.casherOrderManagement,
       icon: <MdDashboard />,
       activeLink: [configRoutes.casherOrderManagement],
+    },
+    {
+      name: "Hoá đơn",
+      link: configRoutes.casherInvoice,
+      icon: <FaFileInvoiceDollar className="ml-3" />,
+      activeLink: [configRoutes.casherInvoice],
     },
   ];
 

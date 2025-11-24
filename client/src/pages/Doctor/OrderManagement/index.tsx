@@ -8,16 +8,15 @@ import {
   Table,
   Divider,
   Select,
+  Button,
+  Modal,
 } from "antd";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { showError, showSuccess } from "@/libs/toast";
 import { AppointmentColumn } from "./_components/columnTypes";
-// import FancyButton from "@/components/FancyButton";
-import { configRoutes } from "@/constants/route";
-import { Link } from "react-router-dom";
-import FancyBreadcrumb from "@/components/FancyBreadcrumb";
 import {
+  useDoctorRequestCancelBulkMutation,
   useGetAppointmentsManagedByDoctorMutation,
   useUpdateAppointmentMutationCompleteMutation,
 } from "@/services/appointment";
@@ -28,6 +27,7 @@ import UpdateAppointmentModal from "./update";
 import { useAuthStore } from "@/hooks/UseAuth";
 
 const { RangePicker } = DatePicker;
+const { TextArea } = Input;
 
 export default function OrderManagementDoctor() {
   const [isLoading, setIsLoading] = useState(false);
@@ -40,20 +40,51 @@ export default function OrderManagementDoctor() {
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(
     null
   );
+  const [statusFilter, setStatusFilter] = useState<string[] | null>(null);
 
   const [getAppointmentsForManagement] =
     useGetAppointmentsManagedByDoctorMutation();
-
   const [updateCompleted] = useUpdateAppointmentMutationCompleteMutation();
+  const [doctorRequestCancelBulk] = useDoctorRequestCancelBulkMutation();
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
-  const [statusFilter, setStatusFilter] = useState<string[] | null>(null);
+  const [cancelModalVisible, setCancelModalVisible] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (selectedKeys: React.Key[]) => setSelectedRowKeys(selectedKeys),
+  };
+
+  const { auth } = useAuthStore();
+
+  const handleRequestCancelMultiple = async () => {
+    if (!cancelReason) {
+      showError("Lỗi", "Vui lòng nhập lý do hủy");
+      return;
+    }
+
+    try {
+      await doctorRequestCancelBulk({
+        appointmentIds: selectedRowKeys as string[],
+        doctorId: auth.accountId || "",
+        reason: cancelReason,
+      });
+      showSuccess("Đã gửi yêu cầu hủy các lịch hẹn");
+      setSelectedRowKeys([]);
+      setCancelReason("");
+      setCancelModalVisible(false);
+      handleEvent();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      showError("Lỗi", error?.data?.message || "Không gửi được yêu cầu");
+    }
+  };
 
   const handleUpdate = (id: string) => {
     setUpdateId(id);
     setUpdateState(true);
   };
-
-  const { auth } = useAuthStore();
 
   const handleGetAppointments = async () => {
     setIsLoading(true);
@@ -83,7 +114,6 @@ export default function OrderManagementDoctor() {
 
   const handleUpdateStatus = async (id: string, status: "completed") => {
     setIsLoading(true);
-    console.log("Updating status to:", status);
     try {
       let updateMutation;
       switch (status) {
@@ -120,9 +150,7 @@ export default function OrderManagementDoctor() {
     return matchSearch && matchDate && matchStatus;
   });
 
-  const handleEvent = () => {
-    handleGetAppointments();
-  };
+  const handleEvent = () => handleGetAppointments();
 
   return (
     <>
@@ -131,17 +159,6 @@ export default function OrderManagementDoctor() {
           <h4 className="cus-text-primary">
             <strong>Lịch hẹn</strong>
           </h4>
-        </Col>
-        <Col style={{ marginLeft: "auto" }}>
-          <FancyBreadcrumb
-            items={[
-              {
-                title: <Link to={configRoutes.staffDashboard}>Dashboard</Link>,
-              },
-              { title: <span>Lịch hẹn</span> },
-            ]}
-            separator=">"
-          />
         </Col>
       </Row>
 
@@ -203,18 +220,19 @@ export default function OrderManagementDoctor() {
                 ]}
               />
               <Divider type="vertical" />
-              {/* <FancyButton
-                variant="primary"
-                label="Thêm lịch hẹn"
-                size="middle"
-                onClick={() => setCreateState(true)}
-                // disabled={true}
-              /> */}
               <CreateAppointment
                 isOpen={createState}
                 onClose={() => setCreateState(false)}
                 onReload={handleGetAppointments}
               />
+              <Divider type="vertical" />
+              <Button
+                type="primary"
+                disabled={selectedRowKeys.length === 0}
+                onClick={() => setCancelModalVisible(true)}
+              >
+                Gửi yêu cầu hủy
+              </Button>
             </Space>
           </Col>
         </Row>
@@ -222,6 +240,7 @@ export default function OrderManagementDoctor() {
         <Table
           loading={isLoading}
           rowKey="id"
+          rowSelection={rowSelection}
           columns={AppointmentColumn()}
           dataSource={filteredAppointments}
           scroll={{ x: "max-content" }}
@@ -243,6 +262,21 @@ export default function OrderManagementDoctor() {
         onClose={() => setUpdateState(false)}
         onReload={handleGetAppointments}
       />
+
+      <Modal
+        title="Lý do hủy lịch hẹn"
+        open={cancelModalVisible}
+        onCancel={() => setCancelModalVisible(false)}
+        onOk={handleRequestCancelMultiple}
+        okText="Xác nhận"
+      >
+        <TextArea
+          rows={4}
+          value={cancelReason}
+          onChange={(e) => setCancelReason(e.target.value)}
+          placeholder="Nhập lý do hủy..."
+        />
+      </Modal>
     </>
   );
 }

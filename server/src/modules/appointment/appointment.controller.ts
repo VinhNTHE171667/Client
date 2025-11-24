@@ -5,6 +5,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Put,
@@ -21,6 +22,39 @@ import { AppointmentStatus } from '@/entities/enums/appointment-status';
 @Controller('appointment')
 export class AppointmentController {
   constructor(private readonly appointmentService: AppointmentService) {}
+
+  @Get('/dashboard')
+  getDashboard(@Query('year') year: number, @Query('month') month?: number) {
+    return this.appointmentService.getDashboard({ year, month });
+  }
+
+  @Post('request-cancel')
+  requestCancelBulk(
+    @Body('appointmentIds') appointmentIds: string[],
+    @Body('reason') reason: string,
+    @Body('doctorId') doctorId: string,
+  ) {
+    return this.appointmentService.requestCancelByDoctorBulk(
+      appointmentIds,
+      doctorId,
+      reason,
+    );
+  }
+
+  @Post('/request-cancel/approve/:id')
+  approveRequest(@Param('id', ParseUUIDPipe) id: string) {
+    return this.appointmentService.approveRequest(id);
+  }
+
+  @Post('/request-cancel/reject/:id')
+  rejectRequest(@Param('id', ParseUUIDPipe) id: string) {
+    return this.appointmentService.rejectRequest(id);
+  }
+
+  @Get('/request-cancel/pending')
+  getPending() {
+    return this.appointmentService.findAllPending();
+  }
 
   @Get('/customer')
   findAll(@Query('customerId') customerId: string) {

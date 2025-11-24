@@ -97,6 +97,8 @@ async function seedData() {
   const admin = internalRepository.create({
     email: 'admin_ne@system.com',
     full_name: 'Super Admin',
+    avatar:
+      'https://res.cloudinary.com/dlf04wlnw/image/upload/v1762503338/Asset_4_300x-8_cvsoe9.png',
     password,
     refreshToken: '',
     role: adminRole!,

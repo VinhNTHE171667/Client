@@ -1,0 +1,76 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    container_name: do_an_fa25_api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - FULL_CONTEXT_DOCS=${FULL_CONTEXT_DOCS}
+    volumes:
+      - "./app/data:/app/data:ro"
+      # persist backend data (models, artifacts) so training can write to host
+      - "./recommendation/backend/data:/app/backend/data"
+    depends_on:
+      - milvus
+
+  milvus:
+    image: milvusdb/milvus:v2.4.6
+    container_name: do_an_fa25_milvus
+    command: ["milvus", "run", "standalone"]
+    ports:
+      - "19530:19530"
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+    depends_on:
+      - etcd
+      - minio
+
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.9
+    container_name: do_an_fa25_etcd
+    environment:
+      ETCD_AUTO_COMPACTION_MODE: revision
+      ETCD_LISTEN_CLIENT_URLS: http://0.0.0.0:2379
+      ETCD_ADVERTISE_CLIENT_URLS: http://etcd:2379
+      ETCD_LISTEN_PEER_URLS: http://0.0.0.0:2380
+      ETCD_INITIAL_ADVERTISE_PEER_URLS: http://etcd:2380
+      ETCD_INITIAL_CLUSTER: default=http://etcd:2380
+      ETCD_NAME: default
+    ports:
+      - "2379:2379"
+
+  minio:
+    image: minio/minio:latest
+    container_name: do_an_fa25_minio
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data
+    ports:
+      - "9000:9000"
+
+  recommender:
+    build:
+      context: ./recommendation
+      dockerfile: Dockerfile
+    container_name: spa_recommender
+    ports:
+      - "8001:8000" # host:container (use 8001 to avoid colliding with main API 8000)
+    env_file:
+      - .env
+    environment:
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DB=${MYSQL_DB}
+    volumes:
+      - "./recommendation/backend:/app/backend"
+      - "./recommendation/backend/data:/app/data"
+    restart: unless-stopped

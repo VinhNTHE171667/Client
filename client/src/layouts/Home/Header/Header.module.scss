@@ -8,6 +8,14 @@
     height: auto;
 }
 
+.stickyHeader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
 .nav-link {
     position: relative;
     text-decoration: none;
@@ -48,4 +56,12 @@
             width: 0;
         }
     }
+}
+
+.btnCustomLogin {
+    background-color: var(--color-primary);
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
 }
