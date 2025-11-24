@@ -1,7 +1,7 @@
 // Color System
-$primary: #0ea5e9;
-$primary-dark: #0284c7;
-$primary-light: #e0f2fe;
+$primary: #52a868;
+$primary-dark: #3d7d4f;
+$primary-light: #e8f5ea;
 $secondary: #64748b;
 $success: #16a34a;
 $danger: #dc2626;
@@ -44,7 +44,10 @@ $shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.12);
     .pageTitle {
       font-size: 36px;
       font-weight: 700;
-      color: $text-primary;
+      background: linear-gradient(135deg, #52a868, #7cbd6f);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       margin: 0 0 8px 0;
       letter-spacing: -0.5px;
       @media (max-width: 768px) {
@@ -53,9 +56,12 @@ $shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.12);
     }
     .pageSubtitle {
       font-size: 15px;
-      color: $text-secondary;
+      background: linear-gradient(135deg, #52a868, #7cbd6f);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       margin: 0;
-      font-weight: 400;
+      font-weight: 600;
     }
   }
   .viewToggle {
@@ -85,9 +91,9 @@ $shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.12);
         background: $primary-light;
       }
       &.active {
-        background: $primary;
+        background: linear-gradient(135deg, #52a868, #7cbd6f);
         color: white;
-        box-shadow: 0 2px 8px rgba($primary, 0.3);
+        box-shadow: 0 2px 8px rgba(82, 168, 104, 0.3);
       }
       .toggleIcon {
         font-size: 16px;
@@ -442,7 +448,7 @@ $shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.12);
       align-items: flex-end;
       gap: 4px;
       padding: 12px 20px;
-      background: $primary-light;
+      background: linear-gradient(135deg, #e8f5ea, #f0f9f1);
       border-radius: 12px;
       white-space: nowrap;
       @media (max-width: 768px) {
@@ -535,12 +541,12 @@ $shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.12);
           font-size: 13px;
           transition: all 0.2s;
           &.ant-btn-primary {
-            background: $primary;
-            border-color: $primary;
+            background: linear-gradient(135deg, #52a868, #7cbd6f);
+            border-color: #52a868;
             &:hover {
-              background: $primary-dark;
-              border-color: $primary-dark;
-              box-shadow: 0 4px 12px rgba($primary, 0.3);
+              background: linear-gradient(135deg, #3d7d4f, #57a766);
+              border-color: #3d7d4f;
+              box-shadow: 0 4px 12px rgba(82, 168, 104, 0.3);
             }
           }
           &.ant-btn-text {
@@ -641,7 +647,7 @@ $shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.12);
       display: flex;
       justify-content: space-between;
       padding: 16px;
-      background: linear-gradient(135deg, $primary-light 0%, rgba($primary, 0.05) 100%);
+      background: linear-gradient(135deg, #e8f5ea 0%, rgba(82, 168, 104, 0.05) 100%);
       border-radius: 12px;
       font-weight: 700;
       color: $primary;

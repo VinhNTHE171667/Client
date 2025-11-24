@@ -154,14 +154,14 @@
 }
 
 .btnPrimary {
-  background: linear-gradient(135deg, #5ca16a, #0099cc);
+  background: linear-gradient(135deg, #4a9960, #6abf7a);
   color: white;
   border: none;
-  box-shadow: 0 10px 30px rgba(0, 208, 255, 0.4);
+  box-shadow: 0 10px 30px rgba(74, 153, 96, 0.4);
 
   &:hover {
     transform: translateY(-6px);
-    box-shadow: 0 20px 40px rgba(0, 208, 255, 0.6);
+    box-shadow: 0 20px 40px rgba(106, 191, 122, 0.6);
   }
 }
 

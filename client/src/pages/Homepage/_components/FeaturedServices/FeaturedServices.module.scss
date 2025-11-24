@@ -5,7 +5,7 @@
   .subTitle {
     text-transform: uppercase;
     font-weight: 600;
-    color: var(--color-primary);
+    color: #4a9960;
     letter-spacing: 2px;
     font-size: 0.95rem;
   }
@@ -73,7 +73,7 @@
   }
 
   .viewBtn {
-    background: var(--color-primary);
+    background: linear-gradient(135deg, #4a9960, #6abf7a);
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -85,7 +85,7 @@
     cursor: pointer;
 
     &:hover {
-      background: #000;
+      background: linear-gradient(135deg, #3d7d4f, #57a766);
     }
   }
 
@@ -141,7 +141,7 @@
   .price {
     font-size: 1.4rem;
     font-weight: 700;
-    color: var(--color-primary);
+    color: #4a9960;
     margin-top: 1rem;
   }
 }
