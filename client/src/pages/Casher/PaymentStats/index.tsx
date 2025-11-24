@@ -169,7 +169,7 @@ export default function PaymentStatsPage() {
       align: "right" as const,
       width: 150,
       render: (total: number) => (
-        <Text strong style={{ color: total > 0 ? "#52c41a" : "#999" }}>
+        <Text strong style={{ color: total > 0 ? "#52a868" : "#999" }}>
           {total.toLocaleString("vi-VN")}
         </Text>
       ),
@@ -182,12 +182,12 @@ export default function PaymentStatsPage() {
       width: 100,
       render: (_: any, record: any) => {
         if (!stats || stats.totalCollected === 0)
-          return <Tag color="blue">0%</Tag>;
+          return <Tag color="green">0%</Tag>;
         const percentage = (
           (record.total / stats.totalCollected) *
           100
         ).toFixed(1);
-        return <Tag color="blue">{percentage}%</Tag>;
+        return <Tag color="green">{percentage}%</Tag>;
       },
     },
   ];
@@ -196,10 +196,29 @@ export default function PaymentStatsPage() {
     <div className="container my-3">
       <Row className="mb-4">
         <Col span={24}>
-          <Title level={2} className="text-center text-primary mb-1">
+          <Title
+            level={2}
+            className="text-center mb-1"
+            style={{
+              background: "linear-gradient(135deg, #52a868, #7cbd6f)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
             Thống kê Tài chính
           </Title>
-          <Text type="secondary" className="d-block text-center">
+          <Text
+            type="secondary"
+            className="d-block text-center"
+            style={{
+              background: "linear-gradient(135deg, #52a868, #7cbd6f)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              fontWeight: 600,
+            }}
+          >
             Theo dõi doanh thu theo phương thức và thu ngân
           </Text>
         </Col>
@@ -228,6 +247,10 @@ export default function PaymentStatsPage() {
               onClick={handleRefresh}
               loading={isLoading}
               block
+              style={{
+                background: "linear-gradient(135deg, #52a868, #7cbd6f)",
+                borderColor: "#52a868",
+              }}
             >
               Tải lại
             </Button>
@@ -276,7 +299,7 @@ export default function PaymentStatsPage() {
                 title="Tổng thu"
                 value={stats.totalCollected}
                 prefix="₫"
-                valueStyle={{ color: "#52c41a" }}
+                valueStyle={{ color: "#52a868" }}
                 formatter={(v) => Number(v).toLocaleString("vi-VN")}
               />
             </Card>

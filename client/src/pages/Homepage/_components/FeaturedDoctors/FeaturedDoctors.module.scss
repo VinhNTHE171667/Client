@@ -4,7 +4,7 @@
 
   .subTitle {
     text-transform: uppercase;
-    color: var(--color-primary);
+    color: #4a9960;
     font-weight: 600;
     letter-spacing: 2px;
     font-size: 1rem;
@@ -26,14 +26,14 @@
     line-height: 1.6;
   }
 
-  // ĐÃ FIX: Grid đẹp dù 1, 2, 3 hay 4 bác sĩ
+  // Grid với kích thước đồng nhất
   .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 30px;
     max-width: 1200px;
     margin: 0 auto;
-    justify-content: center; // Căn giữa khi ít item
+    justify-content: center;
     padding: 0 20px;
   }
 
@@ -53,8 +53,8 @@
     overflow: hidden;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
     transition: all 0.4s ease;
-    max-width: 320px; // Giới hạn chiều rộng tối đa
-    margin: 0 auto;   // Căn giữa từng card
+    width: 300px;
+    flex-shrink: 0;
 
     &:hover {
       transform: translateY(-12px);
@@ -68,7 +68,7 @@
   .cardHeader {
     position: relative;
     height: 200px;
-    background: linear-gradient(135deg, var(--color-primary), #00c4cc);
+    background: linear-gradient(135deg, #52a868 0%, #7cbd6f 35%, #a8d97f 65%, #c8e89f 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -93,13 +93,13 @@
 
   .viewBtn {
     background: white;
-    color: var(--color-primary);
+    color: #4a9960;
     font-weight: 600;
     border-radius: 30px;
     padding: 12px 32px;
 
     &:hover {
-      background: #000;
+      background: linear-gradient(135deg, #4a9960, #6abf7a);
       color: white;
     }
   }
@@ -117,12 +117,12 @@
     cursor: pointer;
     transition: color 0.3s;
 
-    &:hover { color: var(--color-primary); }
+    &:hover { color: #4a9960; }
   }
 
   .specialty {
-    background: linear-gradient(135deg, #e0f7ff, #f0faff);
-    color: var(--color-primary);
+    background: linear-gradient(135deg, #e8f5ea, #f0f9f1);
+    color: #4a9960;
     padding: 8px 20px;
     border-radius: 30px;
     font-size: 0.9rem;
@@ -149,12 +149,12 @@
     font-size: 1.05rem;
     font-weight: 600;
     border-radius: 12px;
-    background: linear-gradient(135deg, var(--color-primary), #00c4cc);
+    background: linear-gradient(135deg, #4a9960, #6abf7a);
     border: none;
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(0, 199, 234, 0.3);
+      box-shadow: 0 10px 20px rgba(74, 153, 96, 0.4);
     }
   }
 
@@ -165,8 +165,8 @@
   .viewAllBtn {
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--color-primary);
+    color: #4a9960;
 
-    &:hover { color: #000; }
+    &:hover { color: #2d5e3a; }
   }
 }

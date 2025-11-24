@@ -413,8 +413,35 @@ class BookingAgent:
 				intent="action"
 			)
 		
-		if query.strip().lower() in ["không", "no", "skip", ""]:
-			session["services"] = []
+		query_lower = query.strip().lower()
+		
+		# CHECK: Nếu đang trong flow "add_more_service" (đã chọn dịch vụ và được hỏi có muốn thêm không)
+		if session.get("add_more_service"):
+			# BẮT CHẶT: CHỈ chấp nhận "có" hoặc "không" - không cho phép nhập tên dịch vụ
+			if query_lower in ["có", "yes", "ok"]:
+				# Reset flag và hiển thị danh sách đầy đủ
+				session["add_more_service"] = False
+				all_services = self._list_services()
+				service_list = "\n".join([f"{i+1}. {s['name']} ({s['price']:,} VND)" for i, s in enumerate(all_services)])
+				return ChatResponse(
+					answer=f"💆 Vui lòng chọn dịch vụ bạn muốn thêm:\n\n{service_list}\n\n💡 Nhập số thứ tự (1, 2, 3...) hoặc tên đầy đủ dịch vụ.",
+					intent="action"
+				)
+			elif query_lower in ["không", "no", "khong"]:
+				# Reset flag và chuyển sang voucher
+				session["add_more_service"] = False
+				session["stage"] = "select_voucher"
+				return self._handle_select_voucher(session, "")
+			else:
+				# KHÔNG hợp lệ - yêu cầu nhập lại
+				selected_list = "\n".join([f"- {s['name']} ({s['price']:,} VND)" for s in session["services"]])
+				return ChatResponse(
+					answer=f"❌ Lựa chọn không hợp lệ!\n\n📋 Dịch vụ đã chọn ({len(session['services'])}):\n{selected_list}\n\n❓ Bạn có muốn chọn thêm dịch vụ nào nữa không?\n\n💡 Vui lòng chỉ nhập:\n- 'có' - để chọn thêm dịch vụ\n- 'không' - để tiếp tục\n\n⚠️ KHÔNG được nhập tên dịch vụ hoặc từ khác!",
+					intent="action"
+				)
+		
+		# Xử lý "không" để bỏ qua chọn dịch vụ (khi chưa chọn dịch vụ nào)
+		if query_lower in ["không", "no", "skip", ""]:
 			session["stage"] = "select_voucher"
 			return self._handle_select_voucher(session, "")
 		
@@ -1042,8 +1069,8 @@ Bạn có xác nhận đặt lịch không? (Nhập 'có' hoặc 'không')"""
 					intent="action"
 				)
 		
-		# CASE: Multiple candidates → Accept any valid number
-		# Try to parse as number
+		# CASE: Multiple candidates → BẮT CHẶT: CHỈ chấp nhận số thứ tự CHÍNH XÁC hoặc tên dịch vụ CHÍNH XÁC
+		# Try to parse as number FIRST
 		try:
 			index = int(query_lower) - 1
 			if 0 <= index < len(candidates):
@@ -1053,17 +1080,31 @@ Bạn có xác nhận đặt lịch không? (Nhập 'có' hoặc 'không')"""
 				session["service_candidates"] = []  # Clear candidates
 				# Hỏi có muốn chọn thêm không
 				return self._handle_service_add_more(session, selected_service)
+			else:
+				# Số không hợp lệ
+				service_list = "\n".join([f"{i+1}. {s['name']} - {s['price']:,} VND" for i, s in enumerate(candidates)])
+				return ChatResponse(
+					answer=f"❌ Số thứ tự không hợp lệ!\n\n🔍 Vui lòng chọn từ danh sách ({len(candidates)} dịch vụ):\n\n{service_list}\n\n💡 Nhập số từ 1 đến {len(candidates)}, hoặc nhập 'không' để tìm lại.\n\n⚠️ Bạn đã nhập: {query}",
+					intent="action"
+				)
 		except ValueError:
-			pass
-		
-		# Try to match by name
-		for i, service in enumerate(candidates):
-			if service["name"].lower() == query_lower or query_lower in service["name"].lower():
-				# Thêm dịch vụ vào danh sách
-				session["services"].append(service)
-				session["service_candidates"] = []  # Clear candidates
-				# Hỏi có muốn chọn thêm không
-				return self._handle_service_add_more(session, service)
+			# Không phải số → kiểm tra tên dịch vụ CHÍNH XÁC
+			# Tìm khớp CHÍNH XÁC tên dịch vụ (không phân biệt hoa thường)
+			for i, service in enumerate(candidates):
+				if service["name"].lower() == query_lower:
+					# Thêm dịch vụ vào danh sách
+					session["services"].append(service)
+					session["service_candidates"] = []  # Clear candidates
+					# Hỏi có muốn chọn thêm không
+					return self._handle_service_add_more(session, service)
+			
+			# Không tìm thấy tên khớp CHÍNH XÁC
+			service_list = "\n".join([f"{i+1}. {s['name']} - {s['price']:,} VND" for i, s in enumerate(candidates)])
+			return ChatResponse(
+				answer=f"❌ Tên dịch vụ không khớp chính xác!\n\n🔍 Vui lòng chọn từ danh sách:\n\n{service_list}\n\n💡 Nhập:\n- Số thứ tự (1, 2, 3...)\n- Hoặc tên CHÍNH XÁC dịch vụ\n- Hoặc 'không' để tìm lại\n\n⚠️ Bạn đã nhập: '{query}'",
+				intent="action"
+			)
+
 		
 		# Invalid selection
 		service_list = "\n".join([f"{i+1}. {s['name']} - {s['price']:,} VND" for i, s in enumerate(candidates)])
