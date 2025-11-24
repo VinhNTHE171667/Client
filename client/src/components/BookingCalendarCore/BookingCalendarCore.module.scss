@@ -116,3 +116,29 @@
         }
     }
 }
+:global(.rbc-time-header-gutter) {
+  width: 70px !important;     
+  min-width: 70px !important;
+  max-width: 70px !important;
+  flex: 0 0 70px !important; 
+  background-color: #f8fafc !important;
+  border-right: 2px solid #0ea5e9 !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+}
+
+:global(.rbc-time-gutter) {
+  width: 70px !important;
+  min-width: 70px !important;
+  max-width: 70px !important;
+  flex: 0 0 70px !important;
+}
+
+:global(.rbc-time-view .rbc-time-header) {
+  display: flex !important;
+}
+
+:global(.rbc-time-view .rbc-time-header > .rbc-row) {
+  display: flex !important;
+  flex: 1 !important;
+}

@@ -90,10 +90,10 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => [
             />
             <div>
               <div style={{ fontWeight: 600, fontSize: 14 }}>
-                {record.customer.full_name}
+                {record.doctor.full_name}
               </div>
               <div style={{ color: "#8c8c8c", fontSize: 12 }}>
-                {record.customer.email}
+                {record.doctor.email}
               </div>
             </div>
           </Space>
