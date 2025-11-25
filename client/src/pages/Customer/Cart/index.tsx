@@ -40,6 +40,7 @@ import { useAuthStore } from "@/hooks/UseAuth";
 import {
   getCustomerRecommendations,
   getServiceRecommendations,
+  getCartRecommendations,
   type RecommendationItem,
 } from "@/services/recommendation";
 const { Title, Text } = Typography;
@@ -62,7 +63,7 @@ const CartPage = () => {
   const [recommendations, setRecommendations] = useState<RecommendationItem[]>(
     []
   );
-  const [suggestCount, setSuggestCount] = useState<number>(6);
+  const [suggestCount, setSuggestCount] = useState<number>(3);
   const [isLoadingRecommendations, setIsLoadingRecommendations] =
     useState(false);
   const [recommendationError, setRecommendationError] = useState<string | null>(
@@ -205,80 +206,69 @@ const CartPage = () => {
     setRecommendationError(null);
     setLastFetchStatus("loading:processing");
     try {
-      // If there are services in cart, prefer service-based cooccurrence recommendations
       let res = null;
+      
+      // PRIORITY 1: If there are services in cart, use cart-based co-occurrence recommendations
       if (cartItems && cartItems.length > 0) {
-        const firstItem = cartItems[0];
-        console.debug("[recommendation] firstItem:", firstItem);
-        const firstServiceUuid = extractUuidFromCartItem(firstItem);
-        console.debug(
-          "[recommendation] first cart service uuid:",
-          firstServiceUuid
-        );
-        const recommenderId = firstServiceUuid
-          ? reverseServiceMap[firstServiceUuid]
-          : undefined;
-        console.debug("[recommendation] mapped recommender id:", recommenderId);
-        if (recommenderId) {
+        console.debug("[recommendation] extracting service IDs from cart items");
+        const cartServiceIds: (string | number)[] = [];
+        
+        for (const item of cartItems) {
+          const serviceUuid = extractUuidFromCartItem(item);
+          if (serviceUuid) {
+            // Send UUID directly to backend (database uses UUIDs for service_id)
+            cartServiceIds.push(serviceUuid);
+          }
+        }
+        
+        console.debug("[recommendation] cart service IDs:", cartServiceIds);
+        
+        if (cartServiceIds.length > 0) {
           try {
             console.debug(
-              "[recommendation] fetching service-based recommendations for",
-              recommenderId
+              "[recommendation] fetching cart-based recommendations for",
+              cartServiceIds.length,
+              "services"
             );
-            setLastFetchStatus(`service:${recommenderId}`);
-            res = await getServiceRecommendations(recommenderId, {
+            setLastFetchStatus(`cart:${cartServiceIds.length}`);
+            res = await getCartRecommendations(cartServiceIds, {
               limit: suggestCount,
             });
             console.debug(
-              "[recommendation] service-based response items:",
+              "[recommendation] cart-based response items:",
               res?.items?.length ?? 0
             );
             setLastFetchStatus(
               (res?.items?.length ?? 0) > 0
-                ? `service:${recommenderId}:ok`
-                : `service:${recommenderId}:empty`
+                ? `cart:ok`
+                : `cart:empty`
             );
           } catch (e) {
             console.warn(
-              "service-based recs failed, falling back to customer recs",
+              "cart-based recs failed, falling back to customer recs",
               e
             );
-            setLastFetchStatus(`service:${recommenderId}:error`);
+            setLastFetchStatus(`cart:error`);
             res = null;
           }
-        } else {
-          console.debug(
-            "[recommendation] no recommender id found for first service, falling back to customer"
-          );
-          setLastFetchStatus("no-recommender-id");
         }
       }
 
+      // PRIORITY 2: Fallback to customer-based recommendations if cart API failed or cart is empty
       if (!res) {
         const customerId = auth?.accountId ? String(auth.accountId) : "1";
 
-        // Skip customer-based recommendations if ID is UUID (recommendation service needs integer ID)
-        // Long-term: update recommendation service to accept UUIDs or add UUID->seqId mapping
-        if (!/^\d+$/.test(customerId)) {
-          console.warn(
-            "[recommendation] customer ID is UUID, skipping customer recommendations",
-            { customerId }
-          );
-          setLastFetchStatus("customer:uuid-skip");
-          res = { items: [], model: "none" };
-        } else {
-          console.debug(
-            "[recommendation] fetching customer-based recommendations for",
-            customerId
-          );
-          setLastFetchStatus("customer:fetching");
-          res = await getCustomerRecommendations(customerId, {
-            limit: suggestCount,
-          });
-          setLastFetchStatus(
-            (res?.items?.length ?? 0) > 0 ? "customer:ok" : "customer:empty"
-          );
-        }
+        console.debug(
+          "[recommendation] fetching customer-based recommendations for",
+          customerId
+        );
+        setLastFetchStatus("customer:fetching");
+        res = await getCustomerRecommendations(customerId, {
+          limit: suggestCount,
+        });
+        setLastFetchStatus(
+          (res?.items?.length ?? 0) > 0 ? "customer:ok" : "customer:empty"
+        );
       }
 
       if (!isMountedRef.current) return;
@@ -320,7 +310,7 @@ const CartPage = () => {
       setRecommendations([]);
       setLastFetchStatus("cart:empty");
     }
-  }, [cartItems.length, loadRecommendations]);
+  }, [cartItems, loadRecommendations]);
 
   // Recommendations are loaded only when the user requests (clicks "Làm mới").
   // Changing `suggestCount` does not automatically reload recommendations.
@@ -848,8 +838,10 @@ const CartPage = () => {
 
             {cartItems.length > 0 && (
               <Card className={styles.recommendationCard}>
+                <h4 style={{ textAlign: 'center', margin: '0 0 16px 0', fontSize: '16px', fontWeight: 600, textTransform: 'uppercase' }}>
+                  GỢI Ý DỊCH VỤ DÀNH CHO BẠN
+                </h4>
                 <div className={styles.recommendationHeader}>
-                  <h4>Gợi ý dịch vụ dành cho bạn</h4>
                   <div
                     style={{ display: "flex", alignItems: "center", gap: 8 }}
                   >
@@ -903,7 +895,19 @@ const CartPage = () => {
                       : publicFallback && publicFallback.length > 0
                       ? publicFallback
                       : fallbackRecommendations
-                    ).map((item) => {
+                    )
+                      .filter((item) => {
+                        // Filter out services that are already in cart
+                        const itemUuid = resolveServiceUuid(item as any);
+                        if (!itemUuid) return true; // Keep items we can't resolve
+                        
+                        // Check if this service is already in cart
+                        return !cartItems.some((cartItem) => {
+                          const cartUuid = extractUuidFromCartItem(cartItem);
+                          return cartUuid === itemUuid;
+                        });
+                      })
+                      .map((item) => {
                       const resolvedUuid = resolveServiceUuid(item as any);
                       const cachedPrice = resolvedUuid
                         ? remoteServices[resolvedUuid]?.price

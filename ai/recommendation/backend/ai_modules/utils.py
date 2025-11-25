@@ -23,8 +23,6 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from app.db.mysql_conn import get_mysql_engine as shared_mysql_engine  # noqa: E402
-
 
 def _create_engine_from_env() -> Engine:
     """Create an engine from environment variables if present in recommendation/.env.
@@ -104,7 +102,8 @@ def get_mysql_engine() -> Engine:
     try:
         return _create_engine_from_env()
     except Exception:
-        # fallback to shared engine used by the main app
+        # fallback to shared engine used by the main app (lazy import to avoid circular import)
+        from app.db.mysql_conn import get_mysql_engine as shared_mysql_engine
         return shared_mysql_engine()
 
 
