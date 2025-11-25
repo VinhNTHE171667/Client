@@ -61,7 +61,7 @@ services:
       dockerfile: Dockerfile
     container_name: spa_recommender
     ports:
-      - "8001:8000" # host:container (use 8001 to avoid colliding with main API 8000)
+      - "8001:8000" # host:container - recommendation service on port 8001
     env_file:
       - .env
     environment:

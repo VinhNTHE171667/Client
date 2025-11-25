@@ -131,8 +131,8 @@ def api_recommendation_run():
         return jsonify({"status": "error", "detail": str(exc)}), 500
 
 
-@app.get("/api/recommendation/customer/<int:customer_id>")
-def api_recommendation_customer(customer_id: int):
+@app.get("/api/recommendation/customer/<string:customer_id>")
+def api_recommendation_customer(customer_id: str):
     """Return customer-specific recommendations (k query param)."""
     try:
         k = int(request.args.get("k", 6))
@@ -143,7 +143,39 @@ def api_recommendation_customer(customer_id: int):
         return jsonify(result), 200
     except Exception as exc:  # noqa: BLE001
         logger.exception("Failed to compute recommendations for %s: %s", customer_id, exc)
-        return jsonify({"error": str(exc)}), 500
+        return jsonify({"error": str(exc), "items": [], "model": "error"}), 200
+
+
+@app.post("/api/recommendation/cart")
+def api_recommendation_cart():
+    """Return recommendations based on services in cart.
+    
+    Expected JSON body:
+    {
+        "serviceIds": [1, 2, 3],  // or ["uuid1", "uuid2"]
+        "k": 6  // optional, defaults to 6
+    }
+    """
+    payload = request.get_json(silent=True) or {}
+    service_ids = payload.get("serviceIds", [])
+    try:
+        k = int(payload.get("k", 6))
+    except Exception:
+        k = 6
+    
+    logger.info("Cart recommendation request: serviceIds=%s, k=%s", service_ids, k)
+    
+    if not service_ids:
+        logger.warning("Cart recommendation called with empty serviceIds")
+        return jsonify({"error": "serviceIds is required", "items": [], "model": "error"}), 400
+    
+    try:
+        result = recommender.recommend_for_cart(service_ids, k=k)
+        logger.info("Cart recommendation result: model=%s, items_count=%s", result.get("model"), len(result.get("items", [])))
+        return jsonify(result), 200
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Failed to compute cart recommendations: %s", exc)
+        return jsonify({"error": str(exc), "items": [], "model": "error"}), 500
 
 
 @app.get("/api/recommendation/top-services")

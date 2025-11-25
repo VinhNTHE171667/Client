@@ -108,14 +108,67 @@ def _popularity_topk(tables: utils.DataFrames, k: int = 6) -> List[Dict[str, Any
     if "service_id" not in df.columns:
         df = utils._normalise_invoice_detail(df)
     grouped = df.groupby("service_id")["quantity"].sum().reset_index().sort_values("quantity", ascending=False)
+    
+    # Normalize scores to 0-1 range for frontend display as percentage
+    max_qty = grouped["quantity"].max() if not grouped.empty else 1.0
+    grouped["normalized_score"] = grouped["quantity"] / max_qty if max_qty > 0 else 0.0
+    
     out = []
     srv = tables.service
-    for _, row in grouped.head(k).iterrows():
-        sid = int(row["service_id"]) if pd.notna(row["service_id"]) else None
-        meta = srv[srv["id"] == sid]
+    # Take more items than k to ensure we have enough after filtering invalid services
+    for _, row in grouped.head(k * 3).iterrows():
+        # Keep service_id as-is (could be int or UUID string)
+        sid = row["service_id"] if pd.notna(row["service_id"]) else None
+        # Try to convert to int for backward compatibility, but keep as string if it's UUID
+        try:
+            sid_for_lookup = int(sid) if sid else None
+        except (ValueError, TypeError):
+            sid_for_lookup = sid
+        
+        meta = srv[srv["id"] == sid_for_lookup]
         name = meta["name"].iloc[0] if not meta.empty and "name" in meta.columns else None
         price = int(meta["price"].iloc[0]) if not meta.empty and "price" in meta.columns else None
-        out.append({"serviceId": sid, "serviceName": name, "price": price, "score": float(row["quantity"]), "reason": "popular"})
+        
+        # Return serviceId as int if possible (for serviceMap lookup), otherwise as string
+        try:
+            service_id_output = int(sid) if sid else None
+        except (ValueError, TypeError):
+            service_id_output = str(sid) if sid else None
+        
+        # Use normalized score (0-1) for better UI display
+        out.append({
+            "serviceId": service_id_output, 
+            "serviceName": name, 
+            "price": price, 
+            "score": float(row["normalized_score"]), 
+            "reason": "popular"
+        })
+        # Stop when we have enough valid recommendations
+        if len(out) >= k:
+            break
+    
+    # If we still don't have enough items, pad with all available services
+    if len(out) < k:
+        all_services = srv[["id", "name", "price"]].copy()
+        seen_ids = {item["serviceId"] for item in out}
+        for _, svc_row in all_services.iterrows():
+            if len(out) >= k:
+                break
+            svc_id = svc_row["id"]
+            if svc_id not in seen_ids:
+                try:
+                    service_id_output = int(svc_id) if svc_id else None
+                except (ValueError, TypeError):
+                    service_id_output = str(svc_id) if svc_id else None
+                
+                out.append({
+                    "serviceId": service_id_output,
+                    "serviceName": svc_row.get("name"),
+                    "price": int(svc_row["price"]) if pd.notna(svc_row.get("price")) else None,
+                    "score": 0.1,  # Low score for non-popular items
+                    "reason": "available"
+                })
+    
     return out
 
 
@@ -145,11 +198,18 @@ def recommend_for_customer(customer_id: int | str, k: int = 6) -> Dict[str, Any]
 
         merged = invd.merge(inv[["id", "customer_id"]].rename(columns={"id": "invoice_id"}), how="left", left_on="invoice_id", right_on="invoice_id")
 
-        # convert customer_id/service_id to int when possible
-        merged["customer_id"] = merged["customer_id"].apply(lambda v: int(v) if pd.notna(v) else v)
-        merged["service_id"] = merged["service_id"].apply(lambda v: int(v) if pd.notna(v) else v)
-
-        target = int(customer_id)
+        # Try to convert customer_id to int for ALS model lookup
+        # If customer_id is UUID (cannot convert to int), fallback to popularity
+        try:
+            target = int(customer_id)
+            # Only convert merged customer_id to int if target customer_id is int
+            merged["customer_id"] = merged["customer_id"].apply(lambda v: int(v) if pd.notna(v) else v)
+            merged["service_id"] = merged["service_id"].apply(lambda v: int(v) if pd.notna(v) else v)
+        except (ValueError, TypeError):
+            # Customer ID is UUID - model was trained on int IDs, so use popularity fallback
+            logger.info(f"Customer ID {customer_id} is UUID, using popularity-based recommendations")
+            items = _popularity_topk(tables, k)
+            return {"model": "popularity_uuid_fallback", "items": items, "issuedAt": pd.Timestamp.now().isoformat()}
 
         # If an ALS model is loaded, prefer ALS-based personalized recommendations
         try:
@@ -198,15 +258,19 @@ def recommend_for_customer(customer_id: int | str, k: int = 6) -> Dict[str, Any]
         candidate = candidate[~candidate["service_id"].isin(purchased)]
         agg = candidate.groupby("service_id")["quantity"].sum().reset_index().sort_values("quantity", ascending=False)
 
-        # attach metadata from service table
+        # Normalize scores for co-occurrence recommendations
+        max_qty = agg["quantity"].max() if not agg.empty else 1.0
+        agg["normalized_score"] = agg["quantity"] / max_qty if max_qty > 0 else 0.0
+
+        # attach metadata from service table - take more candidates to ensure we have enough after deduplication
         svc = tables.service
         results = []
-        for _, row in agg.head(k * 3).iterrows():
+        for _, row in agg.head(k * 5).iterrows():  # Increased from k*3 to k*5 to get more candidates
             sid = int(row["service_id"]) if pd.notna(row["service_id"]) else None
             meta = svc[svc["id"] == sid]
             name = meta["name"].iloc[0] if not meta.empty and "name" in meta.columns else None
             price = int(meta["price"].iloc[0]) if not meta.empty and "price" in meta.columns else None
-            results.append({"serviceId": sid, "serviceName": name, "price": price, "score": float(row.get("quantity", 0)), "reason": "cooccurrence"})
+            results.append({"serviceId": sid, "serviceName": name, "price": price, "score": float(row.get("normalized_score", 0)), "reason": "cooccurrence"})
 
         # dedupe by serviceId preserving order
         seen = set()
@@ -221,19 +285,197 @@ def recommend_for_customer(customer_id: int | str, k: int = 6) -> Dict[str, Any]
                 break
 
         if len(items) < k:
-            # pad with popularity
-            pop = _popularity_topk(tables, k)
+            # pad with popularity - request more than k to have buffer
+            pop = _popularity_topk(tables, k * 3)  # Request 3x to ensure we have enough
             for p in pop:
                 if p["serviceId"] not in seen:
                     items.append(p)
                     seen.add(p["serviceId"])
                 if len(items) >= k:
                     break
+        
+        # Final fallback: add any remaining services if still not enough
+        if len(items) < k:
+            all_services = tables.service[["id", "name", "price"]].copy()
+            for _, svc_row in all_services.iterrows():
+                if len(items) >= k:
+                    break
+                svc_id = svc_row["id"]
+                if svc_id not in seen:
+                    try:
+                        service_id_output = int(svc_id) if svc_id else None
+                    except (ValueError, TypeError):
+                        service_id_output = str(svc_id) if svc_id else None
+                    
+                    items.append({
+                        "serviceId": service_id_output,
+                        "serviceName": svc_row.get("name"),
+                        "price": int(svc_row["price"]) if pd.notna(svc_row.get("price")) else None,
+                        "score": 0.05,
+                        "reason": "available"
+                    })
+                    seen.add(svc_id)
 
-        return {"model": "cooccurrence", "items": items, "issuedAt": pd.Timestamp.now().isoformat()}
+        return {"model": "cooccurrence", "items": items[:k], "issuedAt": pd.Timestamp.now().isoformat()}
 
     except Exception as exc:  # pragma: no cover
         logger.exception("recommend_for_customer failed: %s", exc)
+        return {"model": "error", "items": [], "error": str(exc)}
+
+
+def recommend_for_cart(service_ids: List[int | str], k: int = 6) -> Dict[str, Any]:
+    """Recommend services based on a list of service IDs in the cart.
+    
+    This uses co-occurrence logic: find other customers who bought these services,
+    then recommend other services they commonly purchased together.
+    
+    Args:
+        service_ids: List of service IDs currently in the cart
+        k: Number of recommendations to return
+        
+    Returns:
+        Dict with model type, items list, and issuedAt timestamp
+    """
+    try:
+        tables = utils.load_dataframes()
+        
+        if not service_ids or len(service_ids) == 0:
+            # Empty cart - return popular services
+            items = _popularity_topk(tables, k)
+            return {"model": "popularity_empty_cart", "items": items, "issuedAt": pd.Timestamp.now().isoformat()}
+        
+        inv = tables.invoice.copy()
+        invd = tables.invoice_detail.copy()
+        
+        # Normalize columns
+        inv = inv.rename(columns={c: c.lower() for c in inv.columns})
+        if "customer_id" not in inv.columns and "customerId" in inv.columns:
+            inv = utils._normalise_invoice(inv)
+            
+        invd = invd.rename(columns={c: c.lower() for c in invd.columns})
+        if "service_id" not in invd.columns:
+            invd = utils._normalise_invoice_detail(invd)
+            
+        merged = invd.merge(inv[["id", "customer_id"]].rename(columns={"id": "invoice_id"}), how="left", left_on="invoice_id", right_on="invoice_id")
+        
+        # Convert service_ids in cart to appropriate type
+        cart_service_ids = []
+        for sid in service_ids:
+            try:
+                cart_service_ids.append(int(sid))
+            except (ValueError, TypeError):
+                cart_service_ids.append(sid)
+        
+        # Convert merged service_id to match cart_service_ids type
+        # But keep customer_id as-is (could be UUID or int)
+        try:
+            merged["service_id"] = merged["service_id"].apply(lambda v: int(v) if pd.notna(v) else v)
+        except (ValueError, TypeError):
+            # service_id might be UUID, keep as string
+            merged["service_id"] = merged["service_id"].apply(lambda v: str(v) if pd.notna(v) else v)
+        
+        # Find customers who bought ANY of the services in the cart
+        customers_with_cart_items = merged[merged["service_id"].isin(cart_service_ids)]["customer_id"].dropna().unique().tolist()
+        
+        logger.info(f"Found {len(customers_with_cart_items)} customers who bought cart services")
+        
+        if len(customers_with_cart_items) == 0:
+            # No customers bought these services - fallback to popularity
+            items = _popularity_topk(tables, k)
+            return {"model": "popularity_no_cooccurrence", "items": items, "issuedAt": pd.Timestamp.now().isoformat()}
+        
+        # Find all services these customers bought (excluding cart items)
+        candidate = merged[merged["customer_id"].isin(customers_with_cart_items)]
+        candidate = candidate[~candidate["service_id"].isin(cart_service_ids)]
+        
+        logger.info(f"Candidate services after filtering cart items: {len(candidate)} rows, unique services: {candidate['service_id'].nunique() if not candidate.empty else 0}")
+        
+        if candidate.empty:
+            items = _popularity_topk(tables, k)
+            return {"model": "popularity_no_candidates", "items": items, "issuedAt": pd.Timestamp.now().isoformat()}
+        
+        # Aggregate by service and count occurrences
+        agg = candidate.groupby("service_id")["quantity"].sum().reset_index().sort_values("quantity", ascending=False)
+        
+        # Normalize scores
+        max_qty = agg["quantity"].max() if not agg.empty else 1.0
+        agg["normalized_score"] = agg["quantity"] / max_qty if max_qty > 0 else 0.0
+        
+        # Attach metadata from service table
+        svc = tables.service
+        results = []
+        for _, row in agg.head(k * 5).iterrows():
+            try:
+                sid = int(row["service_id"]) if pd.notna(row["service_id"]) else None
+            except (ValueError, TypeError):
+                sid = str(row["service_id"]) if pd.notna(row["service_id"]) else None
+                
+            meta = svc[svc["id"] == sid]
+            name = meta["name"].iloc[0] if not meta.empty and "name" in meta.columns else None
+            price = int(meta["price"].iloc[0]) if not meta.empty and "price" in meta.columns else None
+            results.append({
+                "serviceId": sid, 
+                "serviceName": name, 
+                "price": price, 
+                "score": float(row.get("normalized_score", 0)), 
+                "reason": "cart_cooccurrence"
+            })
+        
+        # Dedupe by serviceId
+        seen = set()
+        items = []
+        for it in results:
+            sid = it.get("serviceId")
+            if sid in seen:
+                continue
+            seen.add(sid)
+            items.append(it)
+            if len(items) >= k:
+                break
+        
+        # Convert cart_service_ids to set of strings for comparison
+        cart_service_ids_set = {str(s) for s in cart_service_ids}
+        
+        # Pad with popularity if needed
+        if len(items) < k:
+            pop = _popularity_topk(tables, k * 3)  # Request more to ensure we have enough
+            for p in pop:
+                p_sid = p["serviceId"]
+                p_sid_str = str(p_sid) if p_sid else None
+                # Don't add items already in cart or already recommended
+                if p_sid not in seen and p_sid_str not in cart_service_ids_set:
+                    items.append(p)
+                    seen.add(p_sid)
+                if len(items) >= k:
+                    break
+        
+        # Final fallback: if still not enough, add any remaining services
+        if len(items) < k:
+            all_services = tables.service[["id", "name", "price"]].copy()
+            for _, svc_row in all_services.iterrows():
+                if len(items) >= k:
+                    break
+                svc_id = svc_row["id"]
+                svc_id_str = str(svc_id)
+                if svc_id not in seen and svc_id_str not in cart_service_ids_set:
+                    try:
+                        service_id_output = int(svc_id) if svc_id else None
+                    except (ValueError, TypeError):
+                        service_id_output = str(svc_id) if svc_id else None
+                    
+                    items.append({
+                        "serviceId": service_id_output,
+                        "serviceName": svc_row.get("name"),
+                        "price": int(svc_row["price"]) if pd.notna(svc_row.get("price")) else None,
+                        "score": 0.05,  # Very low score for final fallback
+                        "reason": "available"
+                    })
+                    seen.add(svc_id)
+        
+        return {"model": "cart_cooccurrence", "items": items[:k], "issuedAt": pd.Timestamp.now().isoformat()}
+        
+    except Exception as exc:
+        logger.exception("recommend_for_cart failed: %s", exc)
         return {"model": "error", "items": [], "error": str(exc)}
 
 

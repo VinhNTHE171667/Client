@@ -1,14 +1,13 @@
 import { useCallback, useRef, useState } from "react";
 
 import type { ChatRequestPayload, ChatResponsePayload } from "../types/chat";
-
-const DEFAULT_ENDPOINT = "http://localhost:8000/chat";
+import { CHATBOT_API_ENDPOINT, CHATBOT_API_BASE_URL } from "../../../config/api";
 
 export function useChatAPI() {
   const controllerRef = useRef<AbortController | null>(null);
   const [isLoading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const endpoint = import.meta.env.VITE_CHAT_API_URL || DEFAULT_ENDPOINT;
+  const endpoint = CHATBOT_API_ENDPOINT;
 
   const sendMessage = useCallback(
     async (payload: ChatRequestPayload): Promise<ChatResponsePayload> => {
@@ -53,16 +52,14 @@ export function useChatAPI() {
       if (!sessionId) {
         return;
       }
-      const normalized = endpoint.replace(/\/$/, "");
-      const base = normalized.endsWith("/chat") ? normalized : `${normalized}/chat`;
-      const url = `${base}/session/${encodeURIComponent(sessionId)}`;
+      const url = `${CHATBOT_API_BASE_URL}/chat/session/${encodeURIComponent(sessionId)}`;
       try {
         await fetch(url, { method: "DELETE" });
       } catch (err) {
         console.warn("Không thể xoá session chatbot", err);
       }
     },
-    [endpoint]
+    []
   );
 
   return {

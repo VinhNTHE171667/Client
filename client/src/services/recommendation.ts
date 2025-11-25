@@ -1,21 +1,6 @@
-const ENV_BASE = `${import.meta.env.VITE_RECOMMENDATION_API ?? ""}`.trim();
-let API_BASE = "";
-if (ENV_BASE.length > 0) {
-  API_BASE = ENV_BASE.replace(/\/$/, "");
-} else {
-  // When running frontend dev server on localhost:3000, backend API runs on 8000.
-  // Default to that for developer convenience so requests don't hang against the wrong origin.
-  try {
-    const { hostname, port } = window.location;
-    if ((hostname === "localhost" || hostname === "127.0.0.1") && port === "3000") {
-      API_BASE = "http://localhost:8000";
-    } else {
-      API_BASE = window.location.origin.replace(/\/$/, "");
-    }
-  } catch (e) {
-    API_BASE = window.location.origin.replace(/\/$/, "");
-  }
-}
+import { RECOMMENDATION_API_BASE_URL } from "../config/api";
+
+const API_BASE = RECOMMENDATION_API_BASE_URL;
 
 async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
@@ -130,3 +115,28 @@ export async function getCustomerRecommendations(
       items: Array.isArray(response.items) ? response.items : [],
     };
   }
+
+export async function getCartRecommendations(
+  serviceIds: (string | number)[],
+  options?: { limit?: number; signal?: AbortSignal }
+): Promise<RecommendationResponse> {
+  if (!serviceIds || serviceIds.length === 0) {
+    throw new Error("serviceIds is required and cannot be empty");
+  }
+
+  const path = "/api/recommendation/cart";
+  const response = await fetchJson<RecommendationResponse>(path, {
+    method: "POST",
+    signal: options?.signal,
+    body: JSON.stringify({
+      serviceIds,
+      k: options?.limit ?? 6,
+    }),
+  });
+
+  return {
+    model: response.model,
+    issuedAt: response.issuedAt,
+    items: Array.isArray(response.items) ? response.items : [],
+  };
+}
