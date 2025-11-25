@@ -909,9 +909,10 @@ const CartPage = () => {
                       })
                       .map((item) => {
                       const resolvedUuid = resolveServiceUuid(item as any);
-                      const cachedPrice = resolvedUuid
-                        ? remoteServices[resolvedUuid]?.price
+                      const cachedService = resolvedUuid
+                        ? remoteServices[resolvedUuid]
                         : undefined;
+                      const cachedPrice = cachedService?.price;
                       const priceValue =
                         typeof cachedPrice === "number"
                           ? cachedPrice
@@ -928,6 +929,9 @@ const CartPage = () => {
                             ? `Phù hợp ${(item.score * 100).toFixed(0)}%`
                             : `Điểm ${item.score.toFixed(1)}`
                           : null;
+                      
+                      // Get image from cached service (Cloudinary URL), fallback to recommendation imageUrl, then NoImage
+                      const imageUrl = cachedService?.images?.[0]?.url || item.imageUrl || NoImage;
 
                       return (
                         <div
@@ -935,7 +939,7 @@ const CartPage = () => {
                           key={item.serviceUuid ?? item.serviceId}
                         >
                           <img
-                            src={item.imageUrl || NoImage}
+                            src={imageUrl}
                             alt={item.serviceName || "Dịch vụ gợi ý"}
                             className={styles.recommendationImage}
                           />
