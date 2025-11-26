@@ -216,40 +216,6 @@ const SidebarSystem = ({
                 </Link>
               </motion.li>
             ))}
-
-            <motion.li
-            key="recommendation-trigger"
-            className={cx("navbar-item")}
-            initial={{ opacity: 0, x: -15 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{
-              delay: sidebarItems.length * 0.04,
-              type: "spring",
-              stiffness: 180,
-              damping: 12,
-            }}
-            whileTap={isRecommendationRunning ? undefined : { scale: 0.98 }}
-          >
-            <button
-              type="button"
-              className={cx("navbar-item-inner", {
-                disabled: isRecommendationRunning,
-              })}
-              onClick={handleRunRecommendation}
-              disabled={isRecommendationRunning}
-            >
-              <div className={cx("navbar-item-inner-icon-wrapper")}>
-                <BiAnalyse className={cx("navbar-item-inner-icon")} />
-              </div>
-              <div className={cx("link-text-wrapper")}>
-                <span className={cx("link-text")}>
-                  {isRecommendationRunning
-                    ? "Đang phân tích..."
-                    : "Phân tích dữ liệu"}
-                </span>
-              </div>
-            </button>
-          </motion.li>
         </ul>
 
         {/* Profile Start */}
