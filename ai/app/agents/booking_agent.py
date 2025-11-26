@@ -372,6 +372,13 @@ class BookingAgent:
 				intent="action"
 			)
 		
+		# Validation: Chỉ cho phép đặt lịch từ 9h sáng đến 16h chiều
+		if slot_start_time.hour < 9 or slot_start_time.hour >= 16:
+			return ChatResponse(
+				answer="❌ Chỉ cho phép đặt lịch từ 9:00 sáng đến 16:00 chiều!\n\n⏰ Giờ làm việc: 09:00 - 16:00\n\n💡 Vui lòng chọn khung giờ trong khoảng thời gian trên.\n\nVí dụ:\n- '9 giờ sáng'\n- '2 giờ chiều' (14:00)\n- '3 giờ chiều' (15:00)",
+				intent="action"
+			)
+		
 		# Kiểm tra slot có available không (use slot_start_time/slot_end_time)
 		doctor_id = session["doctor_id"]
 		if not self._is_slot_available(doctor_id, appointment_date, slot_start_time, slot_end_time):
