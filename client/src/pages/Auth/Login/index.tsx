@@ -121,31 +121,32 @@ const LoginPage = () => {
             </div>
 
             <div className="flex-grow-1 d-flex justify-content-center align-items-center">
-              <div className={cx("auth-header", "max-w-md", "w-100")}>
-                <h2>{"Đăng nhập"}</h2>
+              <div className={cx("login-card-wrapper")}>
+                <div className={cx("auth-header", "max-w-md", "w-100")}>
+                  <h2>{"Đăng nhập"}</h2>
 
-                <div>
-                  <p className="text-gray-500">
-                    Chào mừng bạn đến với Spa Management System
-                  </p>
-                </div>
+                  <div>
+                    <p className="text-gray-500">
+                      Chào mừng bạn đến với Spa Management System
+                    </p>
+                  </div>
 
-                {/* <div className="py-3">
-                  <button className={cx("btn-google")}>
-                    <img
-                      src="https://www.svgrepo.com/show/475656/google-color.svg"
-                      alt="Google"
-                    />
-                    <span>Đăng nhập bằng Google</span>
-                  </button>
-                </div>
+                  {/* <div className="py-3">
+                    <button className={cx("btn-google")}>
+                      <img
+                        src="https://www.svgrepo.com/show/475656/google-color.svg"
+                        alt="Google"
+                      />
+                      <span>Đăng nhập bằng Google</span>
+                    </button>
+                  </div>
 
-                <div className={cx("divider", "my-4", "text-gray-500")}>
-                  Hoặc đăng nhập bằng email
-                </div> */}
+                  <div className={cx("divider", "my-4", "text-gray-500")}>
+                    Hoặc đăng nhập bằng email
+                  </div> */}
 
-                <div>
-                  <Form
+                  <div>
+                    <Form
                     form={form}
                     layout="vertical"
                     onFinish={handleSubmit}
@@ -212,7 +213,8 @@ const LoginPage = () => {
                         Đăng ký ngay
                       </Link>
                     </div>
-                  </Form>
+                    </Form>
+                  </div>
                 </div>
               </div>
             </div>
