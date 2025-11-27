@@ -3,7 +3,7 @@ name: Deploy Frontend to VPS
 on:
   push:
     branches:
-      - main  # Hoặc 'master' tùy tên nhánh chính của bạn
+      - master  # Hoặc 'master' tùy tên nhánh chính của bạn
     paths:
       - 'client/**' # Chỉ chạy khi có thay đổi trong thư mục client
 
