@@ -1,7 +1,7 @@
 import about_1 from "@/assets/img/about-1.jpg";
 import about_2 from "@/assets/img/about-2.jpg";
 import classNames from "classnames/bind";
-import styles from "./About.module.scss";
+import styles from "./about.module.scss";
 
 const cx = classNames.bind(styles);
 
