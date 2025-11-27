@@ -35,7 +35,7 @@ jobs:
         VITE_PUBLIC_API: "https://g52-genspa.xyz"
         VITE_CHAT_API_URL: "https://g52-genspa.xyz"
         VITE_RECOMMENDATION_API_URL: "https://g52-genspa.xyz"
-        VITE_GEMINI_API_KEY="AIzaSyBXrLziPsVqLu34HyqWEWnSd7CSxfGmpu0"
+        VITE_GEMINI_API_KEY: "AIzaSyBXrLziPsVqLu34HyqWEWnSd7CSxfGmpu0"
 
     - name: Copy files via SSH
       uses: appleboy/scp-action@master
