@@ -1,6 +1,7 @@
 name: Deploy Frontend to VPS
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master  # Hoặc 'master' tùy tên nhánh chính của bạn
