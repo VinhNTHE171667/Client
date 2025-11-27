@@ -27,5 +27,8 @@ export default defineConfig({
       localsConvention: "dashes",
     },
   },
+  build: {
+    sourcemap: true,
+  },
   base: "/",
 });
