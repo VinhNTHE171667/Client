@@ -1,0 +1,77 @@
+.fancy-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border-radius: 8px !important;
+    transition: all 0.25s ease !important;
+    border: none !important;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+        0 4px 6px -4px rgb(0 0 0 / 0.1);
+    height: auto !important;
+
+    &:hover {
+        transform: translateY(-2px);
+    }
+
+    &:active {
+        transform: translateY(0);
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    &.fancy-button-small {
+        padding: 0.4rem 0.8rem !important;
+        font-size: 0.875rem !important;
+    }
+
+    &.fancy-button-middle {
+        padding: 0.6rem 1rem !important;
+        font-size: 1rem !important;
+    }
+
+    &.fancy-button-large {
+        padding: 1rem 1.5rem !important;
+        font-size: 1.125rem !important;
+    }
+
+    &.fancy-button-primary {
+        background-color: var(--color-accent) !important;
+        color: var(--color-light) !important;
+
+        &:hover {
+            filter: brightness(1.1);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+    }
+
+    &.fancy-button-secondary {
+        background-color: var(--color-secondary) !important;
+        color: var(--color-dark) !important;
+
+        &:hover {
+            filter: brightness(1.1);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+    }
+
+    &.fancy-button-outline {
+        background-color: transparent !important;
+        color: var(--color-accent) !important;
+        border: 2px solid var(--color-accent) !important;
+        box-shadow: none;
+
+        &:hover {
+            background-color: var(--color-accent) !important;
+            color: var(--color-light) !important;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+    }
+}

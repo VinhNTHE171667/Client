@@ -1,0 +1,94 @@
+.quality {
+    position: relative;
+    padding: 6rem 0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9f0f7 100%);
+    overflow: hidden;
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+        background-size: 20px 20px;
+        pointer-events: none;
+    }
+
+    .subTitle {
+        position: relative;
+        z-index: 2;
+        text-transform: uppercase;
+        font-weight: 600;
+        color: var(--color-primary);
+        letter-spacing: 1px;
+        margin-bottom: 1rem;
+    }
+
+    .heading {
+        position: relative;
+        z-index: 2;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--color-dark);
+        margin-bottom: 3rem;
+    }
+
+    .card {
+        position: relative;
+        z-index: 2;
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 1rem;
+        padding: 8rem 1.5rem;
+        text-align: center;
+        transition: all 0.35s ease;
+        height: 100%;
+
+        h5 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-top: 5rem;
+            margin-bottom: 0.5rem;
+            color: var(--color-dark);
+        }
+
+        p {
+            font-size: 0.95rem;
+            color: #555;
+            margin: 0;
+        }
+
+        &:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+            background: rgba(255, 255, 255, 0.9);
+
+            .iconCircle {
+                background: var(--color-primary);
+
+                i {
+                    color: #fff;
+                }
+            }
+        }
+    }
+
+    .iconCircle {
+        width: 70px;
+        height: 70px;
+        margin: 0 auto;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ffffff, #f0f0f0);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+        i {
+            font-size: 2rem;
+            color: var(--color-primary);
+            transition: color 0.3s ease;
+        }
+    }
+}
