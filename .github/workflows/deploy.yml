@@ -66,7 +66,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
-          source: "server/dist/**"
+          source: "server/*"
           target: "/var/www/genspa-server"
           strip_components: 1
           rm: true
@@ -88,29 +88,24 @@ jobs:
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             nvm use 20 || nvm install 20 && nvm use 20
-
             cd /var/www/genspa-server
-
             # ===========================
             # Cài dependencies backend
             # ===========================
             npm install
-
             # ===========================
             # Build backend
             # ===========================
             npm run clean
             npm run build
-
             # ===========================
             # Cài PM2 nếu chưa có
             # ===========================
             if ! command -v pm2 &> /dev/null; then
               sudo npm install -g pm2
             fi
-
             # ===========================
             # Start / Restart backend
             # ===========================
-            pm2 restart genspa-api || pm2 start dist/src/main.js --name "genspa-api"
+            pm2 restart genspa-api || pm2 start dist/main.js --name "genspa-api"
             pm2 save
