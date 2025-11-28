@@ -24,6 +24,19 @@ import NoAvatarImage from "@/assets/img/defaultAvatar.jpg";
 import { statusTagColor, translateStatus } from "@/utils/format";
 import { appointmentStatusEnum } from "@/common/types/auth";
 
+const translateStatusHandle = (value) => {
+  switch (value) {
+    case "pending":
+      return "Xử lí: Đang chờ";
+    case "rejected":
+      return "Xử lí: Từ chối";
+    case "approved":
+      return "Xử lí: Chấp nhận";
+    default:
+      return null;
+  }
+};
+
 const showReminderDetail = (record: AppointmentTableProps) => {
   if (!record.reminderDoctor) return;
   console.log("Showing reminder detail for:", record);
@@ -232,27 +245,27 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => {
       width: 150,
       render: (status, record) => {
         const hasReminder = !!record.reminderDoctor;
-
+        const statusHandle = record?.statusHanle;
         return (
-          <Tooltip
-            title={
-              hasReminder ? "Có nhắc nhở – Click nút bên phải để xem" : null
-            }
-          >
-            <Tag
-              color={statusTagColor(status)}
-              className={`
-                font-bold text-sm px-5 py-2 rounded-full shadow-md
-                ${
-                  hasReminder
-                    ? "border-4 border-red-500 bg-red-100 text-red-800 animate-pulse"
-                    : ""
-                }
+          <Tooltip>
+            <div style={{ display: "inline-block" }}>
+              <Tag
+                color={statusTagColor(status)}
+                className={`font-bold text-sm px-2 py-1 rounded-full shadow-md    
               `}
-            >
-              {hasReminder && <BellFilled className="mr-2 animate-bounce" />}
-              {translateStatus(status)}
-            </Tag>
+              >
+                {hasReminder && <BellFilled className="mr-2 animate-bounce" />}
+                {translateStatus(status)}
+              </Tag>
+
+              {statusHandle && (
+                <div>
+                  <Tag className="mt-2 font-bold text-sm px-2 py-1 rounded-full shadow-md">
+                    {translateStatusHandle(statusHandle)}
+                  </Tag>
+                </div>
+              )}
+            </div>
           </Tooltip>
         );
       },
@@ -266,11 +279,13 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => {
       align: "center",
       render: (_, record) => {
         const isDeposited = record.status === appointmentStatusEnum.Deposited;
+        const isRequestCancel =
+          record.statusHanle === "pending" || record.statusHanle === "approved";
         const hasReminder = !!record.reminderDoctor;
 
         const items: MenuProps["items"] = [];
 
-        if (isDeposited) {
+        if (isDeposited && !isRequestCancel) {
           items.push(
             {
               key: "update",

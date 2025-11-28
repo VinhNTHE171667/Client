@@ -12,7 +12,7 @@ import {
   UpdateAppointmentDto,
 } from './appointment/appointment.dto';
 import { Service } from '@/entities/service.entity';
-import { AppointmentStatus } from '@/entities/enums/appointment-status';
+import { AppointmentHanle, AppointmentStatus } from '@/entities/enums/appointment-status';
 import { MailService } from '../mail/mail.service';
 import { Spa } from '@/entities/spa.entity';
 import { Internal } from '@/entities/internal.entity';
@@ -99,6 +99,7 @@ export class AppointmentService {
     return this.appointmentRepo.find({
       where: { doctorId },
       relations: ['customer', 'doctor', 'details', 'details.service'],
+      order: { createdAt: 'DESC' },
     });
   }
 
@@ -112,6 +113,7 @@ export class AppointmentService {
         appointment_date: MoreThan(now),
       },
       select: ['id', 'startTime', 'endTime', 'status'],
+      order: { createdAt: 'DESC' },
     });
   }
 
@@ -124,13 +126,14 @@ export class AppointmentService {
         appointment_date: MoreThan(now),
       },
       select: ['id', 'startTime', 'endTime', 'status'],
+      order: { createdAt: 'DESC' },
     });
   }
 
   findByCustomer(customerId: string) {
     return this.appointmentRepo.find({
       where: { customerId },
-      relations: ['doctor', 'details', 'details.service', 'customer'],
+      relations: ['customer', 'doctor', 'details', 'details.service', 'voucher'],
       order: { createdAt: 'DESC' },
     });
   }
@@ -585,57 +588,99 @@ export class AppointmentService {
     topServices,
     topCustomers,
 
-    // Giữ nguyên để frontend không vỡ chart (nếu có dùng)
     invoices: appointments,
   };
 }
 
   async requestCancelByDoctorBulk(
-    appointmentIds: string[],
-    doctorId: string,
-    reason: string,
-  ) {
-    if (!appointmentIds.length) {
-      throw new BadRequestException('Chưa chọn lịch hẹn nào');
-    }
-
-    const results: { appointmentId: string; status: string }[] = [];
-
-    for (const id of appointmentIds) {
-      const appointment = await this.appointmentRepo.findOne({ where: { id } });
-
-      if (!appointment) {
-        results.push({ appointmentId: id, status: 'Không tìm thấy lịch hẹn' });
-        continue;
-      }
-
-      if (appointment.doctorId !== doctorId) {
-        results.push({ appointmentId: id, status: 'Không có quyền hủy' });
-        continue;
-      }
-
-      const existing = await this.cancelRepo.findOne({
-        where: { appointmentId: id, doctorId, status: 'pending' },
-      });
-
-      if (existing) {
-        results.push({ appointmentId: id, status: 'Đã gửi yêu cầu trước đó' });
-        continue;
-      }
-
-      const request = this.cancelRepo.create({
-        appointmentId: id,
-        doctorId,
-        reason,
-        status: 'pending',
-      });
-
-      await this.cancelRepo.save(request);
-      results.push({ appointmentId: id, status: 'Gửi yêu cầu thành công' });
-    }
-
-    return results;
+  appointmentIds: string[],
+  doctorId: string,
+  reason: string,
+) {
+  if (!appointmentIds.length) {
+    throw new BadRequestException('Chưa chọn lịch hẹn nào');
   }
+
+  const results: { appointmentId: string; status: string }[] = [];
+
+  const staffUsers = await this.internalRepo.find({
+    where: {
+      role: { name: 'staff' }, 
+      isActive: true,
+    },
+    select: ['id', 'full_name', 'email'],
+    relations: ['role'], 
+  });
+
+  if (staffUsers.length === 0) {
+    console.warn('Không có staff nào trong hệ thống để gửi thông báo hủy lịch');
+  }
+
+  for (const id of appointmentIds) {
+    const appointment = await this.appointmentRepo.findOne({
+      where: { id },
+      relations: ['customer', 'doctor'], 
+    });
+
+    if (!appointment) {
+      results.push({ appointmentId: id, status: 'Không tìm thấy lịch hẹn' });
+      continue;
+    }
+
+    if (appointment.doctorId !== doctorId) {
+      results.push({ appointmentId: id, status: 'Không có quyền hủy' });
+      continue;
+    }
+
+    const existing = await this.cancelRepo.findOne({
+      where: { appointmentId: id, doctorId, status: 'pending' },
+    });
+
+    if (existing) {
+      results.push({ appointmentId: id, status: 'Đã gửi yêu cầu trước đó' });
+      continue;
+    }
+
+    const request = this.cancelRepo.create({
+      appointmentId: id,
+      doctorId,
+      reason,
+      status: 'pending',
+    });
+
+    await this.cancelRepo.save(request);
+
+    await this.appointmentRepo.update(id, {
+      statusHanle: AppointmentHanle.Pending, 
+    });
+
+    if (staffUsers.length > 0) {
+      const customerName = appointment.customer?.full_name || 'Khách lẻ';
+      const doctorName = appointment.doctor?.full_name || 'Bác sĩ';
+
+      const notificationPromises = staffUsers.map((staff) =>
+        this.notificationService.create({
+          title: 'Yêu cầu hủy lịch hẹn từ bác sĩ',
+          content: `Bác sĩ ${doctorName} yêu cầu hủy lịch hẹn của khách ${customerName} (Mã: #${id.slice(-8).toUpperCase()}). Lý do: ${reason}`,
+          type: NotificationType.Warning,
+          userId: staff.id,
+          userType: 'internal',
+          actionUrl: ``, 
+          relatedId: request.id, 
+          relatedType: 'cancel_request',
+        }),
+      );
+
+      Promise.allSettled(notificationPromises).catch((err) =>
+        console.error('Lỗi khi gửi thông báo cho staff:', err),
+      );
+    }
+
+    results.push({ appointmentId: id, status: 'Gửi yêu cầu thành công' });
+  }
+
+  return results;
+}
 
   async approveRequest(id: string) {
     const req = await this.cancelRepo.findOne({ where: { id } });
@@ -648,6 +693,7 @@ export class AppointmentService {
       status: AppointmentStatus.Cancelled,
       cancelledAt: new Date(),
       cancelReason: `${req.reason} (Hủy bởi hệ thống sau khi bác sĩ duyệt)`,
+      statusHanle: AppointmentHanle.Approved,
     });
 
     const appointment = await this.findOne(req.appointmentId);
@@ -680,6 +726,19 @@ export class AppointmentService {
       console.log(error)
     }
 
+    if (appointment.doctorId) {
+        await this.notificationService.create({
+          title: 'Yêu cầu hủy lịch đã được duyệt',
+          content: `Yêu cầu hủy lịch hẹn của khách ${appointment.customer?.full_name || 'Khách lẻ'} (Mã: #${appointment.id.slice(-8).toUpperCase()}) đã được nhân viên duyệt thành công.`,
+          type: NotificationType.Success,
+          userId: appointment.doctorId,
+          userType: 'doctor',
+          actionUrl: '/doctor/orders',
+          relatedId: appointment.id,
+          relatedType: 'appointment',
+        });
+    }
+
     // await this.historyRepo.save({
     //   appointmentId: req.appointmentId,
     //   status: AppointmentStatus.Cancelled,
@@ -691,11 +750,29 @@ export class AppointmentService {
 
   async rejectRequest(id: string) {
     const req = await this.cancelRepo.findOne({ where: { id } });
-    if (!req) throw new NotFoundException('Không tìm thấy request');
+      if (!req) throw new NotFoundException('Không tìm thấy request');
 
-    req.status = 'rejected';
-    await this.cancelRepo.save(req);
+      req.status = 'rejected';
+      await this.cancelRepo.save(req);
 
+      await this.appointmentRepo.update(req.appointmentId, {
+      statusHanle: AppointmentHanle.Rejected, 
+    });
+
+  const appointment = await this.findOne(req.appointmentId);
+
+  if (appointment.doctorId) {
+    await this.notificationService.create({
+      title: 'Yêu cầu hủy lịch bị từ chối',
+      content: `Yêu cầu hủy lịch hẹn của khách ${appointment.customer?.full_name || 'Khách lẻ'} (Mã: #${appointment.id.slice(-8).toUpperCase()}) đã bị từ chối. Vui lòng thực hiện đúng lịch hoặc liên hệ quản lý.`,
+      type: NotificationType.Error,
+      userId: appointment.doctorId,
+      userType: 'doctor',
+      actionUrl: '/doctor/orders',
+      relatedId: appointment.id,
+      relatedType: 'appointment',
+    });
+  }
     return { message: 'Đã từ chối yêu cầu.' };
   }
 

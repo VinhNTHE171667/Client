@@ -4,12 +4,15 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-import * as livereload from 'livereload';
 import connectLivereload from 'connect-livereload';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: false, // <-- tắt tất cả log mặc định
+  });
+
+  app.setGlobalPrefix('api');
 
   const config = new DocumentBuilder()
     .setTitle('GenSpa')
@@ -31,14 +34,14 @@ async function bootstrap() {
 
   app.enableCors();
 
-  await app.listen(process.env.PORT ?? 80);
+  await app.listen(process.env.PORT ?? 8080);
 
-  const url = `http://localhost:${process.env.PORT ?? 80}/api`;
+  const url = `http://localhost:${process.env.PORT ?? 8080}/api`;
   // const { default: open } = await import('open');
   // await open(url);
 
-  const liveReloadServer = livereload.createServer();
-  liveReloadServer.watch(__dirname + '/../');
+  // const liveReloadServer = livereload.createServer();
+  // liveReloadServer.watch(__dirname + '/../');
 
   app.use(connectLivereload());
 
