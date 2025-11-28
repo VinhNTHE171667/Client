@@ -69,7 +69,6 @@ jobs:
           source: "server/*"
           target: "/var/www/genspa-server"
           strip_components: 1
-          rm: true
 
       # ===========================
       # Install, Build & Start Backend
