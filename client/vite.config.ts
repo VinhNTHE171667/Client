@@ -29,6 +29,19 @@ export default defineConfig({
   },
   build: {
     sourcemap: true,
+    minify: 'esbuild',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ui: ['antd', '@ant-design/icons', 'react-router-dom'],
+          utils: ['dayjs', 'xlsx', 'react-big-calendar'],
+          charts: ['highcharts', 'highcharts-react-official', 'recharts'],
+          state: ['@reduxjs/toolkit', 'react-redux', 'redux-persist'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000,
   },
   base: "/",
 });
