@@ -1,0 +1,92 @@
+
+> client@0.0.0 build
+> tsc -b && vite build
+
+src/pages/Admin/Dashboard/index.tsx(127,22): error TS1127: Invalid character.
+src/pages/Admin/Dashboard/index.tsx(127,32): error TS1002: Unterminated string literal.
+src/pages/Admin/Dashboard/index.tsx(128,7): error TS1005: ':' expected.
+src/pages/Admin/Dashboard/index.tsx(128,13): error TS1005: ',' expected.
+src/pages/Admin/Dashboard/index.tsx(128,15): error TS1136: Property assignment expected.
+src/pages/Admin/Dashboard/index.tsx(129,20): error TS1359: Identifier expected. 'function' is a reserved word that cannot be used here.
+src/pages/Admin/Dashboard/index.tsx(129,29): error TS1005: ':' expected.
+src/pages/Admin/Dashboard/index.tsx(129,41): error TS1005: '=>' expected.
+src/pages/Admin/Dashboard/index.tsx(130,44): error TS1127: Invalid character.
+src/pages/Admin/Dashboard/index.tsx(130,55): error TS1002: Unterminated string literal.
+src/pages/Admin/Dashboard/index.tsx(131,9): error TS1005: ',' expected.
+src/pages/Admin/Dashboard/index.tsx(132,7): error TS1109: Expression expected.
+src/pages/Admin/Dashboard/index.tsx(132,8): error TS1128: Declaration or statement expected.
+src/pages/Admin/Dashboard/index.tsx(133,5): error TS1128: Declaration or statement expected.
+src/pages/Admin/Dashboard/index.tsx(133,6): error TS1128: Declaration or statement expected.
+src/pages/Admin/Dashboard/index.tsx(141,16): error TS1005: ';' expected.
+src/pages/Admin/Dashboard/index.tsx(142,47): error TS1128: Declaration or statement expected.
+src/pages/Admin/Dashboard/index.tsx(143,6): error TS1128: Declaration or statement expected.
+src/pages/Admin/Dashboard/index.tsx(144,3): error TS1128: Declaration or statement expected.
+src/pages/Admin/Dashboard/index.tsx(416,1): error TS1128: Declaration or statement expected.
+src/pages/Admin/Service/update/index.tsx(26,8): error TS1127: Invalid character.
+src/pages/Admin/Service/update/index.tsx(26,32): error TS1002: Unterminated string literal.
+src/pages/Admin/Service/update/index.tsx(27,43): error TS1127: Invalid character.
+src/pages/Admin/Service/update/index.tsx(27,89): error TS1002: Unterminated string literal.
+src/pages/Admin/Service/update/index.tsx(29,25): error TS1127: Invalid character.
+src/pages/Admin/Service/update/index.tsx(29,54): error TS1002: Unterminated string literal.
+src/pages/Admin/Service/update/index.tsx(30,57): error TS1127: Invalid character.
+src/pages/Admin/Service/update/index.tsx(30,80): error TS1002: Unterminated string literal.
+src/pages/Casher/Invoice/index.tsx(18,8): error TS1127: Invalid character.
+src/pages/Casher/Invoice/index.tsx(18,17): error TS1002: Unterminated string literal.
+src/pages/Casher/Invoice/index.tsx(26,8): error TS1127: Invalid character.
+src/pages/Casher/Invoice/index.tsx(26,30): error TS1002: Unterminated string literal.
+src/pages/Casher/Invoice/index.tsx(197,14): error TS1127: Invalid character.
+src/pages/Casher/Invoice/index.tsx(197,29): error TS1002: Unterminated string literal.
+src/pages/Casher/Invoice/index.tsx(198,7): error TS1005: ':' expected.
+src/pages/Casher/Invoice/index.tsx(198,13): error TS1005: ',' expected.
+src/pages/Casher/Invoice/index.tsx(198,15): error TS1136: Property assignment expected.
+src/pages/Casher/Invoice/index.tsx(198,17): error TS1005: ',' expected.
+src/pages/Casher/Invoice/index.tsx(198,30): error TS1005: ',' expected.
+src/pages/Casher/Invoice/index.tsx(198,51): error TS1005: ',' expected.
+src/pages/Casher/Invoice/index.tsx(202,17): error TS1127: Invalid character.
+src/pages/Casher/Invoice/index.tsx(204,12): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/pages/Casher/Invoice/index.tsx(211,5): error TS1109: Expression expected.
+src/pages/Casher/Invoice/index.tsx(211,6): error TS1128: Declaration or statement expected.
+src/pages/Casher/Invoice/index.tsx(214,16): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(215,12): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(216,12): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(217,13): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(218,5): error TS1109: Expression expected.
+src/pages/Casher/Invoice/index.tsx(218,6): error TS1128: Declaration or statement expected.
+src/pages/Casher/Invoice/index.tsx(221,16): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(222,12): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(223,12): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(224,13): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(225,5): error TS1109: Expression expected.
+src/pages/Casher/Invoice/index.tsx(225,6): error TS1128: Declaration or statement expected.
+src/pages/Casher/Invoice/index.tsx(228,16): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(229,12): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(230,13): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(239,5): error TS1109: Expression expected.
+src/pages/Casher/Invoice/index.tsx(239,6): error TS1128: Declaration or statement expected.
+src/pages/Casher/Invoice/index.tsx(242,16): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(243,12): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(244,12): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(245,13): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(254,5): error TS1109: Expression expected.
+src/pages/Casher/Invoice/index.tsx(254,6): error TS1128: Declaration or statement expected.
+src/pages/Casher/Invoice/index.tsx(257,16): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(258,12): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(259,12): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(260,13): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(265,5): error TS1109: Expression expected.
+src/pages/Casher/Invoice/index.tsx(265,6): error TS1128: Declaration or statement expected.
+src/pages/Casher/Invoice/index.tsx(268,16): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(269,12): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(270,12): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(271,13): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(272,13): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(274,5): error TS1109: Expression expected.
+src/pages/Casher/Invoice/index.tsx(274,6): error TS1128: Declaration or statement expected.
+src/pages/Casher/Invoice/index.tsx(277,12): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(278,12): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(279,12): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(280,13): error TS1005: ';' expected.
+src/pages/Casher/Invoice/index.tsx(288,5): error TS1109: Expression expected.
+src/pages/Casher/Invoice/index.tsx(288,6): error TS1128: Declaration or statement expected.
+src/pages/Casher/Invoice/index.tsx(289,3): error TS1128: Declaration or statement expected.
+src/pages/Casher/Invoice/index.tsx(578,1): error TS1128: Declaration or statement expected.
