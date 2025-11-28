@@ -20,7 +20,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "18"
+          node-version: "20"
 
       # ===========================
       # BUILD FRONTEND
@@ -73,5 +73,14 @@ jobs:
           port: 22
           script: |
             cd /var/www/genspa-server
+            # Update npm nếu cần
+            npm install -g npm@11.6.4 || true
+            # Cài PM2 nếu chưa có
+            if ! command -v pm2 &> /dev/null
+            then
+              sudo npm install -g pm2
+            fi
+            # Cài backend
             npm install --omit=dev
+            # Restart hoặc start backend
             pm2 restart genspa-api || pm2 start dist/main.js --name "genspa-api"
