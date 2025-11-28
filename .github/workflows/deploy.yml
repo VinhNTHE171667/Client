@@ -66,10 +66,11 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
-          source: "server/*"
+          source: "dist/**"
           target: "/var/www/genspa-server"
           strip_components: 1
           rm: true
+          overwrite: true
 
       # ===========================
       # Install, Build & Start Backend
