@@ -14,16 +14,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ===========================
+      # Checkout code
+      # ===========================
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # ===========================
+      # Setup Node.js (version 20)
+      # ===========================
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: "20"
 
       # ===========================
-      # BUILD FRONTEND
+      # Build Frontend
       # ===========================
       - name: Install FE dependencies
         working-directory: ./client
@@ -51,7 +57,7 @@ jobs:
           strip_components: 2
 
       # ===========================
-      # DEPLOY BACKEND
+      # Upload Backend to VPS
       # ===========================
       - name: Upload Backend to VPS
         uses: appleboy/scp-action@master
@@ -64,7 +70,10 @@ jobs:
           target: "/var/www/genspa-server"
           strip_components: 1
 
-      - name: Run BE install & restart
+      # ===========================
+      # Install, Build & Start Backend
+      # ===========================
+      - name: Run BE install, build & restart
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -72,16 +81,35 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
+            # ===========================
+            # Sử dụng Node 20 trên VPS
+            # ===========================
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm use 20 || nvm install 20 && nvm use 20
+
             cd /var/www/genspa-server
-            # Update npm nếu cần
-            npm install -g npm@11.6.4 || true
+
+            # ===========================
+            # Cài dependencies backend
+            # ===========================
+            npm install
+
+            # ===========================
+            # Build backend
+            # ===========================
+            npm run clean
+            npm run build
+
+            # ===========================
             # Cài PM2 nếu chưa có
-            if ! command -v pm2 &> /dev/null
-            then
+            # ===========================
+            if ! command -v pm2 &> /dev/null; then
               sudo npm install -g pm2
             fi
-            # Cài backend
-            npm install --omit=dev
-            # Restart hoặc start backend
-            npm run build
+
+            # ===========================
+            # Start / Restart backend
+            # ===========================
             pm2 restart genspa-api || pm2 start dist/main.js --name "genspa-api"
+            pm2 save
