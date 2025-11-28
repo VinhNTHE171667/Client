@@ -106,5 +106,5 @@ jobs:
             # ===========================
             # Start / Restart backend
             # ===========================
-            pm2 restart genspa-api || pm2 start dist/main.js --name "genspa-api"
+            pm2 restart genspa-api || pm2 start dist/src/main.js --name "genspa-api"
             pm2 save
