@@ -10,10 +10,10 @@ const DB_PASSWORD = process.env.DB_PASSWORD || 'root';
 const DB_NAME = process.env.DB_NAME || 'gen_spa';
 export const dataSourceOptions: DataSourceOptions = {
   type: 'mysql',
-  host: 'localhost',
+  host: '34.87.54.239',
   port: 3306,
   username: 'root',
-  password: '',
+  password: 'root',
   database: 'gen_spa',
   entities: [__dirname + '/../entities/*.entity.{js,ts}'],
   migrations: [__dirname + '/migrations/*.{js,ts}'],
