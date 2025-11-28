@@ -33,6 +33,7 @@ export const appointmentStatusEnum = {
   Paid: "paid",
   Cancelled: "cancelled",
   Completed: "completed",
+  Overdue: "overdue",
 } as const;
 
 export const feedbackStatus = {

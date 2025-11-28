@@ -32,18 +32,43 @@ export const DoctorCancelRequestColumn =
           : "Đã từ chối",
     },
     {
+      title: "Thời gian yêu cầu",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (date: string) =>
+        date ? new Date(date).toLocaleString("vi-VN") : "",
+    },
+
+    {
       title: "Hành động",
       key: "action",
-      render: (_, record: DoctorRequestCancelPropsModel) =>
-        record.status === "pending" ? (
-          <Space>
-            <Button type="primary" onClick={record.onApprove}>
-              Duyệt
-            </Button>
-            <Button danger onClick={record.onReject}>
-              Từ chối
-            </Button>
+      render: (_, record: DoctorRequestCancelPropsModel) => {
+        const isExpired =
+          new Date(record.appointment.appointment_date) < new Date();
+
+        if (record.status !== "pending") return null;
+
+        return (
+          <Space direction="vertical">
+            {isExpired && (
+              <span style={{ color: "red", fontWeight: 500 }}>Đã quá hạn</span>
+            )}
+
+            <Space>
+              <Button
+                type="primary"
+                onClick={record.onApprove}
+                disabled={isExpired}
+              >
+                Duyệt
+              </Button>
+
+              <Button danger onClick={record.onReject} >
+                Từ chối
+              </Button>
+            </Space>
           </Space>
-        ) : null,
+        );
+      },
     },
   ];

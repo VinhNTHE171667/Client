@@ -48,6 +48,8 @@ import DataAnalysisDashboard from "@/pages/Admin/DataAnalysisDashboard";
 import VerifyEmailPage from "@/pages/Auth/VerifyEmailPage";
 import NotificationCustomer from "@/pages/Customer/Notification";
 import PaymentStatsPage from "@/pages/Casher/PaymentStats";
+import NotificationDoctor from "@/pages/Doctor/Notification";
+import NotificationInternal from "@/pages/Staff/Notification";
 
 const router = createBrowserRouter([
   {
@@ -292,6 +294,25 @@ const router = createBrowserRouter([
       },
     ],
   },
+  {
+    path: configRoutes.notificationInternal,
+    element: (
+      <ProtectedRoute
+        allowedRoles={[RoleEnum.Staff, RoleEnum.Admin, RoleEnum.Casher]}
+      />
+    ),
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <NotificationInternal />,
+          },
+        ],
+      },
+    ],
+  },
 
   {
     path: configRoutes.doctorDashboard,
@@ -319,6 +340,22 @@ const router = createBrowserRouter([
           {
             index: true,
             element: <OrderManagementDoctor />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.notificationDoctor,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Doctor]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <NotificationDoctor />,
           },
         ],
       },

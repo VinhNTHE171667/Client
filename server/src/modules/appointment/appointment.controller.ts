@@ -133,4 +133,15 @@ export class AppointmentController {
   remove(@Param('id') id: string) {
     return this.appointmentService.remove(id);
   }
+
+  @Patch(':id/request-complete')
+  async requestComplete(
+    @Param('id') id: string,
+    @Body('staffName') staffName: string,
+  ) {
+    if (!staffName) {
+      throw new BadRequestException('Thiếu thông tin nhân viên');
+    }
+    return this.appointmentService.requestCompleteByStaff(id, staffName);
+  }
 }

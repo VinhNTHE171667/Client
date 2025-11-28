@@ -112,4 +112,7 @@ export class Appointment {
 
   @Column({ type: 'boolean', default: false })
   isFeedbackGiven: boolean;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  reminderDoctor?: string;
 }

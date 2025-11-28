@@ -40,10 +40,12 @@ export const configRoutes = {
   staffFeedback: "/staff/feedback",
   staffProfile: "/staff/profile",
   staffRequestDoctor: "/staff/doctor-cancel-requests",
+  notificationInternal: "/system/notifications",
 
   doctorDashboard: "/doctor/dashboard",
   doctorOrderManagement: "/doctor/orders",
   doctorProfileManagement: "/doctor/profile",
+  notificationDoctor: "/doctor/notifications",
 
   // casherDashboard: "/casher/dashboard",
   casherOrderManagement: "/casher/orders",

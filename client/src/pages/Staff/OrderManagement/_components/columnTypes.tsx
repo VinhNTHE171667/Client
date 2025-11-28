@@ -5,6 +5,7 @@ import {
   EditOutlined,
   // DeleteOutlined,
   CheckOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import type { AppointmentTableProps } from "./type";
@@ -150,16 +151,29 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => [
     key: "operation",
     fixed: "right",
     align: "right",
-    width: 80,
+    width: 120,
     render: (_, record) => {
       const renderItems = (
         record: AppointmentTableProps,
         onConfirm: () => void,
         onReject: () => void,
+        onViewDetails: () => void,
         onUpdate: () => void,
         onRemove: () => void
       ): MenuProps["items"] => {
         const items: MenuProps["items"] = [];
+
+        // Always add view details
+        items.push({
+          key: "view-details",
+          label: (
+            <a onClick={onViewDetails}>
+              <Space>
+                <EyeOutlined /> Xem chi tiết
+              </Space>
+            </a>
+          ),
+        });
 
         if (record.status === "pending") {
           items.push({
@@ -209,6 +223,7 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => [
               record,
               record.onConfirm!,
               record.onReject!,
+              record.onViewDetails!,
               record.onUpdate!,
               record.onRemove!
             ),
@@ -221,8 +236,9 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => [
             icon={<EllipsisOutlined style={{ fontSize: 18 }} />}
             disabled={
               !(
-                (record.status === "pending")
-                // || record.onRemove
+                record.status === "pending" ||
+                record.onViewDetails ||
+                record.onRemove
               )
             }
           />

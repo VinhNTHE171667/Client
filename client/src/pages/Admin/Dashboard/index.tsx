@@ -20,6 +20,7 @@ import {
   ShoppingOutlined,
   StarOutlined,
   FireOutlined,
+  ArrowRightOutlined,
 } from "@ant-design/icons";
 import FancyIconBox from "@/components/FancyIconBox";
 import FancyCounting from "@/components/FancyCounting";
@@ -36,6 +37,7 @@ export default function AdminDashboardPage() {
   const [month, setMonth] = useState<number>(0);
   const [getDashboard] = useDashboardMutation();
   const [loading, setLoading] = useState(false);
+  const [fullDashboard, setFullDashboard] = useState(null);
 
   const [dataTop, setDataTop] = useState({
     totalInvoices: 0,
@@ -72,8 +74,6 @@ export default function AdminDashboardPage() {
         month,
       }).unwrap();
 
-      console.log(month, year, "DASHBOARD DATA", res);
-
       setDataTop({
         totalInvoices: res.totalInvoices,
         totalAmount: res.totalAmount,
@@ -97,6 +97,7 @@ export default function AdminDashboardPage() {
       }));
 
       setChartData(chartArr);
+      setFullDashboard(res);
     } catch (error) {
       console.error("Lỗi lấy dữ liệu dashboard:", error);
     } finally {
@@ -244,68 +245,112 @@ export default function AdminDashboardPage() {
       </Row>
 
       <Row gutter={[16, 16]}>
-        <Col xs={24} md={6}>
-          <Card className="bg-gradient-danger" style={{ borderRadius: 12 }}>
-            <FancyIconBox icon={<UserOutlined />} className="mb-3" />
-            <Title level={5} className="text-light m-0">
-              Khách hàng
-            </Title>
-            <FancyCounting
-              className="text-light"
-              to={dataTop.totalCustomers}
-              duration={2}
-              style={{ fontSize: 24, fontWeight: "bold" }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} md={6}>
-          <Card className="bg-gradient-info" style={{ borderRadius: 12 }}>
-            <FancyIconBox icon={<DollarOutlined />} className="mb-3" />
-            <Title level={5} className="text-light m-0">
-              Doanh thu
-            </Title>
-            <FancyCounting
-              className="text-light"
-              to={dataTop.totalAmount}
-              duration={2}
-              style={{ fontSize: 24, fontWeight: "bold" }}
-              format={(value) =>
-                value.toLocaleString("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                })
-              }
-            />
-          </Card>
-        </Col>
-        <Col xs={24} md={6}>
-          <Card className="bg-gradient-success" style={{ borderRadius: 12 }}>
-            <FancyIconBox icon={<ShoppingCartOutlined />} className="mb-3" />
-            <Title level={5} className="text-light m-0">
-              Đơn hàng
-            </Title>
-            <FancyCounting
-              className="text-light"
-              to={dataTop.totalInvoices}
-              duration={2}
-              style={{ fontSize: 24, fontWeight: "bold" }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} md={6}>
-          <Card className="bg-gradient-warning" style={{ borderRadius: 12 }}>
-            <FancyIconBox icon={<ShoppingOutlined />} className="mb-3" />
-            <Title level={5} className="text-light m-0">
-              Dịch vụ
-            </Title>
-            <FancyCounting
-              className="text-light"
-              to={topServices.length}
-              duration={2}
-              style={{ fontSize: 24, fontWeight: "bold" }}
-            />
-          </Card>
-        </Col>
+        {[
+          {
+            title: "Khách hàng",
+            icon: <UserOutlined />,
+            value: dataTop.totalCustomers,
+            expected: dataTop.expectedCustomers,
+            bg: "bg-gradient-danger",
+          },
+          {
+            title: "Doanh thu",
+            icon: <DollarOutlined />,
+            value: fullDashboard?.actualRevenue,
+            expected: fullDashboard?.expectedRevenue,
+            type: "money",
+            bg: "bg-gradient-info",
+            onClickDetail: () => (window.location.href = "/casher/stats"),
+          },
+          {
+            title: "Đơn hàng",
+            icon: <ShoppingCartOutlined />,
+            value: fullDashboard?.completedAppointments || 0,
+            expected: fullDashboard?.totalAppointments,
+            type: "number",
+            bg: "bg-gradient-success",
+            onClickDetail: () => (window.location.href = "/staff/orders"),
+          },
+          {
+            title: "Dịch vụ",
+            icon: <ShoppingOutlined />,
+            value: topServices.length,
+            bg: "bg-gradient-warning",
+          },
+        ].map((item, idx) => (
+          <Col xs={24} md={6} key={idx}>
+            <Card
+              className={item.bg}
+              style={{ borderRadius: 12, height: "100%", position: "relative" }}
+              bodyStyle={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                height: "100%",
+              }}
+            >
+              {/* Header */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <FancyIconBox icon={item.icon} />
+                <Title level={5} className="text-light m-0">
+                  {item.title}
+                </Title>
+              </div>
+
+              {/* Value + Dự kiến */}
+              <div className="flex justify-between items-end mt-3">
+                <FancyCounting
+                  className="text-light"
+                  to={item.value}
+                  duration={2}
+                  style={{ fontSize: 24, fontWeight: "bold" }}
+                  format={(v) =>
+                    item.type === "money"
+                      ? v.toLocaleString("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                        })
+                      : v
+                  }
+                />
+                {item.expected && item.expected >= 0 && (
+                  <span
+                    style={{
+                      color: "rgba(255, 255, 255, 0.85)",
+                      fontSize: 14,
+                      fontWeight: 500,
+                      fontStyle: "italic",
+                      marginLeft: 4,
+                    }}
+                  >
+                    Dự kiến:{" "}
+                    {item.type === "money"
+                      ? item.expected.toLocaleString("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                        })
+                      : item.expected}
+                  </span>
+                )}
+              </div>
+
+              {item.onClickDetail && (
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: 12,
+                    right: 12,
+                  }}
+                >
+                  <ArrowRightOutlined
+                    style={{ fontSize: 20, color: "white", cursor: "pointer" }}
+                    onClick={item.onClickDetail}
+                  />
+                </div>
+              )}
+            </Card>
+          </Col>
+        ))}
       </Row>
 
       <Row gutter={[16, 16]} style={{ marginTop: 24 }}>

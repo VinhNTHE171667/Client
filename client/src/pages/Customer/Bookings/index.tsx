@@ -112,8 +112,8 @@ const BookingCalendar: React.FC = () => {
   const doctorId = state.doctorId;
   const appointmentId = state.appointmentId;
   const oldSlot = state.oldSlot;
-  const full_name = state.full_name;
-  const phone = state.phone;
+  const full_name = auth?.fullName;
+  const phone = auth?.phone;
   const note = state.note;
   const totalAmount = state.totalAmount;
   const voucherId = state.voucherId;
@@ -199,7 +199,7 @@ const BookingCalendar: React.FC = () => {
 
       const payload: CreateAppointmentProps = {
         customerId: auth.accountId!,
-        doctorId: (doctorId == null || doctorId == "no-doctor") ? null : doctorId,
+        doctorId: doctorId == null || doctorId == "no-doctor" ? null : doctorId,
         staffId: null,
         appointment_date: dayjs(selectedSlot.start).toISOString(),
         startTime: dayjs(selectedSlot.start).toISOString(),
@@ -443,6 +443,9 @@ const BookingCalendar: React.FC = () => {
           layout="vertical"
           onFinish={handleFinish}
           className={styles.form}
+          initialValues={{
+            name: auth?.fullName,
+          }}
         >
           <Form.Item label="Họ và tên" name="name" rules={[{ required: true }]}>
             <Input placeholder="Nhập họ và tên của bạn" />

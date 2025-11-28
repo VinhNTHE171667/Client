@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThan, IsNull, In, Not, LessThan } from 'typeorm';
+import { Repository, MoreThan, IsNull, In, Not, LessThan, Between } from 'typeorm';
 import { Appointment } from '@/entities/appointment.entity';
 import { MailService } from '../mail/mail.service';
 import { Doctor } from '@/entities/doctor.entity';
@@ -10,11 +10,15 @@ import { Service } from '@/entities/service.entity';
 import { AppointmentStatus } from '@/entities/enums/appointment-status';
 import { NotificationService } from '../notification/notification.service'; 
 import { NotificationType } from '@/entities/enums/notification-type.enum';
+import { Voucher } from '@/entities/voucher.entity';
+import { CustomerVoucher } from '@/entities/customerVoucher.entity';
 
 @Injectable()
 export class AppointmentCronReminderService {
   private readonly logger = new Logger(AppointmentCronReminderService.name);
-  private isRunningAssign = false; // Lock to prevent duplicate runs
+  private isRunningAssign = false; 
+  private isRunningOverdue = false; 
+  private isRunningVoucherCheck = false;
 
   constructor(
     @InjectRepository(Appointment)
@@ -29,6 +33,12 @@ export class AppointmentCronReminderService {
     @InjectRepository(Service)
     private readonly serviceRepo: Repository<Service>,
 
+    @InjectRepository(Voucher)
+    private readonly voucherRepo: Repository<Voucher>,
+
+    @InjectRepository(CustomerVoucher)
+    private readonly customerVoucherRepo: Repository<CustomerVoucher>,
+
     private readonly mailService: MailService,
     private readonly notificationService: NotificationService, 
   ) {}
@@ -40,8 +50,11 @@ export class AppointmentCronReminderService {
     const now = new Date();
     const next24h = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
+    // Fix: Only query appointments within the next 24 hours to optimize
     const appointments = await this.appointmentRepo.find({
-      where: { startTime: MoreThan(now) },
+      where: { 
+        startTime: Between(now, next24h) 
+      },
       relations: ['customer', 'details', 'details.service', 'staff'],
     });
 
@@ -51,29 +64,26 @@ export class AppointmentCronReminderService {
     }
 
     for (const appt of appointments) {
-      const startTime = new Date(appt.startTime);
+      await this.mailService.remindUpcomingAppointment({
+        to: appt.customer.email,
+        text: `Xin chào ${appt.customer.full_name}, đây là nhắc nhở về lịch hẹn sắp tới tại GenSpa.`,
+        appointment: {
+          customer: { full_name: appt.customer.full_name },
+          startTime: appt.startTime,
+          services: appt.details.map((s) => ({
+            name: s.service.name,
+            price: s.price.toLocaleString('vi-VN') + '₫',
+          })),
+          staff: appt.staff ? { name: appt.staff.full_name } : null,
+        },
+      });
 
-      if (startTime <= next24h) {
-        await this.mailService.remindUpcomingAppointment({
-          to: appt.customer.email,
-          text: `Xin chào ${appt.customer.full_name}, đây là nhắc nhở về lịch hẹn sắp tới tại GenSpa.`,
-          appointment: {
-            customer: { full_name: appt.customer.full_name },
-            startTime: appt.startTime,
-            services: appt.details.map((s) => ({
-              name: s.service.name,
-              price: s.price.toLocaleString('vi-VN') + '₫',
-            })),
-            staff: appt.staff ? { name: appt.staff.full_name } : null,
-          },
-        });
+      // Save to update timestamps (e.g., updatedAt)
+      await this.appointmentRepo.save(appt);
 
-        await this.appointmentRepo.save(appt);
-
-        this.logger.log(
-          `Đã gửi email nhắc nhở cho khách: ${appt.customer.full_name}`,
-        );
-      }
+      this.logger.log(
+        `Đã gửi email nhắc nhở cho khách: ${appt.customer.full_name}`,
+      );
     }
   }
 
@@ -109,14 +119,12 @@ export class AppointmentCronReminderService {
           const serviceIds = appt.details.map(d => d.serviceId);
           if (!serviceIds.length) continue;
 
-          const services = await this.serviceRepo.find({
-            where: { id: In(serviceIds) },
-            relations: ['doctors'],
-          });
-
+          const services = appt.details.map(d => d.service).filter(Boolean);
           const possibleDoctors = new Set<string>();
           services.forEach(service => {
-            service.doctors.forEach(doctor => possibleDoctors.add(doctor.id));
+            if (service && service.doctors) {
+              service.doctors.forEach(doctor => possibleDoctors.add(doctor.id));
+            }
           });
 
           if (possibleDoctors.size === 0) {
@@ -174,6 +182,149 @@ export class AppointmentCronReminderService {
       }
     } finally {
       this.isRunningAssign = false; 
+    }
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async checkAndUpdateOverdueAppointments() {
+    if (this.isRunningOverdue) {
+      this.logger.warn('Overdue check job is already running, skipping...');
+      return;
+    }
+
+    this.isRunningOverdue = true;
+    this.logger.log('Đang kiểm tra các lịch hẹn quá hạn...');
+
+    try {
+      const now = new Date();
+
+      const statusesToCheck = [
+        AppointmentStatus.Pending,
+        AppointmentStatus.Confirmed,
+        AppointmentStatus.Deposited,
+        AppointmentStatus.Approved,
+      ];
+
+     const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+
+      const overdueAppointments = await this.appointmentRepo.find({
+        where: { 
+          status: In(statusesToCheck),
+          startTime: LessThan(twoHoursAgo),
+        },
+        relations: ['customer'],
+        take: 50, 
+      });
+
+
+      if (!overdueAppointments.length) {
+        this.logger.log('Không có lịch hẹn nào quá hạn');
+        return;
+      }
+
+      for (const appt of overdueAppointments) {
+        if (
+          statusesToCheck.includes(appt.status) &&
+          new Date(appt.startTime) < now
+        ) {
+          appt.status = AppointmentStatus.Overdue;
+          await this.appointmentRepo.save(appt);
+          await this.notificationService.create({
+            title: 'Lịch hẹn của bạn đã quá hạn!',
+            content: `Lịch hẹn của bạn vào lúc ${appt.startTime.toLocaleString('vi-VN')} đã quá thời gian bắt đầu và được chuyển sang trạng thái quá hạn. Vui lòng đặt lịch mới nếu cần.`,
+            type: NotificationType.Warning, 
+            userId: appt.customer.id,
+            userType: 'customer',
+            actionUrl: `/customer/orders`, 
+            relatedId: appt.id,
+            relatedType: 'appointment',
+          });
+
+          this.logger.log(`Đã cập nhật lịch hẹn ${appt.id} sang trạng thái Overdue cho khách ${appt.customer.full_name}`);
+        }
+      }
+    } finally {
+      this.isRunningOverdue = false;
+    }
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async checkAndCancelExpiredVoucherAppointments() {
+    if (this.isRunningVoucherCheck) {
+      this.logger.warn('Voucher expiry check job is already running, skipping...');
+      return;
+    }
+
+    this.isRunningVoucherCheck = true;
+    this.logger.log('Đang kiểm tra các lịch hẹn với voucher hết hạn...');
+
+    try {
+      const now = new Date();
+
+      const statusesToCheck = [
+        AppointmentStatus.Pending,
+        AppointmentStatus.Confirmed,
+      ];
+
+      const appointmentsWithVoucher = await this.appointmentRepo.find({
+        where: { 
+          status: In(statusesToCheck),
+          voucherId: Not(IsNull()),
+        },
+        relations: ['customer'],
+        take: 50, 
+      });
+
+      if (!appointmentsWithVoucher.length) {
+        this.logger.log('Không có lịch hẹn nào sử dụng voucher cần kiểm tra');
+        return;
+      }
+
+      for (const appt of appointmentsWithVoucher) {
+        if (!statusesToCheck.includes(appt.status)) continue;
+
+        const voucher = await this.voucherRepo.findOne({
+          where: { id: appt.voucherId },
+        });
+
+        if (!voucher || !voucher.validTo || voucher.validTo >= now) continue;
+
+        appt.status = AppointmentStatus.Cancelled;
+        appt.cancelledAt = now;
+        appt.cancelReason = 'Voucher đã hết hạn';
+
+        await this.appointmentRepo.save(appt);
+
+        const customerVoucher = await this.customerVoucherRepo.findOne({
+          where: {
+            customerId: appt.customerId,
+            voucherId: appt.voucherId,
+            isUsed: true,
+          },
+        });
+
+        if (customerVoucher) {
+          customerVoucher.isUsed = false;
+          customerVoucher.usedAt = undefined;
+          await this.customerVoucherRepo.save(customerVoucher);
+        }
+
+        // Notify customer
+        await this.notificationService.create({
+          title: 'Lịch hẹn của bạn đã bị hủy do voucher hết hạn',
+          content: `Lịch hẹn của bạn vào lúc ${appt.startTime.toLocaleString('vi-VN')} đã bị hủy vì voucher sử dụng đã hết hạn. Voucher đã được khôi phục để bạn có thể sử dụng lại.`,
+          type: NotificationType.Warning,
+          userId: appt.customer.id,
+          userType: 'customer',
+          actionUrl: `/customer/orders`, 
+          relatedId: appt.id,
+          relatedType: 'appointment',
+        });
+
+        this.logger.log(`Đã hủy lịch hẹn ${appt.id} do voucher hết hạn cho khách ${appt.customer.full_name}`);
+      }
+    } finally {
+      this.isRunningVoucherCheck = false;
     }
   }
 }

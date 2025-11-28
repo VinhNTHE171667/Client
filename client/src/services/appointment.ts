@@ -418,6 +418,16 @@ export const appointmentApi = createApi({
         method: "PATCH",
       }),
     }),
+    requestCompleteAppointment: build.mutation<
+      { success: boolean; message: string },
+      { appointmentId: string; staffName: string }
+    >({
+      query: ({ appointmentId, staffName }) => ({
+        url: `/appointment/${appointmentId}/request-complete`,
+        method: 'PATCH',
+        body: { staffName },
+      })
+    }),
 
     updateAppointmentStatusApproved: build.mutation<
       AppointmentProps,
@@ -581,5 +591,6 @@ export const {
   useGetDoctorCancelRequestsMutation,
   useApproveDoctorCancelRequestMutation,
   useRejectDoctorCancelRequestMutation,
-  useGetPaymentStatsMutation
+  useGetPaymentStatsMutation,
+  useRequestCompleteAppointmentMutation
 } = appointmentApi;

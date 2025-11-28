@@ -11,6 +11,10 @@ import {
   Form,
   Button,
   Select,
+  Descriptions,
+  Tag,
+  Typography,
+  List,
 } from "antd";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
@@ -29,6 +33,7 @@ import { appointmentStatusEnum } from "@/common/types/auth";
 import { useAuthStore } from "@/hooks/UseAuth";
 
 const { RangePicker } = DatePicker;
+const { Title, Text } = Typography;
 
 export default function OrderManagementStaff() {
   const [isLoading, setIsLoading] = useState(false);
@@ -54,6 +59,11 @@ export default function OrderManagementStaff() {
 
   const [statusFilter, setStatusFilter] = useState<string[] | null>(null);
 
+  // New states for details modal
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [selectedDetailAppointment, setSelectedDetailAppointment] =
+    useState<AppointmentTableProps | null>(null);
+
   const handleGetAppointments = async () => {
     setIsLoading(true);
     try {
@@ -67,6 +77,10 @@ export default function OrderManagementStaff() {
           onReject: () => {
             setSelectedAppointment(appointment);
             setRejectModal(true);
+          },
+          onViewDetails: () => {
+            setSelectedDetailAppointment(appointment);
+            setDetailModalVisible(true);
           },
           onUpdate: () => {},
           onRemove: () => console.log("Xóa:", appointment.id),
@@ -136,8 +150,9 @@ export default function OrderManagementStaff() {
 
   const filteredAppointments = appointments.filter((a) => {
     const matchSearch =
-      search === "" ||
-      a.customer.full_name.toLowerCase().includes(search.toLowerCase());
+      search === ""
+        ? true
+        : a.customer.full_name.toLowerCase().includes(search.toLowerCase());
 
     const matchStatus = !statusFilter || statusFilter.includes(a.status);
 
@@ -153,6 +168,13 @@ export default function OrderManagementStaff() {
 
   const handleEvent = () => {
     handleGetAppointments();
+  };
+
+  // Check if voucher is expired
+  const isVoucherExpired = (voucher: any) => {
+    if (!voucher || !voucher.validTo) return false;
+    const currentDate = dayjs("2025-11-27"); // Current date as per context
+    return dayjs(voucher.validTo).isBefore(currentDate);
   };
 
   return (
@@ -192,6 +214,7 @@ export default function OrderManagementStaff() {
             <Space>
               <Select
                 allowClear
+                mode="multiple"
                 placeholder="Chọn trạng thái"
                 value={statusFilter ?? undefined}
                 onChange={(value) => setStatusFilter(value)}
@@ -220,6 +243,7 @@ export default function OrderManagementStaff() {
                     value: appointmentStatusEnum.Completed,
                   },
                   { label: "Đã huỷ", value: appointmentStatusEnum.Cancelled },
+                  { label: "Quá hạn", value: appointmentStatusEnum.Overdue },
                 ]}
               />
               <Divider type="vertical" />
@@ -257,6 +281,7 @@ export default function OrderManagementStaff() {
         />
       </Card>
 
+      {/* Reject Modal */}
       <Modal
         title="Từ chối lịch hẹn"
         open={rejectModal}
@@ -284,6 +309,164 @@ export default function OrderManagementStaff() {
             </div>
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* Details Modal */}
+      <Modal
+        title="Chi tiết lịch hẹn"
+        open={detailModalVisible}
+        onCancel={() => setDetailModalVisible(false)}
+        footer={null}
+        width={800}
+      >
+        {selectedDetailAppointment && (
+          <Descriptions bordered column={1}>
+            <Descriptions.Item label="Mã lịch hẹn">
+              {selectedDetailAppointment.id}
+            </Descriptions.Item>
+            <Descriptions.Item label="Khách hàng">
+              <Space>
+                <div>
+                  <Title level={5}>
+                    {selectedDetailAppointment.customer.full_name}
+                  </Title>
+                  <Text>{selectedDetailAppointment.customer.email}</Text>
+                  <br />
+                  <Text>{selectedDetailAppointment.customer.phone}</Text>
+                </div>
+              </Space>
+            </Descriptions.Item>
+            <Descriptions.Item label="Bác sĩ">
+              {selectedDetailAppointment.doctor ? (
+                <Space>
+                  <div>
+                    <Title level={5}>
+                      {selectedDetailAppointment.doctor.full_name}
+                    </Title>
+                    <Text>{selectedDetailAppointment.doctor.email}</Text>
+                  </div>
+                </Space>
+              ) : (
+                <Text type="secondary">Chưa phân công bác sĩ</Text>
+              )}
+            </Descriptions.Item>
+            <Descriptions.Item label="Nhân viên">
+              {selectedDetailAppointment.staff ? (
+                <Space>
+                  <div>
+                    <Title level={5}>
+                      {selectedDetailAppointment.staff?.full_name}
+                    </Title>
+                    <Text>{selectedDetailAppointment.staff?.email}</Text>
+                  </div>
+                </Space>
+              ) : (
+                <Text type="secondary">Chưa có nhân viên</Text>
+              )}
+            </Descriptions.Item>
+            <Descriptions.Item label="Dịch vụ">
+              <List
+                dataSource={selectedDetailAppointment.details}
+                renderItem={(item) => (
+                  <List.Item>
+                    <div>
+                      <Title level={5}>{item.service.name}</Title>
+                      <Text>
+                        Số lượng: {item.quantity} | Giá:{" "}
+                        {Number(item.price).toLocaleString("vi-VN")} VND
+                      </Text>
+                    </div>
+                  </List.Item>
+                )}
+                bordered
+              />
+            </Descriptions.Item>
+            <Descriptions.Item label="Ngày hẹn">
+              {dayjs(selectedDetailAppointment.appointment_date).format(
+                "DD/MM/YYYY"
+              )}
+            </Descriptions.Item>
+            <Descriptions.Item label="Thời gian">
+              {dayjs(selectedDetailAppointment.startTime).format("HH:mm")} -{" "}
+              {dayjs(selectedDetailAppointment.endTime).format("HH:mm")}
+            </Descriptions.Item>
+            <Descriptions.Item label="Trạng thái">
+              <Tag color="blue">{selectedDetailAppointment.status}</Tag>
+            </Descriptions.Item>
+            <Descriptions.Item label="Tổng tiền">
+              {Number(selectedDetailAppointment.totalAmount).toLocaleString(
+                "vi-VN"
+              )}{" "}
+              VND
+            </Descriptions.Item>
+            <Descriptions.Item label="Tiền đặt cọc">
+              {Number(selectedDetailAppointment.depositAmount).toLocaleString(
+                "vi-VN"
+              )}{" "}
+              VND
+            </Descriptions.Item>
+            <Descriptions.Item label="Ghi chú">
+              {selectedDetailAppointment.note || "Không có"}
+            </Descriptions.Item>
+            <Descriptions.Item label="Voucher">
+              {selectedDetailAppointment.voucher ? (
+                <div>
+                  <Space direction="vertical">
+                    <div>
+                      <Title level={5}>
+                        Mã: {selectedDetailAppointment.voucher.code}
+                      </Title>
+                      <Text>
+                        Mô tả: {selectedDetailAppointment.voucher.description}
+                      </Text>
+                      <br />
+                      <Text>
+                        Giảm:{" "}
+                        {selectedDetailAppointment.voucher.discountAmount
+                          ? Number(
+                              selectedDetailAppointment.voucher.discountAmount
+                            ).toLocaleString("vi-VN") + " VND"
+                          : `${selectedDetailAppointment.voucher.discountPercent}%`}
+                      </Text>
+                      <br />
+                      <Text>
+                        Hiệu lực từ:{" "}
+                        {dayjs(
+                          selectedDetailAppointment.voucher.validFrom
+                        ).format("DD/MM/YYYY HH:mm")}
+                      </Text>
+                      <br />
+                      <Text>
+                        Đến:{" "}
+                        {dayjs(
+                          selectedDetailAppointment.voucher.validTo
+                        ).format("DD/MM/YYYY HH:mm")}
+                      </Text>
+                    </div>
+                    {isVoucherExpired(selectedDetailAppointment.voucher) && (
+                      <Tag color="red">Voucher đã hết hạn!</Tag>
+                    )}
+                  </Space>
+                </div>
+              ) : (
+                <Text type="secondary">Không sử dụng voucher</Text>
+              )}
+            </Descriptions.Item>
+            <Descriptions.Item label="Lý do hủy">
+              {selectedDetailAppointment.cancelReason || "-"}
+            </Descriptions.Item>
+            <Descriptions.Item label="Ngày tạo">
+              {dayjs(selectedDetailAppointment.createdAt).format(
+                "DD/MM/YYYY HH:mm"
+              )}
+            </Descriptions.Item>
+            <Descriptions.Item label="Ngày cập nhật">
+              {dayjs(selectedDetailAppointment.updatedAt).format(
+                "DD/MM/YYYY HH:mm"
+              )}
+            </Descriptions.Item>
+          </Descriptions>
+        )}
       </Modal>
     </>
   );

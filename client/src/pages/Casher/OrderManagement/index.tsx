@@ -8,7 +8,7 @@ import {
   Table,
   Divider,
   Select,
-  message
+  message,
 } from "antd";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
@@ -38,10 +38,11 @@ export default function OrderManagementCasher() {
 
   const [statusFilter, setStatusFilter] = useState<string[] | null>(null);
 
-  const { auth } = useAuthStore(); 
+  const { auth } = useAuthStore();
   const staffId = auth.accountId || "";
 
-  const [getAppointmentsForManagement] = useGetAppointmentsForManagementMutation();
+  const [getAppointmentsForManagement] =
+    useGetAppointmentsForManagementMutation();
 
   const [createPaymentLink] = useCreateLinkPaymentMutation();
   const [updatePaymentStatusPaid] = useUpdatePaymentStatusPaidMutation();
@@ -95,7 +96,7 @@ export default function OrderManagementCasher() {
     try {
       await updatePaymentStatusPaid({
         orderCode: item.orderCode || "",
-        paymentMethod: 'cash',
+        paymentMethod: "cash",
         staffId, // Send staff ID
       }).unwrap();
 
@@ -225,10 +226,11 @@ export default function OrderManagementCasher() {
         <Table
           loading={isLoading}
           rowKey="id"
-          columns={AppointmentColumn({ 
+          columns={AppointmentColumn({
             onPaymentByCash: handlePaymentByCash,
             onPaymentByQR: handlePaymentByQR,
           })}
+          showSucess={showSuccess}
           dataSource={filteredAppointments}
           scroll={{ x: "max-content" }}
           tableLayout="fixed"
