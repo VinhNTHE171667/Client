@@ -717,3 +717,28 @@ $shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.12);
     }
   }
 }
+
+.voucherSection {
+  margin-top: 16px;
+
+  .voucherItem {
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #f5f7fa;
+  }
+
+  .voucherCode {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .voucherDiscount {
+    color: #d9534f;
+    font-weight: 500;
+  }
+
+  .noVoucher {
+    color: #888;
+    font-style: italic;
+  }
+}

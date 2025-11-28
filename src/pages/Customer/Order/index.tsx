@@ -86,22 +86,31 @@ const CustomerOrders: React.FC = () => {
   const [dateRange, setDateRange] = useState<
     [dayjs.Dayjs | null, dayjs.Dayjs | null] | null
   >(null);
-  const [viewMode, setViewMode] = useState<"calendar" | "list">("list"); // Changed default to "list"
+  const [viewMode, setViewMode] = useState<"calendar" | "list">("list");
   const navigate = useNavigate();
   const [updateCancelAppointment] =
     useUpdateAppointmentMutationCancelMutation();
   const [createPaymentLink] = useCreateLinkPaymentMutation();
   const [createFeedbacks] = useCreateFeedbacksMutation();
-  const handleEvent = () => {
+  const handleEvent = async () => {
     if (auth?.accountId) {
-      getAppointments({ customerId: auth.accountId })
-        .unwrap()
-        .then(setAppointments)
-        .catch(() => setAppointments([]));
+      try {
+        const res = await getAppointments({
+          customerId: auth.accountId,
+        }).unwrap();
+        setAppointments(res);
+      } catch {
+        setAppointments([]);
+      }
     }
   };
   useEffect(() => {
     handleEvent();
+    const intervalId = setInterval(() => {
+      handleEvent();
+    }, 15000);
+
+    return () => clearInterval(intervalId);
   }, [auth]);
   const events: RBCEvent[] = useMemo(
     () =>
@@ -157,7 +166,7 @@ const CustomerOrders: React.FC = () => {
         showError("Huỷ lịch hẹn thất bại.");
       }
       setCancelModal(false);
-      handleEvent();
+      await handleEvent();
     } catch (err) {
       const msg =
         err instanceof Error ? err.message : "Đã xảy ra lỗi khi huỷ lịch hẹn.";
@@ -224,7 +233,7 @@ const CustomerOrders: React.FC = () => {
       }).unwrap();
       showSuccess("Gửi feedback thành công!");
       setFeedbackModal(false);
-      handleEvent();
+      await handleEvent();
     } catch (err) {
       handleError(err);
     }
@@ -674,6 +683,36 @@ const CustomerOrders: React.FC = () => {
                 </div>
               ))}
             </div>
+            <div className={styles.voucherSection}>
+              <h4>Voucher</h4>
+
+              {selectedAppointment.voucher ? (
+                <div className={styles.voucherItem}>
+                  <p className={styles.voucherCode}>
+                    Mã voucher: {selectedAppointment.voucher.code}
+                  </p>
+
+                  {selectedAppointment.voucher.discountAmount && (
+                    <p className={styles.voucherDiscount}>
+                      Giảm:{" "}
+                      {Number(
+                        selectedAppointment.voucher.discountAmount
+                      ).toLocaleString("vi-VN")}
+                      ₫
+                    </p>
+                  )}
+
+                  {selectedAppointment.voucher.discountPercent && (
+                    <p className={styles.voucherDiscount}>
+                      Giảm: {selectedAppointment.voucher.discountPercent}%
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <p className={styles.noVoucher}>Không dùng voucher nào</p>
+              )}
+            </div>
+
             <div className={styles.totalAmount}>
               <span>Tổng cộng:</span>
               <span>

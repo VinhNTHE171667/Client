@@ -43,8 +43,7 @@ export const DoctorCancelRequestColumn =
       title: "Hành động",
       key: "action",
       render: (_, record: DoctorRequestCancelPropsModel) => {
-        const isExpired =
-          new Date(record.appointment.appointment_date) < new Date();
+        const isExpired = new Date(record.appointment.endTime) < new Date();
 
         if (record.status !== "pending") return null;
 
@@ -63,7 +62,7 @@ export const DoctorCancelRequestColumn =
                 Duyệt
               </Button>
 
-              <Button danger onClick={record.onReject} >
+              <Button danger onClick={record.onReject}>
                 Từ chối
               </Button>
             </Space>
