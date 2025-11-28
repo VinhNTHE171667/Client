@@ -1,11 +1,10 @@
-name: Deploy FE + BE to VPS
+name: Deploy Backend to VPS
 
 on:
   push:
     branches:
       - master
     paths:
-      - "client/**"
       - "server/**"
   workflow_dispatch:
 
@@ -19,42 +18,6 @@ jobs:
       # ===========================
       - name: Checkout code
         uses: actions/checkout@v3
-
-      # ===========================
-      # Setup Node.js (version 20)
-      # ===========================
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "20"
-
-      # ===========================
-      # Build Frontend
-      # ===========================
-      - name: Install FE dependencies
-        working-directory: ./client
-        run: npm install
-
-      - name: Build FE
-        working-directory: ./client
-        run: npm run build
-        env:
-          VITE_PUBLIC_FE: "https://g52-genspa.xyz"
-          VITE_PUBLIC_API: "https://g52-genspa.xyz"
-          VITE_CHAT_API_URL: "https://g52-genspa.xyz"
-          VITE_RECOMMENDATION_API_URL: "https://g52-genspa.xyz"
-          VITE_GEMINI_API_KEY: "AIzaSyBXrLziPsVqLu34HyqWEWnSd7CSxfGmpu0"
-
-      - name: Upload FE to VPS
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          source: "client/dist/*"
-          target: "/var/www/genspa"
-          strip_components: 2
 
       # ===========================
       # Upload Backend to VPS
@@ -71,7 +34,7 @@ jobs:
           strip_components: 1
 
       # ===========================
-      # Install, Build & Start Backend
+      # Install, Build & Restart Backend
       # ===========================
       - name: Run BE install, build & restart
         uses: appleboy/ssh-action@master
@@ -81,30 +44,27 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            # ===========================
-            # Sử dụng Node 20 trên VPS
-            # ===========================
+            echo "=== LOAD NVM + NODE 20 ==="
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            nvm use 20 || nvm install 20 && nvm use 20
+            nvm use 20 || (nvm install 20 && nvm use 20)
+
+            echo "=== MOVE TO BACKEND FOLDER ==="
             cd /var/www/genspa-server
-            # ===========================
-            # Cài dependencies backend
-            # ===========================
+
+            echo "=== INSTALL DEPENDENCIES ==="
             npm install
-            # ===========================
-            # Build backend
-            # ===========================
-            npm run clean
+
+            echo "=== BUILD BACKEND ==="
+            npm run clean || true
             npm run build
-            # ===========================
-            # Cài PM2 nếu chưa có
-            # ===========================
+
+            echo "=== CHECK & INSTALL PM2 ==="
             if ! command -v pm2 &> /dev/null; then
               sudo npm install -g pm2
             fi
-            # ===========================
-            # Start / Restart backend
-            # ===========================
+
+            echo "=== RESTART BACKEND ==="
             pm2 restart genspa-api || pm2 start npm --name "genspa-api" -- run start:prod
+
             pm2 save
