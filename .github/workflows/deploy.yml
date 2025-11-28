@@ -66,9 +66,10 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
-          source: "server/*"
+          source: "dist/*"
           target: "/var/www/genspa-server"
-          strip_components: 1
+          strip_components: 1,
+          rm: true
 
       # ===========================
       # Install, Build & Start Backend
@@ -111,5 +112,5 @@ jobs:
             # ===========================
             # Start / Restart backend
             # ===========================
-            pm2 restart genspa-api || pm2 start dist/main.js --name "genspa-api"
+            pm2 restart genspa-api || pm2 start dist/src/main.js --name "genspa-api"
             pm2 save
