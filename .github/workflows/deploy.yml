@@ -83,4 +83,5 @@ jobs:
             # Cài backend
             npm install --omit=dev
             # Restart hoặc start backend
+            npm run build
             pm2 restart genspa-api || pm2 start dist/main.js --name "genspa-api"
