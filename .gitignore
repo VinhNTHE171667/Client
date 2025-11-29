@@ -72,6 +72,8 @@ milvus/db/
 milvus/db/**
 *.sock
 *.pid
+minio/data/
+minio/data/**
 
 # OS
 Thumbs.db
