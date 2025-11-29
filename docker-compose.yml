@@ -1,17 +1,6 @@
 version: '3.8'
 
 services:
-  mysql:
-    image: mysql:9.3.0
-    container_name: mysql-container
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-    ports:
-      - "33061:3306"
-    volumes:
-      - ./server/mysql-data:/var/lib/mysql
-    restart: unless-stopped
-
   ai:
     image: doannhatminh/ai-api:latest
     container_name: do_an_fa25_api
@@ -30,25 +19,6 @@ services:
     # AI depends on milvus for embeddings search; enable if you run milvus
     depends_on:
       - milvus
-    restart: unless-stopped
-
-  server:
-    build:
-      context: ./server
-      dockerfile: Dockerfile
-    container_name: spa_main_server
-    ports:
-      - "8080:8080"
-    env_file:
-      - .env
-    environment:
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_DATABASE=${DB_DATABASE}
-    depends_on:
-      - mysql
     restart: unless-stopped
 
   milvus:
