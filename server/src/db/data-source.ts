@@ -5,16 +5,16 @@ import { DataSource } from 'typeorm';
 // const entityPaths = glob.sync('src/entities/*.entity.{ts,js}');
 const DB_HOST = process.env.DB_HOST || 'localhost';
 const DB_PORT = process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306;
-const DB_USER = process.env.DB_USER || 'root';
+const DB_USER = process.env.DB_USERNAME || process.env.DB_USER || 'root';
 const DB_PASSWORD = process.env.DB_PASSWORD || 'root';
-const DB_NAME = process.env.DB_NAME || 'gen_spa';
+const DB_NAME = process.env.DB_DATABASE || process.env.DB_NAME || 'gen_spa';
 export const dataSourceOptions: DataSourceOptions = {
   type: 'mysql',
-  host: '35.198.229.102',
-  port: 3306,
-  username: 'root',
-  password: 'root',
-  database: 'gen_spa',
+  host: DB_HOST,
+  port: DB_PORT,
+  username: DB_USER,
+  password: DB_PASSWORD,
+  database: DB_NAME,
   entities: [__dirname + '/../entities/*.entity.{js,ts}'],
   migrations: [__dirname + '/migrations/*.{js,ts}'],
   migrationsTableName: 'migrations',

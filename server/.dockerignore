@@ -12,3 +12,5 @@ coverage
 .test
 jest.config.js
 test
+mysql-data
+mysql-data/**
