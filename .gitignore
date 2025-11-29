@@ -65,6 +65,14 @@ docker-compose.override.yml
 *.sqlite
 *.sqlite3
 
+# Runtime data directories (don't commit DB files or sockets)
+server/mysql-data/
+server/mysql-data/**
+milvus/db/
+milvus/db/**
+*.sock
+*.pid
+
 # OS
 Thumbs.db
 .DS_Store
