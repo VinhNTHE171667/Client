@@ -663,6 +663,10 @@ const CustomerOrders: React.FC = () => {
               <span className={styles.label}>Bác sĩ:</span>
               <span>{selectedAppointment.doctor?.full_name || "Chưa có"}</span>
             </div>
+            <div className={styles.detailGroup}>
+              <span className={styles.label}>Nhân viên:</span>
+              <span>{selectedAppointment.staff?.full_name || "Chưa có"}</span>
+            </div>
             <div className={styles.servicesSection}>
               <h4>Dịch vụ</h4>
               {selectedAppointment.details?.map((detail) => (
@@ -711,6 +715,16 @@ const CustomerOrders: React.FC = () => {
               ) : (
                 <p className={styles.noVoucher}>Không dùng voucher nào</p>
               )}
+            </div>
+
+            <div className={styles.totalAmount}>
+              <span>Đã đặt cọc:</span>
+              <span>
+                {Number(selectedAppointment.depositAmount).toLocaleString(
+                  "vi-VN"
+                )}
+                ₫
+              </span>
             </div>
 
             <div className={styles.totalAmount}>
