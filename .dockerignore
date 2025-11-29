@@ -1,0 +1,15 @@
+node_modules
+**/node_modules
+.git
+.gitignore
+.vscode
+.idea
+.DS_Store
+dist
+coverage
+*.log
+server/mysql-data
+ai/data
+.env
+.env.bak
+*.bak

@@ -11,7 +11,4 @@ README.md
 coverage
 .test
 jest.config.js
-tsconfig.json
-tsconfig.build.json
-src
 test
