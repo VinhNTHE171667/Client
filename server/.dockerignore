@@ -8,9 +8,9 @@ README.md
 .DS_Store
 .vscode
 .idea
+mysql-data
+mysql-data/**
 coverage
 .test
 jest.config.js
 test
-mysql-data
-mysql-data/**

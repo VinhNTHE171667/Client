@@ -1,47 +1,43 @@
-# Root Dockerfile for building the `server` service from project root
-# This keeps the Dockerfile at repo root while using the `server/` folder
-
-# Build stage
+# 1. Build Stage
 FROM node:20-alpine AS builder
 
-WORKDIR /app/server
+WORKDIR /app
 
-# Copy package files from server and install dev deps to build
-COPY server/package*.json ./
+# Copy file package.json (Vì đang ở trong folder server nên chỉ cần ./)
+COPY package*.json ./
+
+# Cài đặt toàn bộ thư viện để build
 RUN npm ci
 
-# Copy server source and build
-COPY server/ ./
+# Copy toàn bộ code
+COPY . .
+
+# Chạy lệnh build (Tạo ra thư mục dist)
 RUN npm run build
 
-# Production stage
+# 2. Production Stage
 FROM node:20-alpine
 
-WORKDIR /app/server
+WORKDIR /app
 
-# Install dumb-init to handle signals properly
+# Cài dumb-init để quản lý process tốt hơn
 RUN apk add --no-cache dumb-init
 
-# Copy package files and install production deps
-COPY server/package*.json ./
+# Copy package.json và cài thư viện chạy (bỏ qua devDependencies cho nhẹ)
+COPY package*.json ./
 RUN npm ci --only=production && npm cache clean --force
 
-# Copy built application from builder stage
-COPY --from=builder /app/server/dist ./dist
+# Copy thư mục dist từ bước Build sang
+COPY --from=builder /app/dist ./dist
 
-# Create a non-root user
+# Tạo user non-root cho an toàn (Optional)
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001
-
 USER nestjs
 
-# Expose the port the app listens on
+# Mở cổng
 EXPOSE 8080
 
-# Health check (adjust URL if your app exposes a different health endpoint)
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:8080/api', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
-
-# Start the application
+# Chạy Server
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "dist/main"]
