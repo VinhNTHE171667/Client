@@ -61,6 +61,12 @@ export default function OrderManagementDoctor() {
     setIsLoading(true);
     try {
       let pendingCancelIds = new Set<string>();
+      try {
+        const cancelRes = await getCancelRequests().unwrap();
+        pendingCancelIds = new Set(cancelRes.map((r: any) => r.appointmentId));
+      } catch (err) {
+        console.error("Lỗi lấy yêu cầu hủy:", err);
+      }
 
       const res = await getAppointmentsForManagement({
         doctorId: auth.accountId,
