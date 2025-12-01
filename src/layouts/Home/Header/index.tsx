@@ -63,7 +63,7 @@ const Header = () => {
 
   const dropdownItems = [
     { key: "1", label: "Trang cá nhân", onClick: () => navigate(configRoutes.profile) },
-    { key: "2", label: "Giỏ hàng", onClick: () => navigate(configRoutes.cart) },
+    { key: "2", label: "Giỏ dịch vụ", onClick: () => navigate(configRoutes.cart) },
     { key: "3", label: "Lịch đặt của tôi", onClick: () => navigate(configRoutes.customerOrders) },
     { key: "4", label: "Voucher của tôi", onClick: () => navigate(configRoutes.customerVouchers) },
     { key: "5", label: "Đăng xuất", onClick: logout },
