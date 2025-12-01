@@ -81,6 +81,12 @@ export default function UpdateCustomer(props: CustomerModalProps) {
 
     setIsLoading(true);
     try {
+      const phoneRegex = /^0\d{9,10}$/;
+      if (!phoneRegex.test(values.phone)) {
+        showError("Số điện thoại không hợp lệ");
+        return;
+      }
+
       const res = await updateCustomer({ id, customerData: payload });
       if (!res.error) {
         showSuccess("Cập nhật tài khoản thành công");
@@ -139,6 +145,7 @@ export default function UpdateCustomer(props: CustomerModalProps) {
                   { required: true, message: "Vui lòng nhập email" },
                   { type: "email", message: "Email không hợp lệ" },
                 ]}
+                readOnly={true}
               />
             </Col>
 
@@ -209,6 +216,18 @@ export default function UpdateCustomer(props: CustomerModalProps) {
               >
                 <Input placeholder="0.00" style={{ borderRadius: 8 }} />
               </Form.Item>
+            </Col>
+
+            <Col span={12}>
+              <FancyFormItem
+                label="Trạng thái"
+                name="isActive"
+                type="select"
+                options={[
+                  { label: "Active", value: true },
+                  { label: "Disable", value: false },
+                ]}
+              />
             </Col>
           </Row>
 

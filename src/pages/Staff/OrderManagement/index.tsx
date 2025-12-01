@@ -446,6 +446,9 @@ export default function OrderManagementStaff() {
                     {isVoucherExpired(selectedDetailAppointment.voucher) && (
                       <Tag color="red">Voucher đã hết hạn!</Tag>
                     )}
+                    {selectedDetailAppointment.voucher.isActive == false && (
+                      <Tag color="red">Voucher đã bị vô hiệu</Tag>
+                    )}
                   </Space>
                 </div>
               ) : (

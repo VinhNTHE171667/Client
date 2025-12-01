@@ -13,12 +13,10 @@ import {
   useGetAppointmentsBookedByCustomerMutation,
   useGetAppointmentsBookedByDoctorMutation,
   useUpdateAppointmentMutation,
-  // useCreateLinkPaymentMutation,
   type CreateAppointmentProps,
 } from "@/services/appointment";
 import { showError, showSuccess } from "@/libs/toast";
 import { useAuthStore } from "@/hooks/UseAuth";
-
 import NoImage from "@/assets/img/NoImage/NoImage.jpg";
 import { appointmentStatusEnum } from "@/common/types/auth";
 import { useFindVouchersByCustomerMutation } from "@/services/voucher";
@@ -69,7 +67,6 @@ interface BookingFormValues {
   name: string;
   phone: string;
   note?: string;
-  time?: dayjs.Dayjs;
 }
 
 const BookingCalendar: React.FC = () => {
@@ -89,21 +86,22 @@ const BookingCalendar: React.FC = () => {
   const [selectedVoucherId, setSelectedVoucherId] = useState<string | null>(
     null
   );
-
   const [membershipDiscount, setMembershipDiscount] = useState<number>(0);
 
   const [getMembershipByCustomer] = useGetMembershipByCustomerMutation();
+  const [getVouchersByCustomer] = useFindVouchersByCustomerMutation();
 
-  // const [appointmentsBooked, setAppointmentsBooked] = useState<
-  //   AppointmentProps[]
-  // >([]);
-
-  // const calculateTotalBeforeVoucher = (): number => {
-  //   return services.reduce((sum, service) => sum + service.price, 0);
-  // };
+  const [vouchers, setVouchers] = useState<
+    {
+      id: string;
+      code: string;
+      discountAmount: number;
+      discountPercent: number;
+      maxDiscount: number;
+    }[]
+  >([]);
 
   const { auth } = useAuthStore();
-
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -123,25 +121,13 @@ const BookingCalendar: React.FC = () => {
   useEffect(() => {
     if (hasFetched.current) return;
     hasFetched.current = true;
+
     setTimeout(() => {
       window.dispatchEvent(new Event("loading"));
     }, 300);
 
     handleGetBookedAppointments();
   }, []);
-
-  const [getVouchersByCustomer] = useFindVouchersByCustomerMutation();
-  const [vouchers, setVouchers] = useState<
-    {
-      id: string;
-      code: string;
-      discountAmount: number;
-      discountPercent: number;
-      maxDiscount: number;
-    }[]
-  >([]);
-
-  // const [createLinkPayment] = useCreateLinkPaymentMutation();
 
   if (!services.length) {
     return (
@@ -158,7 +144,6 @@ const BookingCalendar: React.FC = () => {
 
   const handleSelectSlot = (slotInfo: SlotInfo) => {
     const now = new Date();
-
     if (new Date(slotInfo.start) < now) {
       showError("Không thể chọn khung giờ trong quá khứ.");
       return;
@@ -177,13 +162,11 @@ const BookingCalendar: React.FC = () => {
     ]);
     setSelectedSlot(slotInfo);
 
-    if (full_name || phone || note) {
-      form.setFieldsValue({
-        name: full_name || "",
-        phone: phone || "",
-        note: note || "",
-      });
-    }
+    form.setFieldsValue({
+      name: full_name || "",
+      phone: phone || "",
+      note: note || "",
+    });
 
     setOpen(true);
   };
@@ -199,7 +182,8 @@ const BookingCalendar: React.FC = () => {
 
       const payload: CreateAppointmentProps = {
         customerId: auth.accountId!,
-        doctorId: doctorId == null || doctorId == "no-doctor" ? null : doctorId,
+        doctorId:
+          doctorId == null || doctorId === "no-doctor" ? null : doctorId,
         staffId: null,
         appointment_date: dayjs(selectedSlot.start).toISOString(),
         startTime: dayjs(selectedSlot.start).toISOString(),
@@ -215,35 +199,14 @@ const BookingCalendar: React.FC = () => {
       };
 
       if (appointmentId) {
-        await updateAppointment({
-          appointmentId: appointmentId,
-          data: payload,
-        });
-
+        await updateAppointment({ appointmentId, data: payload }).unwrap();
+        showSuccess("Cập nhật lịch hẹn thành công!");
         navigate(configRoutes.customerOrders);
       } else {
         await createAppointment(payload).unwrap();
+        showSuccess("Đặt lịch thành công!");
         navigate(configRoutes.customerOrders);
       }
-
-      // console.log("Created appointment:", res);
-
-      // const totalAmount = services.reduce(
-      //   (sum, service) => sum + service.price,
-      //   0
-      // );
-      // const paymentLinkResponse = await createLinkPayment({
-      //   appointmentId: res.id,
-      //   amount: totalAmount,
-      //   description: "Thanh toán cho lịch hẹn",
-      //   returnUrl: window.location.origin + configRoutes.paymentSuccess,
-      //   cancelUrl: window.location.origin + configRoutes.paymentFail,
-      //   customerName: values.name,
-      // }).unwrap();
-
-      // window.location.href = paymentLinkResponse.checkoutUrl;
-
-      showSuccess("Đặt lịch thành công!");
 
       setOpen(false);
       form.resetFields();
@@ -258,29 +221,32 @@ const BookingCalendar: React.FC = () => {
     if (!state.doctorId) return;
 
     try {
-      const vouchersByCustomer = await getVouchersByCustomer(
+      const vouchersResponse = await getVouchersByCustomer(
         auth.accountId!
       ).unwrap();
-      setVouchers(vouchersByCustomer);
+      const activeVouchers = vouchersResponse.filter(
+        (v: any) => v.isActive === true
+      );
+      setVouchers(activeVouchers);
 
       const membershipData = await getMembershipByCustomer(
         auth.accountId!
       ).unwrap();
-
-      if (membershipData) {
+      if (membershipData && membershipData.discountPercent) {
         setMembershipDiscount(Number(membershipData.discountPercent));
       }
 
-      const [res, res1] = await Promise.all([
+      // LẤY LỊCH ĐÃ BOOK
+      const [doctorRes, customerRes] = await Promise.all([
         getAppointmentsBookedByDoctor({ doctorId: state.doctorId }),
         getAppointmentsBookedByCustomer({ customerId: auth.accountId! }),
       ]);
 
-      if ("data" in res && res.data && "data" in res1 && res1.data) {
-        const booked: Appointment[] = res.data;
-        const booked1: Appointment[] = res1.data;
+      if ("data" in doctorRes && "data" in customerRes) {
+        const bookedByDoctor: Appointment[] = doctorRes.data || [];
+        const bookedByCustomer: Appointment[] = customerRes.data || [];
 
-        const filterValid = (list: Appointment[]): Appointment[] =>
+        const filterValid = (list: Appointment[]) =>
           list.filter(
             (item) =>
               item.status !== appointmentStatusEnum.Cancelled &&
@@ -294,88 +260,75 @@ const BookingCalendar: React.FC = () => {
           allDay: false,
         });
 
-        const merged = [...filterValid(booked), ...filterValid(booked1)].map(
-          toEvent
-        );
+        const mergedEvents = [
+          ...filterValid(bookedByDoctor),
+          ...filterValid(bookedByCustomer),
+        ].map(toEvent);
 
-        const uniqueEvents = merged.reduce<RBCEvent[]>((acc, current) => {
+        const uniqueEvents = mergedEvents.reduce<RBCEvent[]>((acc, curr) => {
           const exists = acc.some(
-            (ev) =>
-              ev.start?.getTime() === current.start?.getTime() &&
-              ev.end?.getTime() === current.end?.getTime()
+            (e) =>
+              e.start?.getTime() === curr.start?.getTime() &&
+              e.end?.getTime() === curr.end?.getTime()
           );
-          if (!exists) acc.push(current);
+          if (!exists) acc.push(curr);
           return acc;
         }, []);
 
         if (appointmentId && oldSlot?.start && oldSlot?.end) {
-          const highlightEvent: RBCEvent = {
+          const oldEvent: RBCEvent = {
             title: "Lịch cũ",
             start: new Date(oldSlot.start),
             end: new Date(oldSlot.end),
             allDay: false,
           };
 
-          const filtered = uniqueEvents.filter((ev) => {
-            const sameTime =
-              ev.start?.getTime() === new Date(oldSlot.start).getTime() &&
-              ev.end?.getTime() === new Date(oldSlot.end).getTime();
-            return !(ev.title === "Lịch cũ" || sameTime);
-          });
+          const filtered = uniqueEvents.filter(
+            (e) =>
+              !(
+                e.start?.getTime() === new Date(oldSlot.start).getTime() &&
+                e.end?.getTime() === new Date(oldSlot.end).getTime()
+              )
+          );
 
-          setEvents([...filtered, highlightEvent]);
+          setEvents([...filtered, oldEvent]);
         } else {
           setEvents(uniqueEvents);
         }
-      } else {
-        console.error("Failed to fetch appointments:", res.error);
       }
     } catch (error) {
-      console.error("Error fetching booked appointments:", error);
+      console.error("Lỗi khi tải dữ liệu:", error);
     }
   };
 
   const calculateTotal = (): number => {
-    const subtotal = services.reduce(
-      (sum, service) => sum + Number(service.price),
-      0
-    );
-
+    const subtotal = services.reduce((sum, s) => sum + Number(s.price), 0);
     let total = subtotal;
 
+    // Áp dụng voucher (chỉ voucher còn hiệu lực)
     if (selectedVoucherId) {
       const voucher = vouchers.find((v) => v.id === selectedVoucherId);
       if (voucher) {
-        const discountAmount = Number(voucher.discountAmount || 0);
-        const discountPercent = Number(voucher.discountPercent || 0);
-        const maxDiscount = Number(voucher.maxDiscount || 0);
+        const amount = Number(voucher.discountAmount || 0);
+        const percent = Number(voucher.discountPercent || 0);
+        const max = Number(voucher.maxDiscount || 0);
 
-        let calculatedDiscount = 0;
+        let discount = 0;
+        if (amount > 0) discount = amount;
+        else if (percent > 0) discount = (percent / 100) * subtotal;
 
-        if (discountAmount > 0) {
-          calculatedDiscount = discountAmount;
-        } else if (discountPercent > 0) {
-          calculatedDiscount = (discountPercent / 100) * subtotal;
-        }
-
-        if (maxDiscount > 0) {
-          calculatedDiscount = Math.min(calculatedDiscount, maxDiscount);
-        }
-
-        calculatedDiscount = Math.min(calculatedDiscount, subtotal);
-
-        total = subtotal - calculatedDiscount;
+        if (max > 0) discount = Math.min(discount, max);
+        discount = Math.min(discount, subtotal);
+        total = subtotal - discount;
       }
     }
 
-    if (membershipDiscount && Number(membershipDiscount) > 0) {
-      const memPercent = Number(membershipDiscount);
-      const membershipReduction = (memPercent / 100) * total;
-      total = total - membershipReduction;
+    // Áp dụng membership
+    if (membershipDiscount > 0) {
+      total = total * (1 - membershipDiscount / 100);
     }
 
-    const safeTotal = Math.max(0, Math.round(total));
-    return safeTotal;
+    return Math.max(0, Math.round(total));
   };
 
   const handleBack = () => {
@@ -431,9 +384,7 @@ const BookingCalendar: React.FC = () => {
         open={open}
         onCancel={() => {
           setOpen(false);
-          setEvents((prev) =>
-            prev.filter((event) => event.title !== "Đang chọn")
-          );
+          setEvents((prev) => prev.filter((e) => e.title !== "Đang chọn"));
         }}
         footer={null}
         centered
@@ -442,19 +393,20 @@ const BookingCalendar: React.FC = () => {
           form={form}
           layout="vertical"
           onFinish={handleFinish}
-          className={styles.form}
-          initialValues={{
-            name: auth?.fullName,
-          }}
+          initialValues={{ name: full_name }}
         >
-          <Form.Item label="Họ và tên" name="name" rules={[{ required: true }]}>
-            <Input placeholder="Nhập họ và tên của bạn" />
+          <Form.Item
+            label="Họ và tên"
+            name="name"
+            rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
+          >
+            <Input placeholder="Nhập họ và tên" />
           </Form.Item>
 
           <Form.Item
             label="Số điện thoại"
             name="phone"
-            rules={[{ required: true }]}
+            rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
           >
             <Input placeholder="Nhập số điện thoại" />
           </Form.Item>
@@ -464,81 +416,72 @@ const BookingCalendar: React.FC = () => {
           </Form.Item>
 
           {totalAmount === undefined && (
-            <Form.Item label="Chọn voucher giảm giá">
-              <Select
-                placeholder="Chọn voucher"
-                allowClear
-                value={selectedVoucherId ?? undefined}
-                onChange={(value) => setSelectedVoucherId(value)}
-                options={vouchers.map((v) => {
-                  const amount = Number(v.discountAmount);
-                  const percent = Number(v.discountPercent);
-
-                  let label = v.code;
-
-                  if (amount > 0) {
-                    label += ` - Giảm ${amount.toLocaleString("vi-VN")}₫`;
-                  } else if (percent > 0) {
-                    label += ` - Giảm ${percent}%`;
-                    if (v.maxDiscount) {
-                      label += ` (tối đa ${Number(v.maxDiscount).toLocaleString(
-                        "vi-VN"
-                      )}₫)`;
+            <>
+              <Form.Item label="Chọn voucher giảm giá">
+                <Select
+                  placeholder="Chọn voucher (chỉ hiển thị voucher còn hiệu lực)"
+                  allowClear
+                  value={selectedVoucherId}
+                  onChange={setSelectedVoucherId}
+                  options={vouchers.map((v) => {
+                    let label = v.code;
+                    if (v.discountAmount > 0) {
+                      label += ` - Giảm ${Number(
+                        v.discountAmount
+                      ).toLocaleString("vi-VN")}₫`;
+                    } else if (v.discountPercent > 0) {
+                      label += ` - Giảm ${v.discountPercent}%`;
+                      if (v.maxDiscount) {
+                        label += ` (tối đa ${Number(
+                          v.maxDiscount
+                        ).toLocaleString("vi-VN")}₫)`;
+                      }
                     }
-                  }
+                    return { label, value: v.id };
+                  })}
+                />
+              </Form.Item>
 
-                  return {
-                    label,
-                    value: v.id,
-                  };
-                })}
-              />
-            </Form.Item>
-          )}
+              {membershipDiscount > 0 && (
+                <Form.Item label="Giảm giá thành viên">
+                  <Input
+                    value={membershipDiscount}
+                    addonAfter="%"
+                    disabled
+                    style={{ background: "#f0fff0" }}
+                  />
+                </Form.Item>
+              )}
 
-          {totalAmount === undefined && (
-            <Form.Item label="Membership giảm giá">
-              <Input
-                value={membershipDiscount}
-                type="number"
-                min={0}
-                max={100}
-                addonAfter="%"
-                disabled
-                style={{ background: "#f5f5f5" }}
-              />
-            </Form.Item>
-          )}
-
-          {totalAmount === undefined && (
-            <Form.Item label="Tổng tiền" style={{ marginBottom: 16 }}>
-              <div
-                style={{
-                  background: "#f0f6ff",
-                  padding: "12px 16px",
-                  borderRadius: 8,
-                  fontWeight: 600,
-                  fontSize: 18,
-                  color: "#003366",
-                  textAlign: "right",
-                }}
-              >
-                {Number(calculateTotal()).toLocaleString("vi-VN")}₫
-              </div>
-            </Form.Item>
+              <Form.Item label="Tổng tiền phải thanh toán">
+                <div
+                  style={{
+                    background: "#e6f7ff",
+                    padding: "16px",
+                    borderRadius: 8,
+                    fontSize: 20,
+                    fontWeight: "bold",
+                    textAlign: "right",
+                    color: "#1890ff",
+                  }}
+                >
+                  {calculateTotal().toLocaleString("vi-VN")}₫
+                </div>
+              </Form.Item>
+            </>
           )}
 
           {totalAmount !== undefined && (
-            <Form.Item label="Tổng tiền" style={{ marginBottom: 16 }}>
+            <Form.Item label="Tổng tiền">
               <div
                 style={{
-                  background: "#f0f6ff",
-                  padding: "12px 16px",
+                  background: "#e6f7ff",
+                  padding: "16px",
                   borderRadius: 8,
-                  fontWeight: 600,
-                  fontSize: 18,
-                  color: "#003366",
+                  fontSize: 20,
+                  fontWeight: "bold",
                   textAlign: "right",
+                  color: "#1890ff",
                 }}
               >
                 {Number(totalAmount).toLocaleString("vi-VN")}₫
@@ -550,9 +493,10 @@ const BookingCalendar: React.FC = () => {
             type="primary"
             htmlType="submit"
             loading={loading}
-            className={styles.submitBtn}
+            block
+            size="large"
           >
-            Xác nhận
+            Xác nhận đặt lịch
           </Button>
         </Form>
       </Modal>

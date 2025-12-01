@@ -1,4 +1,4 @@
-import { Button, Dropdown, Space, Tag, type MenuProps } from "antd";
+import { App, Button, Dropdown, Space, Tag, type MenuProps } from "antd";
 import {
   EllipsisOutlined,
   EditOutlined,
@@ -45,6 +45,7 @@ export const categoriesColumn = (): ColumnsType<categoriesModelTable> => [
     fixed: "right",
     align: "right",
     render: (_, record) => {
+      const { modal } = App.useApp();
       const renderItems = (
         onUpdate: () => void,
         onRemove: () => void
@@ -84,8 +85,15 @@ export const categoriesColumn = (): ColumnsType<categoriesModelTable> => [
           {
             label: (
               <div
-                onClick={() => {
-                  onRemove?.();
+                onClick={(e) => {
+                  e.stopPropagation();
+                  modal.confirm({
+                    title: "Bạn có chắc muốn xóa?",
+                    okText: "Xóa",
+                    okType: "danger",
+                    cancelText: "Hủy",
+                    onOk: () => onRemove?.(),
+                  });
                 }}
               >
                 <Space>

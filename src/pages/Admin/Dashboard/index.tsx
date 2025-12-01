@@ -69,26 +69,32 @@ export default function AdminDashboardPage() {
   const handleGetData = async () => {
     setLoading(true);
     try {
-      const res = await getDashboard({
-        year,
-        month,
-      }).unwrap();
+      const res = await getDashboard({ year, month }).unwrap();
+
+      setFullDashboard(res);
 
       setDataTop({
-        totalInvoices: res.totalInvoices,
-        totalAmount: res.totalAmount,
-        totalCustomers: res.totalCustomers,
+        totalInvoices: res.totalInvoices || 0,
+        totalAmount: res.totalAmount || 0,
+        totalCustomers: res.totalCustomers || 0,
       });
 
       setTopServices(res.topServices || []);
       setTopCustomers(res.topCustomers || []);
 
-      const invoices = res.invoices || [];
+      // Xử lý doanh thu theo tháng - QUAN TRỌNG: parse totalAmount (string) thành number
       const monthlyTotals: Record<number, number> = {};
 
-      invoices.forEach((inv) => {
-        const m = new Date(inv.createdAt).getMonth() + 1;
-        monthlyTotals[m] = (monthlyTotals[m] || 0) + Number(inv.total_amount);
+      (res.invoices || []).forEach((inv: any) => {
+        const createdAt = new Date(
+          inv.createdAt || inv.created_at || Date.now()
+        );
+        const m = createdAt.getMonth() + 1;
+        const amount = parseFloat(inv.totalAmount || inv.total_amount || "0");
+
+        if (!isNaN(amount)) {
+          monthlyTotals[m] = (monthlyTotals[m] || 0) + amount;
+        }
       });
 
       const chartArr = Array.from({ length: 12 }, (_, i) => ({
@@ -97,7 +103,6 @@ export default function AdminDashboardPage() {
       }));
 
       setChartData(chartArr);
-      setFullDashboard(res);
     } catch (error) {
       console.error("Lỗi lấy dữ liệu dashboard:", error);
     } finally {
@@ -110,27 +115,29 @@ export default function AdminDashboardPage() {
   }, [year, month]);
 
   const chartOptions = {
-    chart: { type: "line", backgroundColor: "transparent" },
-    title: { text: "Doanh thu theo tháng" },
+    chart: { type: "line", backgroundColor: "transparent", height: 320 },
+    title: { text: `Doanh thu năm ${year}`, style: { fontWeight: "bold" } },
     credits: { enabled: false },
     tooltip: {
-      valueSuffix: " VNĐ",
       shared: true,
-      backgroundColor: "#fff",
+      backgroundColor: "rgba(255,255,255,0.95)",
       borderColor: "#1677ff",
       style: { color: "#000" },
+      formatter: function (this: any) {
+        return `<b>Tháng ${
+          this.x
+        }</b><br/>Doanh thu: <b>${this.y.toLocaleString("vi-VN")} VNĐ</b>`;
+      },
     },
     xAxis: {
       categories: chartData.map((d) => `Tháng ${d.month}`),
-      labels: { style: { color: "#555" } },
+      labels: { style: { color: "#666" } },
     },
     yAxis: {
-      title: { text: "VNĐ" },
+      title: { text: "Doanh thu (VNĐ)" },
       labels: {
-        formatter: function (
-          this: Highcharts.AxisLabelsFormatterContextObject
-        ) {
-          return this.value.toLocaleString("vi-VN");
+        formatter: function (this: any) {
+          return (this.value / 1000000).toFixed(1) + "tr";
         },
       },
     },
@@ -139,10 +146,14 @@ export default function AdminDashboardPage() {
         name: "Doanh thu",
         data: chartData.map((d) => d.total),
         color: "#1677ff",
+        marker: { radius: 5 },
       },
     ],
     plotOptions: {
-      series: { animation: { duration: 800 } },
+      line: {
+        dataLabels: { enabled: false },
+        animation: { duration: 1000 },
+      },
     },
   };
 
@@ -353,14 +364,14 @@ export default function AdminDashboardPage() {
         ))}
       </Row>
 
-      <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
+      <Row gutter={[16, 16]} className="mt-8">
         <Col xs={24} lg={16}>
-          <Card>
+          <Card title="Doanh thu theo tháng" className="shadow-md">
             <HighchartsReact highcharts={Highcharts} options={chartOptions} />
           </Card>
         </Col>
         <Col xs={24} lg={8}>
-          <Card>
+          <Card className="shadow-md">
             <HighchartsReact highcharts={Highcharts} options={pieOptions} />
           </Card>
         </Col>

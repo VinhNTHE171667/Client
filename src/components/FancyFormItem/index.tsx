@@ -55,6 +55,8 @@ const FancyFormItem: React.FC<FancyFormItemProps> = ({
   icon,
   format = "DD/MM/YYYY",
   options = [],
+  disabled = false,
+  readOnly = false,
 }) => {
   const defaultIcon = icon || getDefaultIcon(type, name);
 
@@ -109,6 +111,8 @@ const FancyFormItem: React.FC<FancyFormItemProps> = ({
             type={type}
             prefix={defaultIcon}
             placeholder={placeholder || `Nhập ${label.toLowerCase()}`}
+            disabled={disabled}
+            readOnly={readOnly}
           />
         );
     }

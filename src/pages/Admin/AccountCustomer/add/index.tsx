@@ -56,6 +56,12 @@ export default function AddCustomer(props: CustomerModalProps) {
       isVerified: true,
     };
 
+    const phoneRegex = /^0\d{9,10}$/;
+    if (!phoneRegex.test(values.phone)) {
+      showError("Số điện thoại không hợp lệ");
+      return;
+    }
+
     try {
       const res = await createCustomer(payload).unwrap();
       if (!res.error) {

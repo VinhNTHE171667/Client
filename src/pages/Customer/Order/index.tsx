@@ -638,6 +638,7 @@ const CustomerOrders: React.FC = () => {
       <Modal
         title="Chi Tiết Lịch Hẹn"
         open={detailModal}
+        onCancel={() => setDetailModal(false)}
         footer={[
           <Button key="close" onClick={() => setDetailModal(false)}>
             Đóng
