@@ -244,6 +244,7 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => {
       align: "center",
       width: 150,
       render: (status, record) => {
+        console.log(record);
         const hasReminder = !!record.reminderDoctor;
         const statusHandle = record?.statusHanle;
         return (
