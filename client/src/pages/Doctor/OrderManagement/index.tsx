@@ -19,6 +19,7 @@ import {
   useDoctorRequestCancelBulkMutation,
   useGetAppointmentsManagedByDoctorMutation,
   useUpdateAppointmentMutationCompleteMutation,
+  useGetDoctorCancelRequestsMutation,
 } from "@/services/appointment";
 import type { AppointmentTableProps } from "./_components/type";
 import CreateAppointment from "./add";
@@ -46,20 +47,94 @@ export default function OrderManagementDoctor() {
     useGetAppointmentsManagedByDoctorMutation();
   const [updateCompleted] = useUpdateAppointmentMutationCompleteMutation();
   const [doctorRequestCancelBulk] = useDoctorRequestCancelBulkMutation();
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [getCancelRequests] = useGetDoctorCancelRequestsMutation();
 
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
 
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (selectedKeys: React.Key[]) => setSelectedRowKeys(selectedKeys),
-  };
-
   const { auth } = useAuthStore();
 
+  const handleGetAppointments = async () => {
+    if (!auth?.accountId) return;
+
+    setIsLoading(true);
+    try {
+      let pendingCancelIds = new Set<string>();
+      try {
+        const cancelRes = await getCancelRequests().unwrap();
+        pendingCancelIds = new Set(cancelRes.map((r: any) => r.appointmentId));
+      } catch (err) {
+        console.error("Lỗi lấy yêu cầu hủy:", err);
+      }
+
+      const res = await getAppointmentsForManagement({
+        doctorId: auth.accountId,
+      }).unwrap();
+
+      const tempRes = res ?? [];
+
+      const cleanedAppointments = tempRes.map((appointment: any) => {
+        const isStillPendingCancel = pendingCancelIds.has(appointment.id);
+
+        if (appointment.statusHandle === "pending" && !isStillPendingCancel) {
+          return { ...appointment, statusHandle: null };
+        }
+        return appointment;
+      });
+
+      setAppointments(
+        cleanedAppointments.map((appointment: any) => ({
+          ...appointment,
+          onComplete: () => handleUpdateStatus(appointment.id, "completed"),
+          onUpdate: () => handleUpdate(appointment.id),
+          hasPendingCancelRequest: pendingCancelIds.has(appointment.id), // cho column dùng
+        }))
+      );
+    } catch (error) {
+      showError(
+        "Lỗi",
+        error instanceof Error ? error.message : "Không thể tải dữ liệu"
+      );
+      setAppointments([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Load lần đầu + refresh mỗi 15s
+  useEffect(() => {
+    handleGetAppointments();
+
+    const interval = setInterval(handleGetAppointments, 15000);
+    return () => clearInterval(interval);
+  }, [auth]);
+
+  const handleUpdateStatus = async (id: string, status: "completed") => {
+    setIsLoading(true);
+    try {
+      if (status === "completed") {
+        await updateCompleted({ appointmentId: id }).unwrap();
+        showSuccess("Đã đánh dấu hoàn thành");
+      }
+      handleGetAppointments(); // reload lại
+    } catch (error) {
+      showError(
+        "Lỗi",
+        error instanceof Error ? error.message : "Cập nhật thất bại"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUpdate = (id: string) => {
+    setUpdateId(id);
+    setUpdateState(true);
+  };
+
   const handleRequestCancelMultiple = async () => {
-    if (!cancelReason) {
+    if (!cancelReason.trim()) {
       showError("Lỗi", "Vui lòng nhập lý do hủy");
       return;
     }
@@ -69,67 +144,15 @@ export default function OrderManagementDoctor() {
         appointmentIds: selectedRowKeys as string[],
         doctorId: auth.accountId || "",
         reason: cancelReason,
-      });
-      showSuccess("Đã gửi yêu cầu hủy các lịch hẹn");
+      }).unwrap();
+
+      showSuccess("Đã gửi yêu cầu hủy thành công");
       setSelectedRowKeys([]);
       setCancelReason("");
       setCancelModalVisible(false);
-      handleEvent();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      handleGetAppointments();
     } catch (error: any) {
-      showError("Lỗi", error?.data?.message || "Không gửi được yêu cầu");
-    }
-  };
-
-  const handleUpdate = (id: string) => {
-    setUpdateId(id);
-    setUpdateState(true);
-  };
-
-  const handleGetAppointments = async () => {
-    setIsLoading(true);
-    try {
-      const res = await getAppointmentsForManagement({
-        doctorId: auth.accountId || "",
-      });
-      const tempRes = res.data ?? [];
-      setAppointments(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        tempRes.map((appointment: any) => ({
-          ...appointment,
-          onComplete: () => handleUpdateStatus(appointment.id, "completed"),
-          onUpdate: () => handleUpdate(appointment.id),
-        }))
-      );
-    } catch (error) {
-      showError("Error", error instanceof Error ? error.message : "Unknown");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    handleGetAppointments();
-  }, []);
-
-  const handleUpdateStatus = async (id: string, status: "completed") => {
-    setIsLoading(true);
-    try {
-      let updateMutation;
-      switch (status) {
-        case "completed":
-          updateMutation = updateCompleted;
-          break;
-        default:
-          throw new Error("Unknown status");
-      }
-      await updateMutation({ appointmentId: id });
-      showSuccess("Cập nhật trạng thái thành công");
-      handleEvent();
-    } catch (error) {
-      showError("Error", error instanceof Error ? error.message : "Unknown");
-    } finally {
-      setIsLoading(false);
+      showError("Lỗi", error?.data?.message || "Gửi yêu cầu thất bại");
     }
   };
 
@@ -142,22 +165,23 @@ export default function OrderManagementDoctor() {
 
     const matchDate =
       !dateRange ||
-      dayjs(a.appointment_date).isSame(dateRange[0], "day") ||
-      dayjs(a.appointment_date).isSame(dateRange[1], "day") ||
-      (dayjs(a.appointment_date).isAfter(dateRange[0], "day") &&
-        dayjs(a.appointment_date).isBefore(dateRange[1], "day"));
+      (dayjs(a.appointment_date).isSameOrAfter(dateRange[0], "day") &&
+        dayjs(a.appointment_date).isSameOrBefore(dateRange[1], "day"));
 
-    return matchSearch && matchDate && matchStatus;
+    return matchSearch && matchStatus && matchDate;
   });
 
-  const handleEvent = () => handleGetAppointments();
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (keys: React.Key[]) => setSelectedRowKeys(keys),
+  };
 
   return (
     <>
       <Row className="mx-2 my-2">
         <Col>
           <h4 className="cus-text-primary">
-            <strong>Lịch hẹn</strong>
+            <strong>Lịch hẹn</strong>{" "}
           </h4>
         </Col>
       </Row>
@@ -185,14 +209,16 @@ export default function OrderManagementDoctor() {
               />
             </Space>
           </Col>
+
           <Col>
             <Space>
               <Select
+                mode="multiple"
                 allowClear
                 placeholder="Chọn trạng thái"
                 value={statusFilter ?? undefined}
-                onChange={(value) => setStatusFilter(value)}
-                style={{ width: 200 }}
+                onChange={setStatusFilter}
+                style={{ width: 300 }}
                 options={[
                   {
                     label: "Chờ xác nhận",
@@ -220,6 +246,9 @@ export default function OrderManagementDoctor() {
                 ]}
               />
               <Divider type="vertical" />
+              <Button type="primary" onClick={() => setCreateState(true)}>
+                Tạo lịch hẹn
+              </Button>
               <CreateAppointment
                 isOpen={createState}
                 onClose={() => setCreateState(false)}
@@ -228,10 +257,11 @@ export default function OrderManagementDoctor() {
               <Divider type="vertical" />
               <Button
                 type="primary"
+                danger
                 disabled={selectedRowKeys.length === 0}
                 onClick={() => setCancelModalVisible(true)}
               >
-                Gửi yêu cầu hủy
+                Gửi yêu cầu hủy ({selectedRowKeys.length})
               </Button>
             </Space>
           </Col>
@@ -244,7 +274,6 @@ export default function OrderManagementDoctor() {
           columns={AppointmentColumn()}
           dataSource={filteredAppointments}
           scroll={{ x: "max-content" }}
-          tableLayout="fixed"
           pagination={{
             pageSize: 10,
             showSizeChanger: true,
@@ -264,11 +293,15 @@ export default function OrderManagementDoctor() {
       />
 
       <Modal
-        title="Lý do hủy lịch hẹn"
+        title="Nhập lý do hủy lịch hẹn"
         open={cancelModalVisible}
-        onCancel={() => setCancelModalVisible(false)}
+        onCancel={() => {
+          setCancelModalVisible(false);
+          setCancelReason("");
+        }}
         onOk={handleRequestCancelMultiple}
-        okText="Xác nhận"
+        okText="Gửi yêu cầu"
+        cancelText="Đóng"
       >
         <TextArea
           rows={4}

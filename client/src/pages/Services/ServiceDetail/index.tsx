@@ -399,7 +399,7 @@ const ServiceDetail = () => {
               onClick={handleSkipDoctor}
               loading={isAdding}
             >
-              Tiếp tục không chọn bác sĩ
+              Tiếp tục (Không chọn bác sĩ)
             </Button>,
             <Button
               key="confirm"
