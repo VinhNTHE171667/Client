@@ -61,12 +61,6 @@ export default function OrderManagementDoctor() {
     setIsLoading(true);
     try {
       let pendingCancelIds = new Set<string>();
-      try {
-        const cancelRes = await getCancelRequests().unwrap();
-        pendingCancelIds = new Set(cancelRes.map((r: any) => r.appointmentId));
-      } catch (err) {
-        console.error("Lỗi lấy yêu cầu hủy:", err);
-      }
 
       const res = await getAppointmentsForManagement({
         doctorId: auth.accountId,
@@ -74,18 +68,15 @@ export default function OrderManagementDoctor() {
 
       const tempRes = res ?? [];
 
-      // BƯỚC 3: DỌN RÁC statusHandle = "pending" nếu KHÔNG CÒN trong danh sách pending
       const cleanedAppointments = tempRes.map((appointment: any) => {
         const isStillPendingCancel = pendingCancelIds.has(appointment.id);
 
-        // Nếu statusHandle là "pending" nhưng thực tế không còn request → reset về null
         if (appointment.statusHandle === "pending" && !isStillPendingCancel) {
           return { ...appointment, statusHandle: null };
         }
         return appointment;
       });
 
-      // BƯỚC 4: Gắn thêm flag để column hiển thị tag "Khách yêu cầu hủy"
       setAppointments(
         cleanedAppointments.map((appointment: any) => ({
           ...appointment,

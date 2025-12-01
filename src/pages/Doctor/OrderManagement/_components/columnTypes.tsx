@@ -280,8 +280,7 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => {
       align: "center",
       render: (_, record) => {
         const isDeposited = record.status === appointmentStatusEnum.Deposited;
-        const isRequestCancel =
-          record.statusHanle === "pending" || record.statusHanle === "approved";
+        const isRequestCancel = record.statusHanle === "approved";
         const hasReminder = !!record.reminderDoctor;
 
         const items: MenuProps["items"] = [];
