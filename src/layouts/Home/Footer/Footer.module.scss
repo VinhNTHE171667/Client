@@ -1,17 +1,17 @@
 .footer {
-    background: var(--color-dark);
+    background: #f8f9fa;
     padding-top: 4rem;
     padding-bottom: 4rem;
 
     h4 {
         font-weight: 600;
         margin-bottom: 1.2rem;
-        color: var(--color-light);
+        color: var(--color-primary);
     }
 
     p,
     a {
-        color: #e0e0e0;
+        color: #555;
         font-size: 0.95rem;
         line-height: 1.6;
         text-decoration: none;
@@ -51,21 +51,22 @@
         height: 36px;
         margin-right: 8px;
         border-radius: 50%;
-        background: #ffffff1a;
+        background: var(--color-accent);
         color: #fff;
         text-align: center;
         line-height: 36px;
-        transition: background 0.3s;
+        transition: all 0.3s;
 
         &:hover {
-            background: var(--color-accent);
+            background: #fff;
+            color: var(--color-accent);
         }
     }
 }
 
 .copyright {
-    background: #3b3b3b;
-    color: #bbb;
+    background: #e9ecef;
+    color: #666;
     padding: 1rem 0;
 
     a {

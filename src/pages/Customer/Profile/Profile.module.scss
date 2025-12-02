@@ -45,4 +45,8 @@
             transform: translateY(-2px);
         }
     }
+
+    :global(.ant-form-item-required::before) {
+        color: red !important;
+    }
 }
