@@ -41,6 +41,10 @@ $shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.12);
   }
   .headerContent {
     flex: 1;
+    margin-left: 320px;
+    @media (max-width: 768px) {
+      margin-left: 0;
+    }
     .pageTitle {
       font-size: 36px;
       font-weight: 700;

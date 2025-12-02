@@ -712,7 +712,8 @@ const CustomerOrders: React.FC = () => {
                     Mã voucher: {selectedAppointment.voucher.code}
                   </p>
 
-                  {selectedAppointment.voucher.discountAmount && (
+                  {selectedAppointment.voucher.discountAmount && 
+                   Number(selectedAppointment.voucher.discountAmount) > 0 && (
                     <p className={styles.voucherDiscount}>
                       Giảm:{" "}
                       {Number(
@@ -722,7 +723,8 @@ const CustomerOrders: React.FC = () => {
                     </p>
                   )}
 
-                  {selectedAppointment.voucher.discountPercent && (
+                  {selectedAppointment.voucher.discountPercent && 
+                   Number(selectedAppointment.voucher.discountPercent) > 0 && (
                     <p className={styles.voucherDiscount}>
                       Giảm: {selectedAppointment.voucher.discountPercent}%
                     </p>
