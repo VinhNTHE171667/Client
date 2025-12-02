@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Card,
   Col,
@@ -35,9 +35,12 @@ const currentYear = new Date().getFullYear();
 export default function AdminDashboardPage() {
   const [year, setYear] = useState(currentYear);
   const [month, setMonth] = useState<number>(0);
+  const [viewMode, setViewMode] = useState<'year' | 'month'>('year'); // Thêm viewMode
   const [getDashboard] = useDashboardMutation();
   const [loading, setLoading] = useState(false);
   const [fullDashboard, setFullDashboard] = useState(null);
+  const pieChartRef = useRef<any>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // Theo dõi trạng thái sidebar
 
   const [dataTop, setDataTop] = useState({
     totalInvoices: 0,
@@ -82,27 +85,56 @@ export default function AdminDashboardPage() {
       setTopServices(res.topServices || []);
       setTopCustomers(res.topCustomers || []);
 
-      // Xử lý doanh thu theo tháng - QUAN TRỌNG: parse totalAmount (string) thành number
-      const monthlyTotals: Record<number, number> = {};
+      // Xử lý doanh thu theo tháng hoặc ngày
+      if (month === 0) {
+        // Hiển thị theo 12 tháng
+        setViewMode('year');
+        const monthlyTotals: Record<number, number> = {};
 
-      (res.invoices || []).forEach((inv: any) => {
-        const createdAt = new Date(
-          inv.createdAt || inv.created_at || Date.now()
-        );
-        const m = createdAt.getMonth() + 1;
-        const amount = parseFloat(inv.totalAmount || inv.total_amount || "0");
+        (res.invoices || []).forEach((inv: any) => {
+          const createdAt = new Date(
+            inv.createdAt || inv.created_at || Date.now()
+          );
+          const m = createdAt.getMonth() + 1;
+          const amount = parseFloat(inv.totalAmount || inv.total_amount || "0");
 
-        if (!isNaN(amount)) {
-          monthlyTotals[m] = (monthlyTotals[m] || 0) + amount;
-        }
-      });
+          if (!isNaN(amount)) {
+            monthlyTotals[m] = (monthlyTotals[m] || 0) + amount;
+          }
+        });
 
-      const chartArr = Array.from({ length: 12 }, (_, i) => ({
-        month: i + 1,
-        total: monthlyTotals[i + 1] || 0,
-      }));
+        const chartArr = Array.from({ length: 12 }, (_, i) => ({
+          month: i + 1,
+          total: monthlyTotals[i + 1] || 0,
+        }));
 
-      setChartData(chartArr);
+        setChartData(chartArr);
+      } else {
+        // Hiển thị theo từng ngày trong tháng
+        setViewMode('month');
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const dailyTotals: Record<number, number> = {};
+
+        (res.invoices || []).forEach((inv: any) => {
+          const createdAt = new Date(
+            inv.createdAt || inv.created_at || Date.now()
+          );
+          const m = createdAt.getMonth() + 1;
+          const d = createdAt.getDate();
+          const amount = parseFloat(inv.totalAmount || inv.total_amount || "0");
+
+          if (m === month && !isNaN(amount)) {
+            dailyTotals[d] = (dailyTotals[d] || 0) + amount;
+          }
+        });
+
+        const chartArr = Array.from({ length: daysInMonth }, (_, i) => ({
+          month: i + 1, // Sử dụng month cho day để tương thích
+          total: dailyTotals[i + 1] || 0,
+        }));
+
+        setChartData(chartArr);
+      }
     } catch (error) {
       console.error("Lỗi lấy dữ liệu dashboard:", error);
     } finally {
@@ -114,9 +146,78 @@ export default function AdminDashboardPage() {
     handleGetData();
   }, [year, month]);
 
+  // Thêm useEffect để theo dõi sidebar và update chart size
+  useEffect(() => {
+    const checkSidebarState = () => {
+      // Kiểm tra icon trigger để xác định trạng thái sidebar
+      const siderTrigger = document.querySelector('.ant-layout-sider-trigger');
+      const sider = document.querySelector('.ant-layout-sider');
+      
+      let isCollapsed = false;
+      
+      if (sider) {
+        // Check bằng class collapsed
+        isCollapsed = sider.classList.contains('ant-layout-sider-collapsed');
+        
+        // Hoặc check bằng width
+        if (!isCollapsed) {
+          const width = sider.getBoundingClientRect().width;
+          isCollapsed = width <= 80; // Sidebar collapsed thường có width khoảng 80px
+        }
+      }
+      
+      console.log('Sidebar collapsed:', isCollapsed); // Debug log
+      setSidebarCollapsed(isCollapsed);
+    };
+
+    const handleReflow = () => {
+      checkSidebarState();
+      if (pieChartRef.current?.chart) {
+        setTimeout(() => {
+          pieChartRef.current.chart.reflow();
+        }, 350);
+      }
+    };
+
+    // Lắng nghe window resize
+    window.addEventListener('resize', handleReflow);
+    
+    // Sử dụng MutationObserver để theo dõi thay đổi DOM (sidebar toggle)
+    const observer = new MutationObserver(() => {
+      handleReflow();
+    });
+
+    // Theo dõi thay đổi trên body
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['class', 'style'],
+      subtree: true,
+      childList: true,
+    });
+
+    // Check initial state và trigger reflow
+    const intervals = [100, 300, 500, 1000].map(delay =>
+      setTimeout(() => {
+        checkSidebarState();
+        handleReflow();
+      }, delay)
+    );
+
+    return () => {
+      window.removeEventListener('resize', handleReflow);
+      observer.disconnect();
+      intervals.forEach(clearTimeout);
+    };
+  }, []);
+
   const chartOptions = {
     chart: { type: "line", backgroundColor: "transparent", height: 320 },
-    title: { text: `Doanh thu năm ${year}`, style: { fontWeight: "bold" } },
+    title: { 
+      text: month === 0 
+        ? `Doanh thu năm ${year}` 
+        : `Doanh thu tháng ${month}/${year}`, 
+      style: { fontWeight: "bold" } 
+    },
     credits: { enabled: false },
     tooltip: {
       shared: true,
@@ -124,14 +225,23 @@ export default function AdminDashboardPage() {
       borderColor: "#1677ff",
       style: { color: "#000" },
       formatter: function (this: any) {
-        return `<b>Tháng ${
-          this.x
-        }</b><br/>Doanh thu: <b>${this.y.toLocaleString("vi-VN")} VNĐ</b>`;
+        const index = this.point.index;
+        const actualValue = chartData[index]?.month || this.x;
+        if (month === 0) {
+          return `<b>Tháng ${actualValue}</b><br/>Doanh thu: <b>${this.y.toLocaleString("vi-VN")} VNĐ</b>`;
+        } else {
+          return `<b>Ngày ${actualValue}</b><br/>Doanh thu: <b>${this.y.toLocaleString("vi-VN")} VNĐ</b>`;
+        }
       },
     },
     xAxis: {
-      categories: chartData.map((d) => `Tháng ${d.month}`),
-      labels: { style: { color: "#666" } },
+      categories: chartData.map((d) => viewMode === 'year' ? `Tháng ${d.month}` : `N-${d.month}`),
+      labels: { 
+        style: { color: "#666", fontSize: '9px' },
+        rotation: -45,
+        step: null, // Hiển thị tất cả labels
+      },
+      tickInterval: 1, // Đảm bảo mỗi ngày có tick
     },
     yAxis: {
       title: { text: "Doanh thu (VNĐ)" },
@@ -161,31 +271,58 @@ export default function AdminDashboardPage() {
     chart: {
       type: "pie",
       backgroundColor: "transparent",
+      height: null,
+      reflow: true,
     },
     title: {
       text: "Top 5 dịch vụ được đặt nhiều nhất",
-      style: { fontWeight: "bold" },
+      style: { fontWeight: "bold", fontSize: '16px' },
     },
     credits: { enabled: false },
     tooltip: {
       pointFormat: "<b>{point.y} lượt đặt</b> ({point.percentage:.1f}%)",
+    },
+    responsive: {
+      rules: [{
+        condition: {
+          maxWidth: 500
+        },
+        chartOptions: {
+          plotOptions: {
+            pie: {
+              size: '80%',
+              dataLabels: {
+                distance: 10,
+                style: {
+                  fontSize: '10px'
+                }
+              }
+            }
+          }
+        }
+      }]
     },
     plotOptions: {
       pie: {
         allowPointSelect: true,
         cursor: "pointer",
         borderRadius: 5,
+        size: sidebarCollapsed ? '70%' : '70%', // Giữ nguyên size
+        center: ['50%', '50%'],
         dataLabels: {
-          enabled: true,
-          distance: 20,
+          enabled: sidebarCollapsed, // Chỉ hiển thị label khi sidebar ĐÓNG
+          connectorWidth: 2,
+          connectorColor: '#999',
+          distance: 15,
           style: {
-            color: "#333",
-            fontSize: "13px",
-            textOutline: "none",
+            color: '#333',
+            fontSize: '11px',
+            textOutline: 'none',
+            fontWeight: 'normal',
           },
-          format: "<b>{point.name}</b>: {point.y} lượt",
+          format: '{point.name}: {point.y} lượt',
         },
-        showInLegend: true,
+        showInLegend: !sidebarCollapsed, // Hiển thị legend khi sidebar MỞ (thay cho labels)
       },
     },
     series: [
@@ -371,8 +508,16 @@ export default function AdminDashboardPage() {
           </Card>
         </Col>
         <Col xs={24} lg={8}>
-          <Card className="shadow-md">
-            <HighchartsReact highcharts={Highcharts} options={pieOptions} />
+          <Card className="shadow-md" style={{ height: '100%' }}>
+            <div style={{ height: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <HighchartsReact 
+                key={`pie-chart-${sidebarCollapsed}`}
+                highcharts={Highcharts} 
+                options={pieOptions}
+                ref={pieChartRef}
+                containerProps={{ style: { height: '100%', width: '100%' } }}
+              />
+            </div>
           </Card>
         </Col>
       </Row>
