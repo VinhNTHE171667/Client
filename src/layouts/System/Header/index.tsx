@@ -341,7 +341,7 @@ const HeaderSystem = ({
                 textShadow: "0 2px 4px rgba(0,0,0,0.2)",
               }}
             >
-              Xin chào {auth.fullName || "bạn"}, chúc bạn một ngày làm việc vui vẻ!
+              Xin chào {auth.fullName || "bạn"} - {auth.roles || "User"}
             </h3>
           </div>
         )}
@@ -369,7 +369,10 @@ const HeaderSystem = ({
               <div style={{ textAlign: "center", padding: "4px 0" }}>
                 <div
                   style={{
-                    color: "#4db88e",
+                    background: "linear-gradient(135deg, #2e8b57, #b7ce63)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
                     fontWeight: "600",
                     fontSize: "15px",
                     lineHeight: "1.5",
@@ -385,7 +388,7 @@ const HeaderSystem = ({
             color="#ffffff"
             overlayInnerStyle={{
               boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-              border: "2px solid #4db88e",
+              border: "2px solid #2e8b57",
             }}
           >
             <Dropdown menu={{ items: userDropdownItems }} trigger={["click"]}>
