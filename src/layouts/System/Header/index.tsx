@@ -24,6 +24,7 @@ import {
 import { showError } from "@/libs/toast";
 import { ArrowBigDown, Bell, BellOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { configRoutes } from "@/constants/route";
 
 const cx = classNames.bind(styles);
 
@@ -340,6 +341,18 @@ const HeaderSystem = ({
             <div
               className="d-flex align-items-center"
               style={{ cursor: "pointer", gap: "0.5rem" }}
+              onClick={() => {
+                // Điều hướng đến trang profile tương ứng với role
+                if (auth.roles?.toLowerCase() === "admin") {
+                  navigate(configRoutes.adminSpaProfile);
+                } else if (auth.roles?.toLowerCase() === "staff") {
+                  navigate(configRoutes.staffProfile);
+                } else if (auth.roles?.toLowerCase() === "cashier") {
+                  navigate(configRoutes.casherProfile);
+                } else if (auth.roles?.toLowerCase() === "doctor") {
+                  navigate(configRoutes.doctorProfileManagement);
+                }
+              }}
             >
               {auth.avatar ? (
                 <Avatar size="large" src={auth.avatar} />
