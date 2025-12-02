@@ -235,7 +235,7 @@ const Profile = () => {
                 <Input placeholder="Nhập họ và tên" />
               </Form.Item>
 
-              <Form.Item label="Giới tính" name="gender">
+              <Form.Item label="Giới tính" name="gender" rules={[{ required: true, message: "Vui lòng chọn giới tính" }]}>
                 <Select placeholder="Chọn giới tính">
                   <Option value="male">Nam</Option>
                   <Option value="female">Nữ</Option>
@@ -246,22 +246,22 @@ const Profile = () => {
               <Form.Item
                 label="Email"
                 name="email"
-                rules={[{ type: "email", message: "Email không hợp lệ" }]}
+                rules={[{ required: true, type: "email", message: "Email không hợp lệ" }]}
               >
                 <Input disabled />
               </Form.Item>
 
-              <Form.Item label="Số điện thoại" name="phone">
+              <Form.Item label="Số điện thoại" name="phone" rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}>
                 <Input placeholder="Nhập số điện thoại" />
               </Form.Item>
 
-              <Form.Item label="Địa chỉ" name="address">
+              <Form.Item label="Địa chỉ" name="address" rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}>
                 <Input placeholder="Nhập địa chỉ" />
               </Form.Item>
 
-              <Form.Item label="Ngày sinh" name="birth_date">
+              <Form.Item label="Ngày sinh" name="birth_date" rules={[{ required: true, message: "Vui lòng chọn ngày sinh" }]}>
                 <DatePicker
-                  style={{ width: "100%" }}
+                  style={{ width: "100" }}
                   format="DD/MM/YYYY"
                   placeholder="Chọn ngày sinh"
                 />

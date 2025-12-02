@@ -6,12 +6,10 @@ import img3 from "@/assets/img/carousel-3.jpg";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
-import AboutSection from "../About";
 import styles from "./Homepage.module.scss";
 import classNames from "classnames/bind";
 import ServiceSection from "./_components/ServiceSection";
 import QualitySection from "./_components/QualitySection";
-import ContactSection from "./_components/ContactSection";
 import TestimonialsSection from "./_components/TestimonialsSection";
 import GallerySection from "./_components/GallerySection";
 import { configRoutes } from "@/constants/route";
@@ -92,10 +90,6 @@ const Homepage = () => {
       <ServiceSection />
 
       <QualitySection />
-
-      <AboutSection />
-
-      <ContactSection />
 
       <TestimonialsSection />
 
