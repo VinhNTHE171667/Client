@@ -133,7 +133,7 @@ export default function PaymentStatsPage() {
       return "Khách lẻ / Chuyển khoản trực tiếp";
     }
     if (record.name === "Không có thu ngân") {
-      return "Tiền Cọc chuyển khoản";
+      return "Tiền chuyển khoản";
     }
     return record.name || "Không xác định";
   };
