@@ -15,10 +15,9 @@ import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import {
   useCreateCustomerMutation,
-  type CreateCustomerProps,
+  useGetCustomersMutation,
 } from "@/services/account";
 import { showError, showSuccess } from "@/libs/toast";
-import { extractErrorMessage } from "@/utils/func";
 import FancyFormItem from "@/components/FancyFormItem";
 import FancyButton from "@/components/FancyButton";
 
@@ -34,56 +33,102 @@ export default function AddCustomer(props: CustomerModalProps) {
   const [form] = useForm();
   const [isLoading, setIsLoading] = useState(false);
 
-  const [createCustomer] = useCreateCustomerMutation();
+  const [
+    triggerGetCustomers,
+    {
+      data: allCustomers = [],
+      isLoading: loadingCustomers,
+      isFetching: isFetchingCustomers,
+    },
+  ] = useGetCustomersMutation();
+
+  const [createCustomer, { isLoading: isCreating }] =
+    useCreateCustomerMutation();
 
   useEffect(() => {
-    if (isOpen) form.resetFields();
-  }, [isOpen]);
+    if (isOpen) {
+      form.resetFields();
+      triggerGetCustomers(undefined, true);
+    }
+  }, [isOpen, form, triggerGetCustomers]);
 
-  const onFinish = async (values: CreateCustomerProps) => {
+  const onFinish = async (values: any) => {
+    const normalizedPhone = values.phone?.trim();
+    const normalizedEmail = values.email?.trim().toLowerCase();
+
+    const phoneExists = allCustomers.some(
+      (c: any) => c.phone === normalizedPhone
+    );
+
+    const emailExists = allCustomers.some(
+      (c: any) =>
+        c.email && normalizedEmail && c.email.toLowerCase() === normalizedEmail
+    );
+
+    if (phoneExists) {
+      form.setFields([
+        { name: "phone", errors: ["Số điện thoại này đã được sử dụng"] },
+      ]);
+      showError("Trùng số điện thoại", "Khách hàng với số này đã tồn tại");
+      return;
+    }
+
+    if (emailExists) {
+      form.setFields([
+        { name: "email", errors: ["Email này đã được đăng ký"] },
+      ]);
+      showError("Trùng email", "Vui lòng sử dụng email khác");
+      return;
+    }
+
+    // Validate định dạng SĐT VN
+    const phoneRegex = /^0\d{9,10}$/;
+    if (!phoneRegex.test(normalizedPhone)) {
+      form.setFields([
+        {
+          name: "phone",
+          errors: ["Số điện thoại phải bắt đầu bằng 0 và có 10-11 số"],
+        },
+      ]);
+      return;
+    }
+
     setIsLoading(true);
+
     const payload = {
-      full_name: values.full_name,
+      full_name: values.full_name.trim(),
       gender: values.gender,
       birth_date: dayjs(values.birth_date).format("YYYY-MM-DD"),
       password: values.password,
-      phone: values.phone,
-      email: values.email,
-      address: values.address,
+      phone: normalizedPhone,
+      email: normalizedEmail || null,
+      address: values.address?.trim() || "",
       customer_type: "regular",
       total_spent: "0",
       isActive: true,
       isVerified: true,
     };
 
-    const phoneRegex = /^0\d{9,10}$/;
-    if (!phoneRegex.test(values.phone)) {
-      showError("Số điện thoại không hợp lệ");
-      return;
-    }
-
     try {
-      const res = await createCustomer(payload).unwrap();
-      if (!res.error) {
-        onReload();
-        showSuccess("Tạo khách hàng thành công");
-        onClose();
-      } else {
-        showError(
-          "Tạo khách hàng thất bại",
-          extractErrorMessage(res.error) || "Đã xảy ra lỗi khi tạo khách hàng."
-        );
-      }
-    } catch {
-      showError(
-        "Đã có lỗi xảy ra"
-        // extractErrorMessage(error) ||
-        //   "Vui lòng kiểm tra lại thông tin và thử lại"
-      );
+      await createCustomer(payload).unwrap();
+      showSuccess("Tạo khách hàng thành công!");
+      onReload();
+      onClose();
+      form.resetFields();
+    } catch (error: any) {
+      const msg =
+        error?.data?.message ||
+        "Đã xảy ra lỗi khi tạo khách hàng. Vui lòng thử lại.";
+
+      showError("Tạo khách hàng thất bại", msg);
+      console.error("Create customer error:", error);
     } finally {
       setIsLoading(false);
     }
   };
+
+  const isModalLoading =
+    isLoading || isCreating || loadingCustomers || isFetchingCustomers;
 
   return (
     <Modal
@@ -91,10 +136,14 @@ export default function AddCustomer(props: CustomerModalProps) {
       width={800}
       onCancel={onClose}
       footer={null}
-      closable={false}
+      closable={!isModalLoading}
+      maskClosable={false}
+      destroyOnClose
     >
-      <Spin spinning={isLoading}>
-        <h3 className="text-center mb-4">Tạo khách hàng mới</h3>
+      <Spin spinning={false}>
+        <h3 className="text-center mb-6 text-xl font-semibold">
+          Tạo khách hàng mới
+        </h3>
 
         <Form
           form={form}
@@ -102,13 +151,13 @@ export default function AddCustomer(props: CustomerModalProps) {
           onFinish={onFinish}
           style={{ margin: "0 24px" }}
         >
-          <Row gutter={[24, 12]}>
+          <Row gutter={[24, 16]}>
             <Col span={12}>
               <FancyFormItem
                 label="Họ và tên"
                 name="full_name"
                 type="text"
-                placeholder="Nhập họ tên"
+                placeholder="Nhập họ và tên"
                 rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
               />
             </Col>
@@ -133,11 +182,11 @@ export default function AddCustomer(props: CustomerModalProps) {
                 label="Ngày sinh"
                 name="birth_date"
                 rules={[{ required: true, message: "Vui lòng chọn ngày sinh" }]}
-                style={{ marginBottom: 12 }}
               >
                 <DatePicker
-                  format="YYYY-MM-DD"
-                  style={{ width: "100%", borderRadius: 8 }}
+                  format="DD/MM/YYYY"
+                  style={{ width: "100%" }}
+                  placeholder="Chọn ngày sinh"
                 />
               </Form.Item>
             </Col>
@@ -146,15 +195,16 @@ export default function AddCustomer(props: CustomerModalProps) {
               <Form.Item
                 label="Mật khẩu"
                 name="password"
-                rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
-                style={{ marginBottom: 12 }}
+                rules={[
+                  { required: true, message: "Vui lòng nhập mật khẩu" },
+                  { min: 6, message: "Mật khẩu phải từ 6 ký tự trở lên" },
+                ]}
               >
                 <Input.Password
                   placeholder="Nhập mật khẩu"
                   iconRender={(visible) =>
                     visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
                   }
-                  style={{ borderRadius: 8 }}
                 />
               </Form.Item>
             </Col>
@@ -164,7 +214,7 @@ export default function AddCustomer(props: CustomerModalProps) {
                 label="Số điện thoại"
                 name="phone"
                 type="text"
-                placeholder="Nhập số điện thoại"
+                placeholder="0901234567"
                 rules={[
                   { required: true, message: "Vui lòng nhập số điện thoại" },
                 ]}
@@ -176,7 +226,7 @@ export default function AddCustomer(props: CustomerModalProps) {
                 label="Email"
                 name="email"
                 type="email"
-                placeholder="Nhập email"
+                placeholder="example@gmail.com"
                 rules={[
                   { required: true, message: "Vui lòng nhập email" },
                   { type: "email", message: "Email không hợp lệ" },
@@ -189,24 +239,23 @@ export default function AddCustomer(props: CustomerModalProps) {
                 label="Địa chỉ"
                 name="address"
                 type="text"
-                placeholder="Nhập địa chỉ"
+                placeholder="Nhập địa chỉ thường trú"
                 rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}
               />
             </Col>
           </Row>
 
-          <Row justify="center" className="mt-4">
+          <Row justify="center" className="mt-8">
             <Space size="large">
-              <Button onClick={onClose}>Huỷ</Button>
+              <Button onClick={onClose} disabled={isModalLoading}>
+                Hủy
+              </Button>
               <FancyButton
-                onClick={() => form.submit()}
-                icon={<></>}
+                htmlType="submit"
                 label="Tạo khách hàng"
                 variant="primary"
-                size="small"
-                loading={isLoading}
-                className="w-100"
-              ></FancyButton>
+                loading={isModalLoading}
+              />
             </Space>
           </Row>
         </Form>

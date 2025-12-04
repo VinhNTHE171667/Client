@@ -116,6 +116,8 @@ const BookingCalendar: React.FC = () => {
   const totalAmount = state.totalAmount;
   const voucherId = state.voucherId;
 
+  const subtotal = services.reduce((sum, s) => sum + Number(s.price), 0);
+
   const hasFetched = useRef(false);
 
   useEffect(() => {
@@ -302,7 +304,6 @@ const BookingCalendar: React.FC = () => {
   };
 
   const calculateTotal = (): number => {
-    const subtotal = services.reduce((sum, s) => sum + Number(s.price), 0);
     let total = subtotal;
 
     // Áp dụng voucher (chỉ voucher còn hiệu lực)
@@ -315,11 +316,11 @@ const BookingCalendar: React.FC = () => {
 
         let discount = 0;
         if (amount > 0) discount = amount;
-        else if (percent > 0) discount = (percent / 100) * subtotal;
+        else if (percent > 0) discount = (percent / 100) * total;
 
         if (max > 0) discount = Math.min(discount, max);
-        discount = Math.min(discount, subtotal);
-        total = subtotal - discount;
+        discount = Math.min(discount, total);
+        total = total - discount;
       }
     }
 
@@ -333,6 +334,21 @@ const BookingCalendar: React.FC = () => {
 
   const handleBack = () => {
     navigate(configRoutes.customerOrders);
+  };
+
+  const getFilteredVouchers = () => {
+    return vouchers.filter((v) => {
+      let discount = 0;
+      if (v.discountAmount > 0) {
+        discount = v.discountAmount;
+      } else if (v.discountPercent > 0) {
+        discount = (v.discountPercent / 100) * subtotal;
+        if (v.maxDiscount > 0) {
+          discount = Math.min(discount, v.maxDiscount);
+        }
+      }
+      return discount <= 0.5 * subtotal;
+    });
   };
 
   return (
@@ -419,11 +435,11 @@ const BookingCalendar: React.FC = () => {
             <>
               <Form.Item label="Chọn voucher giảm giá">
                 <Select
-                  placeholder="Chọn voucher (chỉ hiển thị voucher còn hiệu lực)"
+                  placeholder="Chọn voucher (chỉ hiển thị voucher còn hiệu lực và giá trị sử dụng <= 50% tổng đơn)"
                   allowClear
                   value={selectedVoucherId}
                   onChange={setSelectedVoucherId}
-                  options={vouchers.map((v) => {
+                  options={getFilteredVouchers().map((v) => {
                     let label = v.code;
                     if (v.discountAmount > 0) {
                       label += ` - Giảm ${Number(

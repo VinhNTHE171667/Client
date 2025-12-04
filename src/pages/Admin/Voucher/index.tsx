@@ -15,10 +15,9 @@ import { vouchersColumn } from "./_components/columnTypes";
 import AddVoucher from "./add";
 import FancyCounting from "@/components/FancyCounting";
 import UpdateVoucher from "./update";
+import VoucherCategoriesModal from "./category-voucher/voucher-categories-modal";
 
 export default function Vouchers() {
-  //   const navigate = useNavigate();
-
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [createState, setCreateState] = useState<boolean>(false);
@@ -26,6 +25,10 @@ export default function Vouchers() {
 
   const [updateId, setUpdateId] = useState<string>("");
   const [vouchers, setVouchers] = useState<VoucherModelTable[]>([]);
+
+  // New state for categories modal
+  const [showCategoriesModal, setShowCategoriesModal] =
+    useState<boolean>(false);
 
   const handleUpdate = (id: string) => {
     setUpdateId(id);
@@ -67,30 +70,6 @@ export default function Vouchers() {
     );
   }, [vouchers, debouncedSearch]);
 
-  //   const handleDisable = async (username: string, status: string) => {
-  //     setIsLoading(true);
-  //     if (status === "ACTIVE") {
-  //       try {
-  //         const res = await instance.post(
-  //           `/account-management/disable-account/${username}`
-  //         );
-  //         if (res.data.statusCode === 200) {
-  //         } else {
-  //         }
-  //       } catch (error) {}
-  //     } else if (status === "") {
-  //       try {
-  //         const res = await instance.post(
-  //           `/account-management/active-account/${username}`
-  //         );
-  //         if (res.data.statusCode === 200) {
-  //         } else {
-  //         }
-  //       } catch (error) {}
-  //     }
-  //     setIsLoading(false);
-  //   };
-
   const [getVouchers] = useGetVouchersMutation();
 
   const handleGetVouchers = async () => {
@@ -122,8 +101,6 @@ export default function Vouchers() {
   const handleEvent = () => {
     handleGetVouchers();
   };
-
-  // const totalVouchers = useMemo(() => vouchers.length, [vouchers]);
 
   const avgVoucherValue = useMemo(() => {
     if (!vouchers || vouchers.length === 0) return 0;
@@ -173,6 +150,12 @@ export default function Vouchers() {
                 label="Thêm voucher"
                 size="middle"
                 onClick={() => setCreateState(true)}
+              />
+              <FancyButton
+                variant="secondary"
+                label="Danh mục voucher"
+                size="middle"
+                onClick={() => setShowCategoriesModal(true)}
               />
               <AddVoucher
                 isOpen={createState}
@@ -229,20 +212,6 @@ export default function Vouchers() {
               <h4>
                 <strong>{"Danh sách voucher"}</strong> <br />
               </h4>
-              {/* <Breadcrumb
-              items={[
-                {
-                  title: (
-                    <Link href={"/admin"}>
-                      {"Quản lý tài khoản"}
-                    </Link>
-                  ),
-                },
-                {
-                  title: t("admin.account.breadCrumb.admin"),
-                },
-              ]}
-            /> */}
             </Col>
             <Col>
               <Space>
@@ -260,25 +229,6 @@ export default function Vouchers() {
           <Table
             loading={isLoading}
             rowKey="id"
-            //   onRow={(record) => ({
-            //     onClick: (event) => {
-            //       const target = event.target as HTMLElement;
-            //       const isWithinLink =
-            //         target.tagName === "A" || target.closest("a");
-            //       const isWithinAction =
-            //         target.closest("td")?.classList.contains("ant-table-cell") &&
-            //         !target
-            //           .closest("td")
-            //           ?.classList.contains("ant-table-selection-column") &&
-            //         !target
-            //           .closest("td")
-            //           ?.classList.contains("ant-table-cell-fix-right");
-
-            //       if (isWithinAction && !isWithinLink) {
-            //         handleUpdate(record.id);
-            //       }
-            //     },
-            //   })}
             columns={vouchersColumn()}
             dataSource={
               Array.isArray(filteredVouchers) && filteredVouchers.length > 0
@@ -308,6 +258,12 @@ export default function Vouchers() {
           />
         </div>
       </Card>
+
+      <VoucherCategoriesModal
+        isOpen={showCategoriesModal}
+        onClose={() => setShowCategoriesModal(false)}
+        onReload={handleEvent} 
+      />
     </>
   );
 }

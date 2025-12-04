@@ -111,24 +111,21 @@ export default function InvoiceCasher() {
 
         const group = acc[apptId];
 
-        // GỘP DỊCH VỤ - KHÔNG BỊ TRÙNG
         inv.details?.forEach((detail) => {
           const existing = group.details.find(
             (d) => d.serviceId === detail.serviceId
           );
           if (existing) {
-            existing.quantity += detail.quantity;
+            existing.quantity = detail.quantity;
           } else {
             group.details.push({ ...detail });
           }
         });
 
-        // GỘP PHƯƠNG THỨC THANH TOÁN
         const methodText = inv.payment_method === "qr" ? "QR Code" : "Tiền mặt";
         const typeText = inv.invoice_type === "deposit" ? "Đặt cọc" : "Cuối";
 
         if (group.paymentMethods.includes(methodText)) {
-          // Đã có phương thức → chỉ thêm loại
           group.paymentMethods = group.paymentMethods.replace(
             new RegExp(`${methodText}.*`),
             `${methodText} (${typeText})`
@@ -138,10 +135,8 @@ export default function InvoiceCasher() {
             (group.paymentMethods ? ", " : "") + `${methodText} (${typeText})`;
         }
 
-        // CỘNG TIỀN CHÍNH XÁC
         group.totalFinalAmount += Number(inv.finalAmount || 0);
 
-        // GÁN HÓA ĐƠN
         if (inv.invoice_type === "deposit") group.depositInvoice = inv;
         if (inv.invoice_type === "final") group.finalInvoice = inv;
 
@@ -160,6 +155,7 @@ export default function InvoiceCasher() {
         ?.toLowerCase()
         .includes(search.toLowerCase()) ||
       aggInv.customer?.email?.toLowerCase().includes(search.toLowerCase()) ||
+      aggInv.customer?.phone?.toLowerCase().includes(search.toLowerCase()) ||
       aggInv.appointmentId.includes(search);
 
     const matchDate =

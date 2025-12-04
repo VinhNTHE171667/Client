@@ -152,7 +152,9 @@ export default function OrderManagementStaff() {
     const matchSearch =
       search === ""
         ? true
-        : a.customer.full_name.toLowerCase().includes(search.toLowerCase());
+        : a.customer.full_name.toLowerCase().includes(search.toLowerCase()) ||
+          a.customer.email.toLowerCase().includes(search.toLowerCase()) ||
+          a.customer.phone.toLowerCase().includes(search.toLowerCase());
 
     const matchStatus = !statusFilter || statusFilter.includes(a.status);
 
