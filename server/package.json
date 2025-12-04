@@ -25,6 +25,7 @@
     "prebuild": "npm run clean",
     "migration:generate": "npm run prebuild && npm run typeorm:ts -- migration:generate src/db/migrations/migrate",
     "migration:run": "npm run build && npm run typeorm -- migration:run",
+    "migration:run:prod": "npm run typeorm -- migration:run",
     "migration:revert": "npm run build && npm run typeorm -- migration:revert",
     "copy:hbs": "copyfiles -u 1 src/**/*.hbs dist",
     "start:prodFinal": "npx tsc -p tsconfig.build.json"
