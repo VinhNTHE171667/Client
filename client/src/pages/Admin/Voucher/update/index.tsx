@@ -23,9 +23,12 @@ import {
   useUpdateVoucherMutation,
   type CreateVoucherProps,
   type VoucherFormValues,
+  useGetVoucherCategoriesQuery,
+  type VoucherCategory,
 } from "@/services/voucher";
-import FancyButton from "@/components/FancyButton";
+import { useGetServicesMutation } from "@/services/services";
 import { useGetCustomersMutation } from "@/services/account";
+import FancyButton from "@/components/FancyButton";
 
 const { RangePicker } = DatePicker;
 
@@ -44,58 +47,121 @@ export default function UpdateVoucher({
 }: UpdateVoucherProps) {
   const [form] = useForm();
   const [isLoading, setIsLoading] = useState(false);
+  const [updateVoucher] = useUpdateVoucherMutation();
+  const [getCustomers] = useGetCustomersMutation();
+  const [getServices] = useGetServicesMutation();
   const { data: voucherData, refetch } = useGetVoucherByIdQuery(id, {
     skip: !isOpen || !id,
   });
-  const [getCustomers] = useGetCustomersMutation();
+  const { data: categories = [] } = useGetVoucherCategoriesQuery(undefined, {
+    skip: !isOpen,
+  });
+
   const [customerOptions, setCustomerOptions] = useState<
     { label: string; value: string }[]
   >([]);
-
-  const [updateVoucher] = useUpdateVoucherMutation();
+  const [categoryOptions, setCategoryOptions] = useState<
+    { label: string; value: string; prefix: string }[]
+  >([]);
+  const [maxServicePrice, setMaxServicePrice] = useState<number>(0);
+  const [selectedCategoryPrefix, setSelectedCategoryPrefix] =
+    useState<string>("");
 
   useEffect(() => {
     if (isOpen && id) {
-      refetch();
-
-      const handleGetCustomers = async () => {
-        try {
-          const res = await getCustomers().unwrap();
-          if (res)
-            setCustomerOptions(
-              res.map(
-                (customer: {
-                  id: string;
-                  full_name: string;
-                  email: string;
-                }) => ({
-                  label: `${customer.full_name} - ${customer.email}`,
-                  value: customer.id,
-                })
-              )
-            );
-        } catch (error) {
-          console.error("Failed to fetch customers:", error);
-        }
-      };
-
-      handleGetCustomers();
-
       form.resetFields();
+      refetch();
+      loadCustomers();
+      loadServices();
     }
   }, [isOpen, id]);
 
   useEffect(() => {
-    if (voucherData) {
-      form.setFieldsValue({
-        ...voucherData,
-        validRange: [
-          voucherData.validFrom ? dayjs(voucherData.validFrom) : null,
-          voucherData.validTo ? dayjs(voucherData.validTo) : null,
-        ],
-      });
+    if (categories && categories.length > 0) {
+      setCategoryOptions(
+        categories
+          .filter((cat: VoucherCategory) => cat.isActive)
+          .map((cat: VoucherCategory) => ({
+            label: cat.name,
+            value: cat.id,
+            prefix: cat.prefix,
+          }))
+      );
     }
-  }, [voucherData]);
+  }, [categories]);
+
+  useEffect(() => {
+    if (voucherData && categories && categories.length > 0) {
+      const validRange = [
+        voucherData.validFrom ? dayjs(voucherData.validFrom) : null,
+        voucherData.validTo ? dayjs(voucherData.validTo) : null,
+      ];
+      form.setFieldsValue({
+        code: voucherData.code,
+        description: voucherData.description,
+        discountAmount: voucherData.discountAmount,
+        discountPercent: voucherData.discountPercent,
+        maxDiscount: voucherData.maxDiscount,
+        isActive: voucherData.isActive ?? true,
+        customerIds: voucherData.customerIds || [],
+        validRange,
+        categoryId: voucherData.categoryId,
+      });
+
+      // Set initial prefix based on voucher category
+      if (voucherData.categoryId) {
+        const cat = categories.find(
+          (c: VoucherCategory) => c.id === voucherData.categoryId
+        );
+        if (cat) {
+          setSelectedCategoryPrefix(cat.prefix || "");
+        }
+      }
+    }
+  }, [voucherData, categories]);
+
+  const loadCustomers = async () => {
+    try {
+      const res = await getCustomers().unwrap();
+      setCustomerOptions(
+        res.map((c: any) => ({
+          label: `${c.full_name} - ${c.email}`,
+          value: c.id,
+        }))
+      );
+    } catch {
+      console.error("Failed to load customers");
+    }
+  };
+
+  const loadServices = async () => {
+    try {
+      const res = await getServices();
+      if (res?.data) {
+        const prices = res.data.map((s: any) => Number(s.price || 0));
+        setMaxServicePrice(Math.max(0, ...prices));
+      }
+    } catch {
+      console.error("Failed to load services");
+    }
+  };
+
+  const handleCategoryChange = (_: string, option: any) => {
+    const prefix = option?.prefix || "";
+    setSelectedCategoryPrefix(prefix);
+    form.setFieldsValue({ code: "" });
+  };
+
+  const handleGenerateCode = () => {
+    if (!selectedCategoryPrefix) {
+      showError("Thông báo", "Vui lòng chọn danh mục voucher trước.");
+      return;
+    }
+    const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const generatedCode = `${selectedCategoryPrefix}${randomPart}`;
+    form.setFieldsValue({ code: generatedCode });
+    form.validateFields(["code"]);
+  };
 
   const onFinish = async (values: VoucherFormValues) => {
     setIsLoading(true);
@@ -111,9 +177,7 @@ export default function UpdateVoucher({
         isActive: values.isActive ?? true,
         customerIds: values.customerIds || [],
       };
-
       const res = await updateVoucher({ id, body: payload });
-
       if (!("error" in res)) {
         showSuccess("Cập nhật voucher thành công");
         onReload();
@@ -125,7 +189,7 @@ export default function UpdateVoucher({
           extractErrorMessage(err) || "Vui lòng thử lại."
         );
       }
-    } catch {
+    } catch (error) {
       showError("Đã có lỗi xảy ra", "Vui lòng kiểm tra lại thông tin.");
     } finally {
       setIsLoading(false);
@@ -144,15 +208,27 @@ export default function UpdateVoucher({
         <h3 className="text-center mb-4 fw-semibold text-primary">
           Cập nhật Voucher
         </h3>
-
         <Form
           form={form}
           layout="vertical"
           onFinish={onFinish}
           style={{ margin: "16px 24px" }}
+          initialValues={{ isActive: true }}
         >
-          <Row gutter={[16, 16]}>
-            <Col xs={24} md={16}>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item label="Danh mục Voucher" name="categoryId">
+                <Select
+                  placeholder="Chọn danh mục"
+                  options={categoryOptions}
+                  showSearch
+                  allowClear
+                  optionFilterProp="label"
+                  onChange={handleCategoryChange}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
               <Form.Item
                 label="Mã Voucher"
                 name="code"
@@ -160,11 +236,23 @@ export default function UpdateVoucher({
                   { required: true, message: "Vui lòng nhập mã voucher" },
                 ]}
               >
-                <Input placeholder="Nhập mã voucher" />
+                <Row gutter={8}>
+                  <Col span={18}>
+                    <Form.Item name="code" noStyle>
+                      <Input placeholder="Nhập mã voucher" />
+                    </Form.Item>
+                  </Col>
+                  <Col span={6}>
+                    <Button type="primary" block onClick={handleGenerateCode}>
+                      Tạo mã
+                    </Button>
+                  </Col>
+                </Row>
               </Form.Item>
             </Col>
-
-            <Col xs={24} md={8}>
+          </Row>
+          <Row gutter={16}>
+            <Col span={16}>
               <Form.Item
                 label="Trạng thái"
                 name="isActive"
@@ -179,100 +267,85 @@ export default function UpdateVoucher({
               </Form.Item>
             </Col>
           </Row>
-
           <Form.Item label="Mô tả" name="description">
             <Input.TextArea
-              placeholder="Nhập mô tả voucher"
+              placeholder="Nhập mô tả"
               autoSize={{ minRows: 2, maxRows: 4 }}
             />
           </Form.Item>
-
-          <Row gutter={[16, 16]}>
-            <Col xs={24} md={8}>
-              <Form.Item label="Giảm theo số tiền (VNĐ)" name="discountAmount">
-                <InputNumber<number>
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item
+                label="Giảm tiền (VNĐ)"
+                name="discountAmount"
+                rules={[
+                  {
+                    validator(_, value) {
+                      if (value && value > maxServicePrice) {
+                        return Promise.reject(
+                          `Không được vượt quá ${maxServicePrice.toLocaleString()} VNĐ`
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                <InputNumber
                   style={{ width: "100%" }}
-                  placeholder="Nhập số tiền giảm"
                   min={0}
-                  formatter={(value) =>
-                    value ? `${Number(value).toLocaleString()}₫` : ""
-                  }
-                  parser={(value) => Number(value?.replace(/[₫,]/g, "") || 0)}
+                  max={maxServicePrice}
+                  formatter={(v) => (v ? Number(v).toLocaleString() : "")}
+                  parser={(v) => v.replace(/[^\d]/g, "")}
+                  suffix="₫"
+                  onChange={(value) => {
+                    if (value && value > maxServicePrice) {
+                      form.setFieldsValue({
+                        discountAmount: maxServicePrice,
+                      });
+                    }
+                  }}
                 />
               </Form.Item>
             </Col>
-
-            <Col xs={24} md={8}>
+            <Col span={8}>
               <Form.Item label="Giảm theo %" name="discountPercent">
-                <InputNumber<number>
+                <InputNumber
                   style={{ width: "100%" }}
-                  placeholder="Nhập phần trăm giảm"
                   min={0}
                   max={100}
-                  formatter={(value) => `${value}%`}
-                  parser={(value) => Number(value?.replace("%", "") || 0)}
+                  suffix="%"
                 />
               </Form.Item>
             </Col>
-
-            <Col xs={24} md={8}>
-              <Form.Item label="Giảm tối đa (VNĐ)" name="maxDiscount">
-                <InputNumber<number>
+            <Col span={8}>
+              <Form.Item
+                label="Giảm tối đa (VNĐ)"
+                name="maxDiscount"
+                rules={[
+                  { required: true, message: "Vui lòng nhập mức giảm tối đa" },
+                  {
+                    validator(_, value) {
+                      if (value && value > maxServicePrice) {
+                        return Promise.reject(
+                          `Không được lớn hơn ${maxServicePrice.toLocaleString()} VNĐ`
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                <InputNumber
                   style={{ width: "100%" }}
-                  placeholder="Nhập mức giảm tối đa"
                   min={0}
-                  formatter={(value) =>
-                    value ? `${Number(value).toLocaleString()}₫` : ""
-                  }
-                  parser={(value) => Number(value?.replace(/[₫,]/g, "") || 0)}
+                  formatter={(v) => (v ? Number(v).toLocaleString() : "")}
+                  parser={(v) => v.replace(/[^\d]/g, "")}
+                  suffix="₫"
                 />
               </Form.Item>
             </Col>
           </Row>
-
-          <Form.Item label="Áp dụng cho khách hàng" name="customerIds">
-            <Select
-              mode="multiple"
-              placeholder="Chọn khách hàng áp dụng voucher"
-              options={customerOptions}
-              allowClear
-              showSearch
-              optionFilterProp="label"
-              dropdownRender={(menu) => (
-                <>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      padding: 8,
-                    }}
-                  >
-                    <Button
-                      type="link"
-                      size="small"
-                      onClick={() => {
-                        const allValues = customerOptions.map((c) => c.value);
-                        form.setFieldsValue({ customerIds: allValues });
-                      }}
-                    >
-                      Chọn tất cả
-                    </Button>
-                    <Button
-                      type="link"
-                      size="small"
-                      onClick={() => {
-                        form.setFieldsValue({ customerIds: [] });
-                      }}
-                    >
-                      Bỏ chọn tất cả
-                    </Button>
-                  </div>
-                  {menu}
-                </>
-              )}
-            />
-          </Form.Item>
-
           <Form.Item label="Thời gian hiệu lực" name="validRange">
             <RangePicker
               style={{ width: "100%" }}
@@ -283,15 +356,23 @@ export default function UpdateVoucher({
               }
             />
           </Form.Item>
-
-          <Row justify="center" className="mt-4">
+          <Form.Item label="Áp dụng cho khách hàng" name="customerIds">
+            <Select
+              mode="multiple"
+              placeholder="Chọn khách hàng"
+              options={customerOptions}
+              allowClear
+              showSearch
+              optionFilterProp="label"
+            />
+          </Form.Item>
+          <Row justify="center">
             <Space size="large">
               <Button onClick={onClose}>Huỷ</Button>
               <FancyButton
-                onClick={() => form.submit()}
                 label="Cập nhật Voucher"
                 variant="primary"
-                size="small"
+                onClick={() => form.submit()}
                 loading={isLoading}
               />
             </Space>

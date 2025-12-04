@@ -132,6 +132,9 @@ export default function PaymentStatsPage() {
     if (!record.name && !record.cashierId) {
       return "Khách lẻ / Chuyển khoản trực tiếp";
     }
+    if (record.name === "Không có thu ngân") {
+      return "Tiền chuyển khoản";
+    }
     return record.name || "Không xác định";
   };
 

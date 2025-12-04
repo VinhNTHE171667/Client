@@ -232,7 +232,20 @@ const ServiceDetail = () => {
                 Danh mục: <strong>{category?.name}</strong>
               </Paragraph>
 
-              <Paragraph className={styles.shortDesc}>{description}</Paragraph>
+              <div style={{ 
+                lineHeight: '1.8', 
+                fontSize: '14px',
+                whiteSpace: 'pre-wrap',
+                background: '#f9fafb',
+                padding: '16px',
+                borderRadius: '8px',
+                border: '1px solid #e5e7eb',
+                maxHeight: '400px',
+                overflowY: 'auto',
+                marginBottom: '20px'
+              }}>
+                {description}
+              </div>
 
               <div className={styles.cusButtonGroup}>
                 <FancyButton
@@ -248,11 +261,6 @@ const ServiceDetail = () => {
             </div>
           </Col>
         </Row>
-
-        <div className={styles.descriptionSection}>
-          <Title level={4}>Mô tả chi tiết</Title>
-          <Paragraph>{description}</Paragraph>
-        </div>
 
         <div className={styles.feedbackSection}>
           <Title level={4}>Đánh giá từ khách hàng</Title>

@@ -15,13 +15,23 @@ import {
   Button,
   Divider,
   Statistic,
-  Collapse
 } from "antd";
-import { EyeOutlined, DownloadOutlined, UserOutlined, MoneyCollectOutlined, ProfileOutlined } from "@ant-design/icons";
+import {
+  EyeOutlined,
+  DownloadOutlined,
+  UserOutlined,
+  MoneyCollectOutlined,
+  ProfileOutlined,
+  DollarOutlined,
+  CrownOutlined,
+} from "@ant-design/icons";
 import { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { showError } from "@/libs/toast";
-import { useGetInvoiceMutation, type InvoiceProps } from "@/services/appointment";
+import {
+  useGetInvoiceMutation,
+  type InvoiceProps,
+} from "@/services/appointment";
 import * as XLSX from "xlsx/dist/xlsx.full.min.js";
 import { saveAs } from "file-saver";
 import AvatarTable from "@/components/AvatarTable";
@@ -32,14 +42,14 @@ const { Title, Text } = Typography;
 
 type AggregatedInvoice = {
   appointmentId: string;
-  customer: InvoiceProps['customer'];
+  customer: InvoiceProps["customer"];
   appointmentDate: string;
   invoiceType: string;
   status: string;
   paymentMethods: string;
   totalFinalAmount: number;
   createdAt: string;
-  details: InvoiceProps['details']; 
+  details: InvoiceProps["details"][0][]; // đã gộp, không trùng
   depositInvoice?: InvoiceProps;
   finalInvoice?: InvoiceProps;
 };
@@ -50,13 +60,16 @@ export default function InvoiceCasher() {
   const [isLoading, setIsLoading] = useState(false);
   const [invoices, setInvoices] = useState<InvoiceProps[]>([]);
   const [search, setSearch] = useState("");
-  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(
+    null
+  );
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [getInvoice] = useGetInvoiceMutation();
 
   // Modal chi tiết
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] = useState<AggregatedInvoice | null>(null);
+  const [selectedAppointment, setSelectedAppointment] =
+    useState<AggregatedInvoice | null>(null);
 
   const handleGetInvoices = async () => {
     setIsLoading(true);
@@ -74,35 +87,63 @@ export default function InvoiceCasher() {
     handleGetInvoices();
   }, []);
 
-  // Group invoices by appointmentId
+  // FIX TRÙNG DỊCH VỤ + GỘP CHÍNH XÁC
   const aggregatedInvoices = useMemo(() => {
-    const grouped = invoices.reduce((acc: Record<string, AggregatedInvoice>, inv) => {
-      const apptId = inv.appointment.id;
-      if (!acc[apptId]) {
-        acc[apptId] = {
-          appointmentId: apptId,
-          customer: inv.customer,
-          appointmentDate: inv.appointment.appointment_date,
-          invoiceType: 'Combined',
-          status: inv.status,
-          paymentMethods: `${inv.payment_method === "qr" ? "QR Code" : "Tiền mặt"} (${inv.invoice_type === "deposit" ? "Đặt cọc" : "Cuối"})`,
-          totalFinalAmount: Number(inv.finalAmount || 0),
-          createdAt: inv.createdAt,
-          details: [...(inv.details || [])],
-          depositInvoice: inv.invoice_type === 'deposit' ? inv : undefined,
-          finalInvoice: inv.invoice_type === 'final' ? inv : undefined,
-        };
-      } else {
-        // Combine payment methods if multiple
-        const separator = acc[apptId].paymentMethods ? ', ' : '';
-        acc[apptId].paymentMethods += separator + `${inv.payment_method === "qr" ? "QR Code" : "Tiền mặt"} (${inv.invoice_type === "deposit" ? "Đặt cọc" : "Cuối"})`;
-        acc[apptId].totalFinalAmount += Number(inv.finalAmount || 0);
-        acc[apptId].details.push(...(inv.details || []));
-        if (inv.invoice_type === 'deposit') acc[apptId].depositInvoice = inv;
-        if (inv.invoice_type === 'final') acc[apptId].finalInvoice = inv;
-      }
-      return acc;
-    }, {});
+    const grouped = invoices.reduce(
+      (acc: Record<string, AggregatedInvoice>, inv) => {
+        const apptId = inv.appointment.id;
+
+        if (!acc[apptId]) {
+          acc[apptId] = {
+            appointmentId: apptId,
+            customer: inv.customer,
+            appointmentDate: inv.appointment.appointment_date,
+            invoiceType: "Combined",
+            status: inv.appointment.status,
+            paymentMethods: "",
+            totalFinalAmount: 0,
+            createdAt: inv.createdAt,
+            details: [],
+            depositInvoice: undefined,
+            finalInvoice: undefined,
+          };
+        }
+
+        const group = acc[apptId];
+
+        inv.details?.forEach((detail) => {
+          const existing = group.details.find(
+            (d) => d.serviceId === detail.serviceId
+          );
+          if (existing) {
+            existing.quantity = detail.quantity;
+          } else {
+            group.details.push({ ...detail });
+          }
+        });
+
+        const methodText = inv.payment_method === "qr" ? "QR Code" : "Tiền mặt";
+        const typeText = inv.invoice_type === "deposit" ? "Đặt cọc" : "Cuối";
+
+        if (group.paymentMethods.includes(methodText)) {
+          group.paymentMethods = group.paymentMethods.replace(
+            new RegExp(`${methodText}.*`),
+            `${methodText} (${typeText})`
+          );
+        } else {
+          group.paymentMethods +=
+            (group.paymentMethods ? ", " : "") + `${methodText} (${typeText})`;
+        }
+
+        group.totalFinalAmount += Number(inv.finalAmount || 0);
+
+        if (inv.invoice_type === "deposit") group.depositInvoice = inv;
+        if (inv.invoice_type === "final") group.finalInvoice = inv;
+
+        return acc;
+      },
+      {}
+    );
 
     return Object.values(grouped);
   }, [invoices]);
@@ -110,29 +151,31 @@ export default function InvoiceCasher() {
   const filteredInvoices = aggregatedInvoices.filter((aggInv) => {
     const matchSearch =
       search === "" ||
-      aggInv.customer?.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+      aggInv.customer?.full_name
+        ?.toLowerCase()
+        .includes(search.toLowerCase()) ||
       aggInv.customer?.email?.toLowerCase().includes(search.toLowerCase()) ||
+      aggInv.customer?.phone?.toLowerCase().includes(search.toLowerCase()) ||
       aggInv.appointmentId.includes(search);
-
-    const matchStatus = !statusFilter || statusFilter === 'combined';
 
     const matchDate =
       !dateRange ||
       (dayjs(aggInv.createdAt).isAfter(dateRange[0].startOf("day")) &&
         dayjs(aggInv.createdAt).isBefore(dateRange[1].endOf("day")));
 
-    return matchSearch && matchStatus && matchDate;
+    return matchSearch && matchDate;
   });
 
   const rowSelection = {
     selectedRowKeys,
-    onChange: (newSelectedRowKeys: React.Key[], selectedRows: AggregatedInvoice[]) => {
+    onChange: (
+      newSelectedRowKeys: React.Key[],
+      selectedRows: AggregatedInvoice[]
+    ) => {
       setSelectedRowKeys(newSelectedRowKeys);
-      // Map back to original invoices for export
-      const originalInvoices = selectedRows.flatMap(agg => [
-        agg.depositInvoice, 
-        agg.finalInvoice 
-      ].filter(Boolean) as InvoiceProps[]);
+      const originalInvoices = selectedRows.flatMap((agg) =>
+        [agg.depositInvoice, agg.finalInvoice].filter(Boolean)
+      ) as InvoiceProps[];
       setSelectedInvoices(originalInvoices);
     },
   };
@@ -153,8 +196,9 @@ export default function InvoiceCasher() {
         "Loại HD": inv.invoice_type === "final" ? "Thanh toán cuối" : "Đặt cọc",
         "Tổng tiền": Number(inv.total || 0).toLocaleString("vi-VN") + "đ",
         "Giảm giá": Number(inv.discount || 0).toLocaleString("vi-VN") + "đ",
-        "Thành tiền": Number(inv.finalAmount || 0).toLocaleString("vi-VN") + "đ",
-        "PTTT": inv.payment_method === "qr" ? "QR Code" : "Tiền mặt",
+        "Thành tiền":
+          Number(inv.finalAmount || 0).toLocaleString("vi-VN") + "đ",
+        PTTT: inv.payment_method === "qr" ? "QR Code" : "Tiền mặt",
       });
 
       inv.details?.forEach((d) => {
@@ -164,7 +208,7 @@ export default function InvoiceCasher() {
           Email: `Giá: ${Number(d.price).toLocaleString("vi-VN")}đ`,
         });
       });
-      rows.push({}); // Separator
+      rows.push({});
     });
 
     const ws = XLSX.utils.json_to_sheet(rows);
@@ -184,7 +228,7 @@ export default function InvoiceCasher() {
     {
       title: "STT",
       width: 70,
-      align: "center",
+      align: "center" as const,
       render: (_: any, __: any, index: number) => index + 1,
     },
     {
@@ -199,7 +243,9 @@ export default function InvoiceCasher() {
           />
           <div>
             <div className="font-semibold">{record.customer?.full_name}</div>
-            <div className="text-xs text-gray-500">{record.customer?.phone}</div>
+            <div className="text-xs text-gray-500">
+              {record.customer?.phone}
+            </div>
           </div>
         </Space>
       ),
@@ -207,26 +253,26 @@ export default function InvoiceCasher() {
     {
       title: "Ngày hẹn",
       dataIndex: "appointmentDate",
-      align: "center",
+      align: "center" as const,
       width: 120,
       render: (date: string) => dayjs(date).format("DD/MM/YYYY"),
     },
     {
       title: "Loại HD",
-      dataIndex: "invoiceType",
-      align: "center",
-      width: 120,
+      align: "center" as const,
+      width: 110,
       render: () => <Tag color="blue">Kết hợp</Tag>,
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
-      align: "center",
+      align: "center" as const,
       render: (status: string) => {
         const map: Record<string, { color: string; text: string }> = {
           completed: { color: "purple", text: "Hoàn tất" },
           paid: { color: "green", text: "Đã thanh toán" },
-          pending: { color: "orange", text: "Chờ xử lý" },
+          deposited: { color: "orange", text: "Đã đặt cọc" },
+          pending: { color: "gold", text: "Chờ xử lý" },
         };
         const item = map[status] || { color: "default", text: status };
         return <Tag color={item.color}>{item.text}</Tag>;
@@ -235,13 +281,17 @@ export default function InvoiceCasher() {
     {
       title: "PT Thanh toán",
       dataIndex: "paymentMethods",
-      align: "center",
-      width: 180,
+      align: "center" as const,
+      width: 200,
       render: (methods: string) => (
         <Space direction="vertical" size={0}>
-          {methods.split(', ').map((method, index) => (
-            <Tag key={index} color={method.includes('QR') ? "cyan" : "blue"} size="small">
-              {method}
+          {methods.split(", ").map((m, i) => (
+            <Tag
+              key={i}
+              color={m.includes("QR") ? "cyan" : "blue"}
+              size="small"
+            >
+              {m}
             </Tag>
           ))}
         </Space>
@@ -250,18 +300,15 @@ export default function InvoiceCasher() {
     {
       title: "Thành tiền cuối",
       dataIndex: "totalFinalAmount",
-      align: "right",
+      align: "right" as const,
       width: 150,
       render: (value: number) =>
-        value.toLocaleString("vi-VN", {
-          style: "currency",
-          currency: "VND",
-        }),
+        value.toLocaleString("vi-VN", { style: "currency", currency: "VND" }),
     },
     {
       title: "Ngày tạo",
       dataIndex: "createdAt",
-      align: "center",
+      align: "center" as const,
       width: 160,
       render: (date: string) => dayjs(date).format("DD/MM/YYYY HH:mm"),
       sorter: (a: AggregatedInvoice, b: AggregatedInvoice) =>
@@ -269,9 +316,9 @@ export default function InvoiceCasher() {
     },
     {
       title: "Hành động",
-      align: "center",
+      align: "center" as const,
       width: 100,
-      fixed: "right",
+      fixed: "right" as const,
       render: (_: any, record: AggregatedInvoice) => (
         <Button
           type="link"
@@ -307,15 +354,6 @@ export default function InvoiceCasher() {
               format="DD/MM/YYYY"
               onChange={(dates) => setDateRange(dates as any)}
             />
-            <Select
-              allowClear
-              placeholder="Loại hóa đơn"
-              style={{ width: 180 }}
-              onChange={(v) => setStatusFilter(v)}
-              options={[
-                { label: "Kết hợp", value: "combined" },
-              ]}
-            />
           </Space>
 
           <Button
@@ -345,13 +383,20 @@ export default function InvoiceCasher() {
         />
       </Card>
 
+      {/* MODAL CHI TIẾT - ĐÃ FIX CASHIER + DỊCH VỤ */}
       <Modal
         title={
           <Row align="middle" gutter={16}>
-            <Col><ProfileOutlined style={{ fontSize: 20, color: '#1890ff' }} /></Col>
             <Col>
-            <Title level={4} className="mb-0">Chi tiết lịch hẹn & hóa đơn</Title>
-            <Text className="text-primary">{selectedAppointment?.appointmentId}</Text>
+              <ProfileOutlined style={{ fontSize: 20, color: "#1890ff" }} />
+            </Col>
+            <Col>
+              <Title level={4} className="mb-0">
+                Chi tiết lịch hẹn & hóa đơn
+              </Title>
+              <Text className="text-primary">
+                {selectedAppointment?.appointmentId}
+              </Text>
             </Col>
           </Row>
         }
@@ -364,61 +409,71 @@ export default function InvoiceCasher() {
         ]}
         width={1100}
         destroyOnClose
-        className="modern-modal-invoice"
         style={{ top: 20 }}
       >
         {selectedAppointment && (
           <div className="space-y-6">
-            {/* Header with Icons */}
-            <Row gutter={24} align="middle" className="modern-header">
-              <Col span={6} className="ml-2">
-                <Space direction="vertical">
-                  <Text strong className="text-lg">Ngày hẹn</Text>
-                  <Tag color="cyan">
-                    {dayjs(selectedAppointment.appointmentDate).format("DD/MM/YYYY HH:mm")}
-                  </Tag>
-                </Space>
+            <Row gutter={24} align="middle">
+              <Col span={6}>
+                <Text strong>Ngày hẹn</Text>
+                <Tag color="cyan" className="block mt-1">
+                  {dayjs(selectedAppointment.appointmentDate).format(
+                    "DD/MM/YYYY HH:mm"
+                  )}
+                </Tag>
               </Col>
               <Col span={6}>
-                <Space direction="vertical">
-                  <Text strong className="text-lg">Trạng thái</Text>
-                  <Tag color="purple" className="modern-tag-large">
-                    {selectedAppointment.status}
-                  </Tag>
-                </Space>
+                <Text strong>Trạng thái</Text>
+                <Tag color="purple" className="block mt-1">
+                  {selectedAppointment.status === "paid"
+                    ? "Đã thanh toán"
+                    : "Đã đặt cọc"}
+                </Tag>
               </Col>
-              <Col span={6} className="text-right">
+              <Col span={12} className="text-right">
                 <Statistic
                   title="Tổng thành tiền cuối"
                   value={selectedAppointment.totalFinalAmount}
-                  prefix={<MoneyCollectOutlined style={{ color: '#52c41a' }} />}
-                  valueStyle={{ color: '#52c41a', fontSize: 24 }}
-                  formatter={(value) => value.toLocaleString("vi-VN")}
+                  prefix="₫"
+                  valueStyle={{ color: "#52c41a", fontSize: 28 }}
+                  formatter={(v) => Number(v).toLocaleString("vi-VN")}
                 />
               </Col>
             </Row>
 
-            <Card 
-              title={<Space><UserOutlined /> Thông tin khách hàng</Space>} 
-              size="small" 
-              className="modern-card mb-2"
-              hoverable
+            <Card
+              title={
+                <Space>
+                  <UserOutlined /> Thông tin khách hàng
+                </Space>
+              }
+              size="small"
             >
-              <Descriptions bordered column={2} size="small" colon={false}>
+              <Descriptions bordered column={2} size="small">
                 <Descriptions.Item label="Tên khách hàng" span={2}>
                   <Space>
-                    <Avatar src={selectedAppointment.customer?.avatar ?? NoAvatarImage} size={48} />
+                    <Avatar
+                      src={
+                        selectedAppointment.customer?.avatar ?? NoAvatarImage
+                      }
+                      size={48}
+                    />
                     <div>
-                      <div className="font-semibold text-lg">{selectedAppointment.customer?.full_name}</div>
+                      <div className="font-semibold text-lg">
+                        {selectedAppointment.customer?.full_name}
+                      </div>
                       <div className="text-sm text-gray-600">
-                        {selectedAppointment.customer?.phone} | {selectedAppointment.customer?.email}
+                        {selectedAppointment.customer?.phone} |{" "}
+                        {selectedAppointment.customer?.email}
                       </div>
                     </div>
                   </Space>
                 </Descriptions.Item>
                 <Descriptions.Item label="Loại khách">
                   {selectedAppointment.customer?.customer_type === "vip" ? (
-                    <Tag color="gold" icon={<CrownOutlined />}>VIP</Tag>
+                    <Tag color="gold" icon={<CrownOutlined />}>
+                      VIP
+                    </Tag>
                   ) : (
                     <Tag color="default">Thường</Tag>
                   )}
@@ -426,85 +481,97 @@ export default function InvoiceCasher() {
               </Descriptions>
             </Card>
 
-            {/* Services Table */}
-            <Card 
-              title={<Space><ProfileOutlined /> Dịch vụ đã sử dụng</Space>} 
-              size="small" 
-              className="modern-card"
-              hoverable
+            <Card
+              title={
+                <Space>
+                  <ProfileOutlined /> Dịch vụ đã sử dụng
+                </Space>
+              }
+              size="small"
             >
               <Table
-                dataSource={selectedAppointment.details || []}
+                dataSource={selectedAppointment.details}
                 pagination={false}
-                rowKey="id"
+                rowKey="serviceId"
                 size="small"
                 bordered
-                className="modern-table"
                 columns={[
                   {
                     title: "Tên dịch vụ",
-                    dataIndex: ["service", "name"],
-                    render: (name: string, record: any) => (
-                      <Space size="middle">
+                    render: (_: any, r: any) => (
+                      <Space>
                         <div>
-                          <div className="font-medium">{name}</div>
+                          <div className="font-medium">{r.service?.name}</div>
                           <Text type="secondary" style={{ fontSize: 12 }}>
-                            {record.service?.description}
+                            {r.service?.description?.slice(0, 80)}...
                           </Text>
                         </div>
                       </Space>
                     ),
-                    width: 350,
+                    width: 380,
                   },
-                  { 
-                    title: "SL", 
-                    dataIndex: "quantity", 
-                    width: 80, 
-                    align: "center",
+                  {
+                    title: "SL",
+                    dataIndex: "quantity",
+                    width: 80,
+                    align: "center" as const,
                   },
                   {
                     title: "Giá",
                     dataIndex: "price",
-                    width: 120,
-                    align: "right",
+                    width: 130,
+                    align: "right" as const,
                     render: (v: string) =>
-                      <Text strong>{Number(v).toLocaleString("vi-VN", { style: "currency", currency: "VND" })}</Text>,
+                      Number(v).toLocaleString("vi-VN", {
+                        style: "currency",
+                        currency: "VND",
+                      }),
                   },
                   {
                     title: "Thành tiền",
                     width: 150,
-                    align: "right",
-                    render: (_: any, record: any) =>
+                    align: "right" as const,
+                    render: (_: any, r: any) => (
                       <Text strong className="text-green-600">
-                        {(Number(record.price) * record.quantity).toLocaleString("vi-VN", {
-                          style: "currency",
-                          currency: "VND",
-                        })}
-                      </Text>,
+                        {(Number(r.price) * r.quantity).toLocaleString(
+                          "vi-VN",
+                          {
+                            style: "currency",
+                            currency: "VND",
+                          }
+                        )}
+                      </Text>
+                    ),
                   },
                 ]}
               />
             </Card>
 
-            {/* Payment Breakdown */}
-            <Card 
-              title={<Space><MoneyCollectOutlined /> Chi tiết thanh toán</Space>} 
-              size="small" 
-              className="modern-card mb-2 mt-2"
-              hoverable
+            <Card
+              title={
+                <Space>
+                  <MoneyCollectOutlined /> Chi tiết thanh toán
+                </Space>
+              }
+              size="small"
             >
-              <Row gutter={24} align="middle">
+              <Row gutter={24}>
                 {selectedAppointment.depositInvoice && (
                   <Col span={12}>
                     <Statistic
                       title="Hóa đơn đặt cọc"
-                      value={Number(selectedAppointment.depositInvoice.finalAmount)}
+                      value={Number(
+                        selectedAppointment.depositInvoice.finalAmount
+                      )}
                       prefix="₫"
-                      valueStyle={{ color: '#faad14' }}
-                      formatter={(value) => value.toLocaleString("vi-VN")}
+                      valueStyle={{ color: "#faad14" }}
+                      formatter={(v) => Number(v).toLocaleString("vi-VN")}
                     />
-                    <Tag color="orange" size="small" className="mt-2">
-                      {selectedAppointment.depositInvoice.payment_method === "qr" ? "QR Code" : "Tiền mặt"}
+                    <Tag color="orange" className="mt-2">
+                      {selectedAppointment.depositInvoice.payment_method ===
+                      "qr"
+                        ? "QR Code"
+                        : "Tiền mặt"}
                     </Tag>
                   </Col>
                 )}
@@ -512,56 +579,94 @@ export default function InvoiceCasher() {
                   <Col span={12}>
                     <Statistic
                       title="Hóa đơn thanh toán cuối"
-                      value={Number(selectedAppointment.finalInvoice.finalAmount)}
+                      value={Number(
+                        selectedAppointment.finalInvoice.finalAmount
+                      )}
                       prefix="₫"
-                      valueStyle={{ color: '#52c41a' }}
-                      formatter={(value) => value.toLocaleString("vi-VN")}
+                      valueStyle={{ color: "#52c41a" }}
+                      formatter={(v) => Number(v).toLocaleString("vi-VN")}
                     />
-                    <Tag color="green" size="small" className="mt-2">
-                      {selectedAppointment.finalInvoice.payment_method === "qr" ? "QR Code" : "Tiền mặt"}
+                    <Tag color="green" className="mt-2">
+                      {selectedAppointment.finalInvoice.payment_method === "qr"
+                        ? "QR Code"
+                        : "Tiền mặt"}
                     </Tag>
                   </Col>
                 )}
               </Row>
               <Divider />
-              <Row justify="end" className="modern-total">
-                <Col>
-                  <Space>
-                    <Text>Tổng cộng: </Text>
-                    <Text strong className="text-2xl text-green-600">
-                      {Number(selectedAppointment.totalFinalAmount).toLocaleString("vi-VN")}₫
-                    </Text>
-                  </Space>
-                </Col>
+              <Row justify="end">
+                <Text strong className="text-2xl text-green-600">
+                  {selectedAppointment.totalFinalAmount.toLocaleString("vi-VN")}{" "}
+                  ₫
+                </Text>
               </Row>
             </Card>
 
-            {/* Cashier Card */}
-            {(selectedAppointment.finalInvoice?.cashier || selectedAppointment.depositInvoice?.cashier) && (
-              <Card title={<Space><UserOutlined /> Thông tin thu ngân</Space>} size="small" className="modern-card" hoverable>
-                <Descriptions bordered column={1} size="small" colon={false}>
+            {/* CASHIER - ĐÃ FIX RÕ RÀNG */}
+            {(selectedAppointment.finalInvoice?.cashier ||
+              selectedAppointment.depositInvoice?.cashier) && (
+              <Card
+                title={
+                  <Space>
+                    <UserOutlined /> Thông tin thu ngân
+                  </Space>
+                }
+                size="small"
+              >
+                <Descriptions bordered column={1} size="small">
                   {selectedAppointment.finalInvoice?.cashier && (
-                    <Descriptions.Item label="Thu ngân cuối">
+                    <Descriptions.Item label="Thu ngân thanh toán cuối">
                       <Space>
-                        <Avatar src={selectedAppointment.finalInvoice.cashier.avatar ?? NoAvatarImage} size={32} />
+                        <Avatar
+                          src={
+                            selectedAppointment.finalInvoice.cashier.avatar ??
+                            NoAvatarImage
+                          }
+                          size={32}
+                        />
                         <div>
-                          <div className="font-semibold">{selectedAppointment.finalInvoice.cashier.full_name}</div>
-                          <div className="text-xs text-gray-500">{selectedAppointment.finalInvoice.cashier.email}</div>
+                          <div className="font-semibold">
+                            {selectedAppointment.finalInvoice.cashier.full_name}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {selectedAppointment.finalInvoice.cashier.email}
+                          </div>
                         </div>
                       </Space>
                     </Descriptions.Item>
                   )}
-                  {selectedAppointment.depositInvoice?.cashier && selectedAppointment.depositInvoice.cashier !== selectedAppointment.finalInvoice?.cashier && (
-                    <Descriptions.Item label="Thu ngân đặt cọc">
-                      <Space>
-                        <Avatar src={selectedAppointment.depositInvoice.cashier.avatar ?? NoAvatarImage} size={32} />
-                        <div>
-                          <div className="font-semibold">{selectedAppointment.depositInvoice.cashier.full_name}</div>
-                          <div className="text-xs text-gray-500">{selectedAppointment.depositInvoice.cashier.email}</div>
-                        </div>
-                      </Space>
-                    </Descriptions.Item>
-                  )}
+                  {selectedAppointment.depositInvoice?.cashier &&
+                    !selectedAppointment.finalInvoice?.cashier && (
+                      <Descriptions.Item label="Thu ngân đặt cọc">
+                        <Space>
+                          <Avatar
+                            src={
+                              selectedAppointment.depositInvoice.cashier
+                                .avatar ?? NoAvatarImage
+                            }
+                            size={32}
+                          />
+                          <div>
+                            <div className="font-semibold">
+                              {
+                                selectedAppointment.depositInvoice.cashier
+                                  .full_name
+                              }
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {selectedAppointment.depositInvoice.cashier.email}
+                            </div>
+                          </div>
+                        </Space>
+                      </Descriptions.Item>
+                    )}
+                  {selectedAppointment.depositInvoice &&
+                    !selectedAppointment.depositInvoice.cashier && (
+                      <Descriptions.Item label="Hóa đơn đặt cọc">
+                        <Tag color="orange">Thanh toán online qua QR</Tag>
+                      </Descriptions.Item>
+                    )}
                 </Descriptions>
               </Card>
             )}

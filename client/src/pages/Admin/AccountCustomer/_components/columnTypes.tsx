@@ -1,4 +1,13 @@
-import { Button, Dropdown, Space, Tag, Tooltip, type MenuProps } from "antd";
+import {
+  App,
+  Button,
+  Dropdown,
+  Modal,
+  Space,
+  Tag,
+  Tooltip,
+  type MenuProps,
+} from "antd";
 import {
   EllipsisOutlined,
   EditOutlined,
@@ -127,6 +136,7 @@ export const customerColumn = (): ColumnsType<CustomerModelTable> => [
     fixed: "right",
     align: "center",
     render: (_, record) => {
+      const { modal } = App.useApp();
       const menuItems: MenuProps["items"] = [
         {
           key: "edit",
@@ -144,7 +154,20 @@ export const customerColumn = (): ColumnsType<CustomerModelTable> => [
         {
           key: "delete",
           label: (
-            <div onClick={() => record.onRemove?.()}>
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+
+                modal.confirm({
+                  title: "Bạn có chắc muốn xóa?",
+                  content: "Hành động này không thể hoàn tác.",
+                  okText: "Xóa",
+                  okType: "danger",
+                  cancelText: "Hủy",
+                  onOk: () => record.onRemove?.(),
+                });
+              }}
+            >
               <Space>
                 <DeleteOutlined /> Xóa
               </Space>

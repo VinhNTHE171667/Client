@@ -152,7 +152,9 @@ export default function OrderManagementStaff() {
     const matchSearch =
       search === ""
         ? true
-        : a.customer.full_name.toLowerCase().includes(search.toLowerCase());
+        : a.customer.full_name.toLowerCase().includes(search.toLowerCase()) ||
+          a.customer.email.toLowerCase().includes(search.toLowerCase()) ||
+          a.customer.phone.toLowerCase().includes(search.toLowerCase());
 
     const matchStatus = !statusFilter || statusFilter.includes(a.status);
 
@@ -445,6 +447,9 @@ export default function OrderManagementStaff() {
                     </div>
                     {isVoucherExpired(selectedDetailAppointment.voucher) && (
                       <Tag color="red">Voucher đã hết hạn!</Tag>
+                    )}
+                    {selectedDetailAppointment.voucher.isActive == false && (
+                      <Tag color="red">Voucher đã bị vô hiệu</Tag>
                     )}
                   </Space>
                 </div>

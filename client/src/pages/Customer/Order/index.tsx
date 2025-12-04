@@ -42,6 +42,7 @@ import {
   ClockCircleOutlined,
   TeamOutlined,
   PhoneOutlined,
+  QuestionCircleOutlined,
 } from "@ant-design/icons";
 import { configRoutes } from "@/constants/route";
 import NoImage from "@/assets/img/NoImage/NoImage.jpg";
@@ -78,6 +79,8 @@ const CustomerOrders: React.FC = () => {
   const [feedbacks, setFeedbacks] = useState<
     { serviceId: string; rating?: number; comment?: string }[]
   >([]);
+  const [reasonModal, setReasonModal] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState<string>("");
   const [viewFeedbackModal, setViewFeedbackModal] = useState(false);
   const [viewFeedbacks, setViewFeedbacks] = useState<FeedbackResponse[]>([]);
   const [getFeedbackByAppointment, { isLoading: isLoadingFeedback }] =
@@ -446,12 +449,28 @@ const CustomerOrders: React.FC = () => {
                           <h3 className={styles.customerName}>
                             {item.customer?.full_name || "Khách hàng"}
                           </h3>
-                          <Tag
-                            color={statusTagColor(item.status)}
-                            className={styles.statusTag}
-                          >
-                            {translateStatus(item.status)}
-                          </Tag>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Tag
+                              color={statusTagColor(item.status)}
+                              className={styles.statusTag}
+                            >
+                              {translateStatus(item.status)}
+                            </Tag>
+                            {item.status === appointmentStatusEnum.Rejected && (
+                              <Button
+                                type="link"
+                                size="small"
+                                icon={<QuestionCircleOutlined />}
+                                onClick={() => {
+                                  setRejectionReason(item.rejectionReason || "Không có lý do cụ thể");
+                                  setReasonModal(true);
+                                }}
+                                style={{ padding: 0, color: "#ff4d4f" }}
+                              >
+                                Lý do
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <div className={styles.priceSection}>
@@ -512,27 +531,6 @@ const CustomerOrders: React.FC = () => {
                       </Button>
                       {isPending && (
                         <>
-                          <Button
-                            type="text"
-                            size="small"
-                            icon={<EditOutlined />}
-                            onClick={() =>
-                              handleSelectEvent({
-                                id: item.id,
-                                title:
-                                  item.details?.[0]?.service?.name ??
-                                  "Lịch hẹn",
-                                start: new Date(item.startTime ?? new Date()),
-                                end: new Date(
-                                  item.endTime ?? item.startTime ?? new Date()
-                                ),
-                                resource: item,
-                              } as RBCEvent)
-                            }
-                            className={styles.actionBtn}
-                          >
-                            Chỉnh Sửa
-                          </Button>
                           <Button
                             type="text"
                             size="small"
@@ -636,8 +634,26 @@ const CustomerOrders: React.FC = () => {
         <p className={styles.cautionText}>Hành động này không thể hoàn tác.</p>
       </Modal>
       <Modal
+        title="Lý Do Từ Chối"
+        open={reasonModal}
+        onCancel={() => setReasonModal(false)}
+        footer={[
+          <Button key="close" type="primary" onClick={() => setReasonModal(false)}>
+            Đóng
+          </Button>,
+        ]}
+        wrapClassName={styles.modal}
+      >
+        <div style={{ padding: "20px 0" }}>
+          <p style={{ fontSize: "16px", lineHeight: "1.6", color: "#333" }}>
+            {rejectionReason}
+          </p>
+        </div>
+      </Modal>
+      <Modal
         title="Chi Tiết Lịch Hẹn"
         open={detailModal}
+        onCancel={() => setDetailModal(false)}
         footer={[
           <Button key="close" onClick={() => setDetailModal(false)}>
             Đóng
@@ -696,7 +712,8 @@ const CustomerOrders: React.FC = () => {
                     Mã voucher: {selectedAppointment.voucher.code}
                   </p>
 
-                  {selectedAppointment.voucher.discountAmount && (
+                  {selectedAppointment.voucher.discountAmount && 
+                   Number(selectedAppointment.voucher.discountAmount) > 0 && (
                     <p className={styles.voucherDiscount}>
                       Giảm:{" "}
                       {Number(
@@ -706,7 +723,8 @@ const CustomerOrders: React.FC = () => {
                     </p>
                   )}
 
-                  {selectedAppointment.voucher.discountPercent && (
+                  {selectedAppointment.voucher.discountPercent && 
+                   Number(selectedAppointment.voucher.discountPercent) > 0 && (
                     <p className={styles.voucherDiscount}>
                       Giảm: {selectedAppointment.voucher.discountPercent}%
                     </p>

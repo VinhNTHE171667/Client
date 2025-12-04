@@ -16,6 +16,7 @@ import { MembershipModule } from './modules/membership/membership.module';
 import { FeedbackModule } from './modules/feedback/feedback.module';
 import { NotificationModule } from './modules/notification/notification.module'; 
 import { ScheduleModule } from '@nestjs/schedule';
+import { CategoryVoucherModule } from './modules/categoryVoucher/category-voucher.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     MembershipModule,
     FeedbackModule,
     NotificationModule,
+    CategoryVoucherModule
   ],
   controllers: [AppController],
   providers: [AppService],

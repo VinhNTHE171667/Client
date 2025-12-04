@@ -13,13 +13,17 @@ import ErrorBoundary from "./components/ErrorBoundary/index.tsx";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
+import { App as AntdApp } from "antd";
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ErrorBoundary>
       <ReduxProvider>
         <AntdThemeProvider>
-          <ToastContainer />
-          <App />
+          <AntdApp>
+            <ToastContainer />
+            <App />
+          </AntdApp>
         </AntdThemeProvider>
       </ReduxProvider>
     </ErrorBoundary>

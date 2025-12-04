@@ -215,7 +215,7 @@ const CasherProfile = () => {
                 <Input placeholder="Nhập tên nhân viên" />
               </Form.Item>
 
-              <Form.Item label="Giới tính" name="gender">
+              <Form.Item label="Giới tính" name="gender" rules={[{ required: true, message: "Vui lòng chọn giới tính" }]}>
                 <Select placeholder="Chọn giới tính">
                   <Option value="male">Nam</Option>
                   <Option value="female">Nữ</Option>
@@ -226,12 +226,12 @@ const CasherProfile = () => {
               <Form.Item
                 label="Email"
                 name="email"
-                rules={[{ type: "email", message: "Email không hợp lệ" }]}
+                rules={[{ required: true, type: "email", message: "Email không hợp lệ" }]}
               >
                 <Input disabled />
               </Form.Item>
 
-              <Form.Item label="Số điện thoại" name="phone">
+              <Form.Item label="Số điện thoại" name="phone" rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}>
                 <Input placeholder="Nhập số điện thoại" />
               </Form.Item>
 

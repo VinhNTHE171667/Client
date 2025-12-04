@@ -122,6 +122,11 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => {
       width: 70,
       align: "center",
       render: (_, record) => {
+        // Không hiển thị nút actions nếu đã thanh toán
+        if (record.status === appointmentStatusEnum.Paid) {
+          return <span>—</span>;
+        }
+
         const items: MenuProps["items"] = [];
 
         // Nút: Nhắc bác sĩ hoàn thành

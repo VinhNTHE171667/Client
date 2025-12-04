@@ -24,6 +24,7 @@ import {
 import { showError } from "@/libs/toast";
 import { ArrowBigDown, Bell, BellOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { configRoutes } from "@/constants/route";
 
 const cx = classNames.bind(styles);
 
@@ -205,7 +206,9 @@ const HeaderSystem = ({
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   return (
-    <div className={cx("header-wrapper")}>
+    <div className={cx("header-wrapper")} style={{
+      background: "linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%)",
+    }}>
       <div className={cx("header-content")}>
         {isMobile && (
           <div
@@ -318,6 +321,31 @@ const HeaderSystem = ({
           </Space>
         </h2>
 
+        {/* Greeting Message */}
+        {!isMobile && (
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <h3
+              style={{
+                color: "#ffffff",
+                fontWeight: "700",
+                fontSize: "18px",
+                margin: 0,
+                letterSpacing: "0.5px",
+                textShadow: "0 2px 4px rgba(0,0,0,0.2)",
+              }}
+            >
+              Xin chào {auth.fullName || "bạn"} - {auth.roles || "User"}
+            </h3>
+          </div>
+        )}
+
         {/* Notification and User Dropdown */}
         <div className="d-flex align-items-center" style={{ gap: "1rem" }}>
           <Dropdown
@@ -336,23 +364,63 @@ const HeaderSystem = ({
             </Badge>
           </Dropdown>
 
-          <Dropdown menu={{ items: userDropdownItems }} trigger={["click"]}>
-            <div
-              className="d-flex align-items-center"
-              style={{ cursor: "pointer", gap: "0.5rem" }}
-            >
-              {auth.avatar ? (
-                <Avatar size="large" src={auth.avatar} />
-              ) : (
-                <Avatar size="large">{userInitial}</Avatar>
-              )}
-              {!isMobile && (
-                <span className="d-none d-xl-block fw-bold text-dark">
-                  {auth.fullName || "Tài khoản"}
-                </span>
-              )}
-            </div>
-          </Dropdown>
+          <Tooltip
+            title={
+              <div style={{ textAlign: "center", padding: "4px 0" }}>
+                <div
+                  style={{
+                    background: "linear-gradient(135deg, #2e8b57, #b7ce63)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                    fontWeight: "600",
+                    fontSize: "15px",
+                    lineHeight: "1.5",
+                  }}
+                >
+                  Xin chào {auth.fullName || "bạn"}!
+                  <br />
+                  Chúc bạn một ngày làm việc vui vẻ
+                </div>
+              </div>
+            }
+            placement="bottom"
+            color="#ffffff"
+            overlayInnerStyle={{
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              border: "2px solid #2e8b57",
+            }}
+          >
+            <Dropdown menu={{ items: userDropdownItems }} trigger={["click"]}>
+              <div
+                className="d-flex align-items-center"
+                style={{ cursor: "pointer", gap: "0.5rem" }}
+                onClick={() => {
+                  // Điều hướng đến trang profile tương ứng với role
+                  if (auth.roles?.toLowerCase() === "admin") {
+                    navigate(configRoutes.adminSpaProfile);
+                  } else if (auth.roles?.toLowerCase() === "staff") {
+                    navigate(configRoutes.staffProfile);
+                  } else if (auth.roles?.toLowerCase() === "cashier") {
+                    navigate(configRoutes.casherProfile);
+                  } else if (auth.roles?.toLowerCase() === "doctor") {
+                    navigate(configRoutes.doctorProfileManagement);
+                  }
+                }}
+              >
+                {auth.avatar ? (
+                  <Avatar size="large" src={auth.avatar} />
+                ) : (
+                  <Avatar size="large">{userInitial}</Avatar>
+                )}
+                {!isMobile && (
+                  <span className="d-none d-xl-block fw-bold text-dark">
+                    {auth.fullName || "Tài khoản"}
+                  </span>
+                )}
+              </div>
+            </Dropdown>
+          </Tooltip>
         </div>
       </div>
 
