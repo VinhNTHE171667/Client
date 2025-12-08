@@ -405,7 +405,7 @@ export const appointmentApi = createApi({
       query: ({ appointmentId, staff: { id } }) => ({
         url: `/appointment/${appointmentId}/confirm`,
         method: "PATCH",
-        body: { staff: { id } },
+        body: {  id  },
       }),
     }),
 
