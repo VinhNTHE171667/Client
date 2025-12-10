@@ -137,6 +137,12 @@ export const getSidebarItemsByRole = (role: string): SiderItem[] => {
 
   const DoctorSidebar = (): SiderItem[] => [
     {
+      name: "Lịch sử khám",
+      link: configRoutes.doctorOrderManagementHistory,
+      icon: <MdPeopleAlt className="ml-3" />,
+      activeLink: [configRoutes.doctorOrderManagementHistory],
+    },
+    {
       name: "Đơn hàng",
       link: configRoutes.doctorOrderManagement,
       icon: <MdPeopleAlt className="ml-3" />,

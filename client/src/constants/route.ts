@@ -44,6 +44,7 @@ export const configRoutes = {
 
   doctorDashboard: "/doctor/dashboard",
   doctorOrderManagement: "/doctor/orders",
+  doctorOrderManagementHistory: "/doctor/orders/history",
   doctorProfileManagement: "/doctor/profile",
   notificationDoctor: "/doctor/notifications",
 

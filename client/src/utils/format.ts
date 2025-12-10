@@ -20,6 +20,10 @@ export const translateStatus = (status?: string) => {
       return "Đã xác nhận";
     case appointmentStatusEnum.Deposited:
       return "Đã đặt cọc";
+    case appointmentStatusEnum.Arrived:
+      return "Đã tiếp đón";
+    case appointmentStatusEnum.InService:
+      return "Đang khám";
     case appointmentStatusEnum.Approved:
       return "Đã duyệt";
     case appointmentStatusEnum.Rejected:
@@ -45,6 +49,10 @@ export const statusTagColor = (status?: string) => {
       return "blue";
     case appointmentStatusEnum.Deposited:
       return "cyan";
+    case appointmentStatusEnum.Arrived:
+      return "lime";
+    case appointmentStatusEnum.InService:
+      return "orange";
     case appointmentStatusEnum.Approved:
       return "geekblue";
     case appointmentStatusEnum.Rejected:

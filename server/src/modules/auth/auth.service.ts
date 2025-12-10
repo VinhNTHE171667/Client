@@ -96,6 +96,38 @@ export class AuthService {
     return null;
   }
 
+  async checkDuplicatePhoneWithRole(phone: string): Promise<RoleType | null> {
+    const [customer, internal, doctor] = await Promise.all([
+      this.customerRepository.findOne({ where: { phone } }),
+      this.internalRepository.findOne({ where: { phone } }),
+      this.doctorRepository.findOne({ where: { phone } }),
+    ]);
+
+    if (customer) return RoleEnum.Customer;
+    if (doctor) return RoleEnum.Doctor;
+
+    if (internal) {
+      const role = await this.internalRepository.findOne({
+        where: { phone },
+        relations: ['role'],
+      });
+      if (role && role.role) {
+        switch (role.role.name) {
+          case 'admin':
+            return RoleEnum.Admin;
+          case 'staff':
+            return RoleEnum.Staff;
+          case 'cashier':
+            return RoleEnum.Cashier;
+          default:
+            return null;
+        }
+      }
+    }
+
+    return null;
+  }
+
   async generateToken(payload: { id: string; email: string; role: RoleType }) {
     try {
       const [accessToken, refreshToken] = await Promise.all([
@@ -231,6 +263,13 @@ export class AuthService {
     );
     if (existingRole) {
       throw new HttpException(`Email đã được sử dụng`, HttpStatus.CONFLICT);
+    }
+
+    if (customerData.phone) {
+      const existingPhone = await this.checkDuplicatePhoneWithRole(customerData.phone);
+      if (existingPhone) {
+        throw new HttpException(`Số điện thoại đã được sử dụng`, HttpStatus.CONFLICT);
+      }
     }
 
     const newCustomer = this.customerRepository.create(customerData);

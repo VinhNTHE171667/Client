@@ -8,7 +8,11 @@ export enum AppointmentStatus {
   Completed = 'completed',
   Cancelled = 'cancelled',
   Overdue = 'overdue',
+
+  Arrived = 'arrived',    
+  InService = 'in_service' 
 }
+
 
 
 export enum AppointmentHanle {

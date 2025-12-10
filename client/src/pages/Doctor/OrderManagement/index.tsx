@@ -20,6 +20,7 @@ import {
   useGetAppointmentsManagedByDoctorMutation,
   useUpdateAppointmentMutationCompleteMutation,
   useGetDoctorCancelRequestsMutation,
+  useUpdateAppointmentStatusInServiceMutation,
 } from "@/services/appointment";
 import type { AppointmentTableProps } from "./_components/type";
 import CreateAppointment from "./add";
@@ -46,6 +47,7 @@ export default function OrderManagementDoctor() {
   const [getAppointmentsForManagement] =
     useGetAppointmentsManagedByDoctorMutation();
   const [updateCompleted] = useUpdateAppointmentMutationCompleteMutation();
+  const [updateInService] = useUpdateAppointmentStatusInServiceMutation();
   const [doctorRequestCancelBulk] = useDoctorRequestCancelBulkMutation();
   const [getCancelRequests] = useGetDoctorCancelRequestsMutation();
 
@@ -87,6 +89,8 @@ export default function OrderManagementDoctor() {
         cleanedAppointments.map((appointment: any) => ({
           ...appointment,
           onComplete: () => handleUpdateStatus(appointment.id, "completed"),
+          onStartService: () =>
+            handleUpdateStatus(appointment.id, "in_service"),
           onUpdate: () => handleUpdate(appointment.id),
           hasPendingCancelRequest: pendingCancelIds.has(appointment.id), // cho column dùng
         }))
@@ -110,12 +114,18 @@ export default function OrderManagementDoctor() {
     return () => clearInterval(interval);
   }, [auth]);
 
-  const handleUpdateStatus = async (id: string, status: "completed") => {
+  const handleUpdateStatus = async (
+    id: string,
+    status: "completed" | "in_service"
+  ) => {
     setIsLoading(true);
     try {
       if (status === "completed") {
         await updateCompleted({ appointmentId: id }).unwrap();
         showSuccess("Đã đánh dấu hoàn thành");
+      } else if (status === "in_service") {
+        await updateInService({ appointmentId: id }).unwrap();
+        showSuccess("Đã bắt đầu phục vụ");
       }
       handleGetAppointments(); // reload lại
     } catch (error) {
@@ -159,7 +169,9 @@ export default function OrderManagementDoctor() {
   const filteredAppointments = appointments.filter((a) => {
     const matchSearch =
       search === "" ||
-      a.customer.full_name.toLowerCase().includes(search.toLowerCase());
+      a.customer.full_name.toLowerCase().includes(search.toLowerCase()) ||
+      a.customer.email.toLowerCase().includes(search.toLowerCase()) ||
+      a.customer.phone.toLowerCase().includes(search.toLowerCase());
 
     const matchStatus = !statusFilter || statusFilter.includes(a.status);
 
@@ -231,6 +243,14 @@ export default function OrderManagementDoctor() {
                   {
                     label: "Đã đặt cọc",
                     value: appointmentStatusEnum.Deposited,
+                  },
+                  {
+                    label: "Đã tiếp đón",
+                    value: appointmentStatusEnum.Arrived,
+                  },
+                  {
+                    label: "Đang phục vụ",
+                    value: appointmentStatusEnum.InService,
                   },
                   { label: "Đã duyệt", value: appointmentStatusEnum.Approved },
                   {

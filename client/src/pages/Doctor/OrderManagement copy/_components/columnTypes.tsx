@@ -231,6 +231,7 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => {
             danger={record.status === appointmentStatusEnum.Deposited}
             size="middle"
             className="font-bold shadow-md hover:shadow-lg transition-all"
+            onClick={() => showReminderDetail(record)}
           >
             {record?.reminderDoctor}
           </Button>
@@ -288,6 +289,16 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => {
         const hasReminder = !!record.reminderDoctor;
 
         const items: MenuProps["items"] = [];
+
+        // Always add view details
+        items.push({
+          key: "view-details",
+          label: (
+            <Space onClick={record.onViewDetails}>
+              <EyeOutlined /> Xem chi tiết
+            </Space>
+          ),
+        });
 
         if (isDeposited && !isRequestCancel) {
           items.push({

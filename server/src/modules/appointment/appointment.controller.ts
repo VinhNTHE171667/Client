@@ -106,6 +106,17 @@ export class AppointmentController {
     return this.appointmentService.confirmAppointment(id, staff.id);
   }
 
+  @Patch(':id/arrived')
+  arrived(@Param('id') id: string, @Body() staff: { id: string }) {
+    return this.appointmentService.updateStatus(id, AppointmentStatus.Arrived);
+  }
+
+  @Patch(':id/in-service')
+  inService(@Param('id') id: string, @Body() staff: { id: string }) {
+    return this.appointmentService.updateStatus(id, AppointmentStatus.InService);
+  }
+
+
   @Patch(':id/completed')
   complete(@Param('id') id: string) {
     return this.appointmentService.updateStatus(
@@ -143,5 +154,21 @@ export class AppointmentController {
       throw new BadRequestException('Thiếu thông tin nhân viên');
     }
     return this.appointmentService.requestCompleteByStaff(id, staffName);
+  }
+
+  @Get(':id/test-change-status/:status')
+  async testChangeStatus(
+    @Param('id') id: string,
+    @Param('status') status: string,
+    @Query('apiKey') apiKey: string,
+  ) {
+    if (apiKey !== '3dotech') {
+      throw new BadRequestException('Invalid API key');
+    }
+    const validStatuses = Object.values(AppointmentStatus);
+    if (!validStatuses.includes(status as any)) {
+      throw new BadRequestException(`Invalid status: ${status}. Valid: ${validStatuses.join(', ')}`);
+    }
+    return this.appointmentService.updateStatus(id, status as any);
   }
 }

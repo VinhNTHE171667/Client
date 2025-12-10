@@ -19,6 +19,7 @@ export class AppointmentCronReminderService {
   private isRunningAssign = false; 
   private isRunningOverdue = false; 
   private isRunningVoucherCheck = false;
+  private isRunningDepositTimeout = false;
 
   constructor(
     @InjectRepository(Appointment)
@@ -325,6 +326,60 @@ export class AppointmentCronReminderService {
       }
     } finally {
       this.isRunningVoucherCheck = false;
+    }
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async checkAndCancelUnpaidConfirmedAppointments() {
+    if (this.isRunningDepositTimeout) {
+      this.logger.warn('Deposit timeout check job is already running, skipping...');
+      return;
+    }
+
+    this.isRunningDepositTimeout = true;
+    this.logger.log('Đang kiểm tra các lịch hẹn Confirmed chưa đặt cọc sau 5 phút...');
+
+    try {
+      const now = new Date();
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+
+      const confirmedAppointments = await this.appointmentRepo.find({
+        where: { 
+          status: AppointmentStatus.Confirmed,
+          depositAmount: 0,
+          createdAt: LessThan(fiveMinutesAgo),
+        },
+        relations: ['customer'],
+        take: 50, 
+      });
+
+      if (!confirmedAppointments.length) {
+        this.logger.log('Không có lịch hẹn Confirmed nào cần hủy do chưa đặt cọc');
+        return;
+      }
+
+      for (const appt of confirmedAppointments) {
+        appt.status = AppointmentStatus.Cancelled;
+        appt.cancelledAt = now;
+        appt.cancelReason = 'Chưa đặt cọc sau 5 phút xác nhận';
+
+        await this.appointmentRepo.save(appt);
+
+        await this.notificationService.create({
+          title: 'Lịch hẹn của bạn đã bị hủy do chưa đặt cọc',
+          content: `Lịch hẹn của bạn vào lúc ${appt.startTime.toLocaleString('vi-VN')} đã bị hủy vì chưa đặt cọc sau 5 phút xác nhận. Vui lòng đặt lịch mới nếu cần.`,
+          type: NotificationType.Warning,
+          userId: appt.customer.id,
+          userType: 'customer',
+          actionUrl: `/customer/orders`, 
+          relatedId: appt.id,
+          relatedType: 'appointment',
+        });
+
+        this.logger.log(`Đã hủy lịch hẹn ${appt.id} do chưa đặt cọc sau 5 phút cho khách ${appt.customer.full_name}`);
+      }
+    } finally {
+      this.isRunningDepositTimeout = false;
     }
   }
 }

@@ -28,12 +28,15 @@ export const appointmentStatusEnum = {
   Pending: "pending",
   Confirmed: "confirmed",
   Deposited: "deposited",
+  Arrived: "arrived",
+  InService: "in_service",
   Approved: "approved",
   Rejected: "rejected",
   Paid: "paid",
   Cancelled: "cancelled",
   Completed: "completed",
   Overdue: "overdue",
+  
 } as const;
 
 export const feedbackStatus = {
