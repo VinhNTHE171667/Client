@@ -105,10 +105,27 @@ export default function Vouchers() {
   const avgVoucherValue = useMemo(() => {
     if (!vouchers || vouchers.length === 0) return 0;
     const sum = vouchers.reduce((sumAcc, v) => {
-      const val = Number(v.maxDiscount ?? 0);
+      // Use discountAmount if available, otherwise use maxDiscount
+      const discountAmount = Number(v.discountAmount ?? 0);
+      const maxDiscount = Number(v.maxDiscount ?? 0);
+      const val = discountAmount > 0 ? discountAmount : maxDiscount;
       return sumAcc + (isNaN(val) ? 0 : val);
     }, 0);
     return Math.round(sum / vouchers.length);
+  }, [vouchers]);
+
+  const activeVoucherCount = useMemo(() => {
+    const now = new Date();
+    return vouchers.reduce((sum, v) => {
+      if (v.validFrom && v.validTo) {
+        const startDate = new Date(v.validFrom);
+        const endDate = new Date(v.validTo);
+        if (now >= startDate && now <= endDate && v.isActive) {
+          return sum + 1;
+        }
+      }
+      return sum;
+    }, 0);
   }, [vouchers]);
 
   return (
@@ -179,21 +196,7 @@ export default function Vouchers() {
           <Col className="metric">
             <p className="metric-label">{"Số voucher đang được sử dụng"}</p>
             <p className="metric-value">
-              <FancyCounting
-                from={0}
-                to={vouchers.reduce((sum, v) => {
-                  const now = new Date();
-                  if (v.validFrom && v.validTo) {
-                    const startDate = new Date(v.validFrom);
-                    const endDate = new Date(v.validTo);
-                    if (now >= startDate && now <= endDate) {
-                      return sum + 1;
-                    }
-                  }
-                  return sum;
-                }, 0)}
-                duration={4}
-              />
+              <FancyCounting from={0} to={activeVoucherCount} duration={4} />
             </p>
           </Col>
           <Col className="metric">
@@ -262,7 +265,7 @@ export default function Vouchers() {
       <VoucherCategoriesModal
         isOpen={showCategoriesModal}
         onClose={() => setShowCategoriesModal(false)}
-        onReload={handleEvent} 
+        onReload={handleEvent}
       />
     </>
   );

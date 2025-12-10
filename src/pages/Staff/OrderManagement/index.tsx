@@ -25,12 +25,14 @@ import {
   useGetAppointmentsForManagementMutation,
   useUpdateAppointmentStatusConfirmedMutation,
   useUpdateAppointmentStatusRejectedMutation,
+  useUpdateAppointmentStatusArrivedMutation,
   type AppointmentProps,
 } from "@/services/appointment";
 import type { AppointmentTableProps } from "./_components/type";
 import CreateAppointment from "./add";
 import { appointmentStatusEnum } from "@/common/types/auth";
 import { useAuthStore } from "@/hooks/UseAuth";
+import { translateStatus } from "@/utils/format";
 
 const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
@@ -52,6 +54,7 @@ export default function OrderManagementStaff() {
 
   const [updateConfirmed] = useUpdateAppointmentStatusConfirmedMutation();
   const [updateRejected] = useUpdateAppointmentStatusRejectedMutation();
+  const [updateArrived] = useUpdateAppointmentStatusArrivedMutation();
 
   const [rejectModal, setRejectModal] = useState(false);
   const [selectedAppointment, setSelectedAppointment] =
@@ -59,7 +62,6 @@ export default function OrderManagementStaff() {
 
   const [statusFilter, setStatusFilter] = useState<string[] | null>(null);
 
-  // New states for details modal
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedDetailAppointment, setSelectedDetailAppointment] =
     useState<AppointmentTableProps | null>(null);
@@ -70,7 +72,6 @@ export default function OrderManagementStaff() {
       const res = await getAppointmentsForManagement();
       const tempRes = res.data ?? [];
       setAppointments(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         tempRes.map((appointment: any) => ({
           ...appointment,
           onConfirm: () => handleUpdateStatus(appointment.id, "confirmed"),
@@ -84,6 +85,7 @@ export default function OrderManagementStaff() {
           },
           onUpdate: () => {},
           onRemove: () => console.log("Xóa:", appointment.id),
+          onWelcome: () => handleUpdateStatus(appointment.id, "arrived"),
         }))
       );
     } catch (error) {
@@ -95,11 +97,14 @@ export default function OrderManagementStaff() {
 
   useEffect(() => {
     handleGetAppointments();
+    // Polling every 5 seconds for real-time updates
+    const interval = setInterval(handleGetAppointments, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleUpdateStatus = async (
     id: string,
-    status: "confirmed" | "imported"
+    status: "confirmed" | "arrived"
   ) => {
     setIsLoading(true);
     try {
@@ -107,6 +112,9 @@ export default function OrderManagementStaff() {
       switch (status) {
         case "confirmed":
           updateMutation = updateConfirmed;
+          break;
+        case "arrived":
+          updateMutation = updateArrived;
           break;
         default:
           throw new Error("Unknown status");
@@ -172,10 +180,9 @@ export default function OrderManagementStaff() {
     handleGetAppointments();
   };
 
-  // Check if voucher is expired
   const isVoucherExpired = (voucher: any) => {
     if (!voucher || !voucher.validTo) return false;
-    const currentDate = dayjs("2025-11-27"); // Current date as per context
+    const currentDate = dayjs("2025-11-27");
     return dayjs(voucher.validTo).isBefore(currentDate);
   };
 
@@ -233,6 +240,10 @@ export default function OrderManagementStaff() {
                   {
                     label: "Đã đặt cọc",
                     value: appointmentStatusEnum.Deposited,
+                  },
+                  {
+                    label: "Đã tiếp đón",
+                    value: appointmentStatusEnum.Arrived,
                   },
                   { label: "Đã duyệt", value: appointmentStatusEnum.Approved },
                   {
@@ -393,7 +404,9 @@ export default function OrderManagementStaff() {
               {dayjs(selectedDetailAppointment.endTime).format("HH:mm")}
             </Descriptions.Item>
             <Descriptions.Item label="Trạng thái">
-              <Tag color="blue">{selectedDetailAppointment.status}</Tag>
+              <Tag color="blue">
+                {translateStatus(selectedDetailAppointment.status)}
+              </Tag>
             </Descriptions.Item>
             <Descriptions.Item label="Tổng tiền">
               {Number(selectedDetailAppointment.totalAmount).toLocaleString(

@@ -159,7 +159,8 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => [
         onReject: () => void,
         onViewDetails: () => void,
         onUpdate: () => void,
-        onRemove: () => void
+        onRemove: () => void,
+        onWelcome?: () => void // Thêm handler cho "Tiếp đón" (nếu cần)
       ): MenuProps["items"] => {
         const items: MenuProps["items"] = [];
 
@@ -201,6 +202,20 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => [
           });
         }
 
+        // Thêm hành động "Tiếp đón" nếu trạng thái là "deposited"
+        if (record.status === "deposited" && onWelcome) {
+          items.push({
+            key: "2",
+            label: (
+              <a onClick={onWelcome}>
+                <Space>
+                  <CheckOutlined /> Tiếp đón
+                </Space>
+              </a>
+            ),
+          });
+        }
+
         // Nếu cần thêm hành động xoá:
         // items.push({
         //   key: "2",
@@ -225,7 +240,8 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => [
               record.onReject!,
               record.onViewDetails!,
               record.onUpdate!,
-              record.onRemove!
+              record.onRemove!,
+              record.onWelcome 
             ),
           }}
           trigger={["click"]}
@@ -237,6 +253,7 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => [
             disabled={
               !(
                 record.status === "pending" ||
+                record.status === "deposited" || 
                 record.onViewDetails ||
                 record.onRemove
               )

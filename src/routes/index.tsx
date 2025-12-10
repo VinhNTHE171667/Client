@@ -50,6 +50,7 @@ import NotificationCustomer from "@/pages/Customer/Notification";
 import PaymentStatsPage from "@/pages/Casher/PaymentStats";
 import NotificationDoctor from "@/pages/Doctor/Notification";
 import NotificationInternal from "@/pages/Staff/Notification";
+import HistoryOrderManagementDoctor from "@/pages/Doctor/OrderManagement copy";
 
 const router = createBrowserRouter([
   {
@@ -340,6 +341,22 @@ const router = createBrowserRouter([
           {
             index: true,
             element: <OrderManagementDoctor />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.doctorOrderManagementHistory,
+    element: <ProtectedRoute allowedRoles={[RoleEnum.Doctor]} />,
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <HistoryOrderManagementDoctor />,
           },
         ],
       },

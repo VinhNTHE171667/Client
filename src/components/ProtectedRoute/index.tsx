@@ -35,7 +35,7 @@ const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
   );
 
   if (!hasPermission) {
-    return <Navigate to={configError.UnAuthorize} replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return <Outlet />;

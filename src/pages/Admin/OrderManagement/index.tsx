@@ -81,6 +81,9 @@ export default function OrderManagementAdmin() {
 
   useEffect(() => {
     handleGetAppointments();
+    // Polling every 5 seconds for real-time updates
+    const interval = setInterval(handleGetAppointments, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleUpdateStatus = async (
@@ -137,7 +140,9 @@ export default function OrderManagementAdmin() {
   const filteredAppointments = appointments.filter((a) => {
     const matchSearch =
       search === "" ||
-      a.customer.full_name.toLowerCase().includes(search.toLowerCase());
+      a.customer.full_name.toLowerCase().includes(search.toLowerCase()) ||
+      a.customer.email.toLowerCase().includes(search.toLowerCase()) ||
+      a.customer.phone.toLowerCase().includes(search.toLowerCase());
 
     const matchStatus = !statusFilter || statusFilter.includes(a.status);
 
@@ -192,6 +197,7 @@ export default function OrderManagementAdmin() {
             <Space>
               <Select
                 allowClear
+                mode="multiple"
                 placeholder="Chọn trạng thái"
                 value={statusFilter ?? undefined}
                 onChange={(value) => setStatusFilter(value)}
@@ -220,6 +226,7 @@ export default function OrderManagementAdmin() {
                     value: appointmentStatusEnum.Completed,
                   },
                   { label: "Đã huỷ", value: appointmentStatusEnum.Cancelled },
+                  { label: "Quá hạn", value: appointmentStatusEnum.Overdue },
                 ]}
               />
               <Divider type="vertical" />
@@ -257,6 +264,7 @@ export default function OrderManagementAdmin() {
         />
       </Card>
 
+      {/* Reject Modal */}
       <Modal
         title="Từ chối lịch hẹn"
         open={rejectModal}

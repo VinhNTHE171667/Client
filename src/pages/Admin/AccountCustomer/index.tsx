@@ -60,7 +60,6 @@ export default function AccountCustomer() {
     }
   };
 
-  // LẤY DANH SÁCH KHÁCH HÀNG
   const handleGetCustomers = async () => {
     setIsLoading(true);
     try {
@@ -68,8 +67,8 @@ export default function AccountCustomer() {
       if (Array.isArray(res)) {
         const formatted = res.map((c: any) => ({
           ...c,
-          isVerified: c.isVerified ?? false,
-          total_spent: "0", // sẽ được tính lại bên dưới
+          isVerified: c.isActive || c.isEmailVerified,
+          total_spent: "0",
         }));
         setAllCustomers(formatted);
         setCustomers(formatted);
@@ -81,7 +80,6 @@ export default function AccountCustomer() {
     }
   };
 
-  // LẤY HOÁ ĐƠN ĐỂ TÍNH TỔNG CHI TIÊU
   const fetchInvoices = async () => {
     try {
       const res = await getInvoice().unwrap();
@@ -113,6 +111,10 @@ export default function AccountCustomer() {
       (sum, c) => sum + Number(c.total_spent || 0),
       0
     );
+  }, [customersWithRealSpent]);
+
+  const verifiedCustomerCount = useMemo(() => {
+    return customersWithRealSpent.filter((c) => c.isVerified).length;
   }, [customersWithRealSpent]);
 
   const filteredCustomers = useMemo(() => {
@@ -213,11 +215,7 @@ export default function AccountCustomer() {
           </Col>
           <Col className="metric">
             <p className="metric-label">Khách hàng xác thực</p>
-            <FancyCounting
-              from={0}
-              to={customersWithRealSpent.filter((c) => c.isVerified).length}
-              duration={2}
-            />
+            <FancyCounting from={0} to={verifiedCustomerCount} duration={2} />
           </Col>
         </Row>
       </Card>

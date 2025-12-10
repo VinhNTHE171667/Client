@@ -73,7 +73,9 @@ export default function OrderManagementCasher() {
   const filteredAppointments = appointments.filter((a) => {
     const matchSearch =
       search === "" ||
-      a.customer.full_name.toLowerCase().includes(search.toLowerCase());
+      a.customer.full_name.toLowerCase().includes(search.toLowerCase()) ||
+      a.customer.email.toLowerCase().includes(search.toLowerCase()) ||
+      a.customer.phone.toLowerCase().includes(search.toLowerCase());
 
     const matchStatus = !statusFilter || statusFilter.includes(a.status);
 
