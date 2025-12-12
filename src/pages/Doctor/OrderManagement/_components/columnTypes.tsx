@@ -228,7 +228,7 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => {
         value ? (
           <Button
             type="primary"
-            danger={record.status === appointmentStatusEnum.Deposited}
+            danger={record.status === appointmentStatusEnum.InService}
             size="middle"
             className="font-bold shadow-md hover:shadow-lg transition-all"
           >

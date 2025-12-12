@@ -122,21 +122,19 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => {
       width: 70,
       align: "center",
       render: (_, record) => {
-        // Không hiển thị nút actions nếu đã thanh toán
         if (record.status === appointmentStatusEnum.Paid) {
           return <span>—</span>;
         }
 
         const items: MenuProps["items"] = [];
 
-        // Nút: Nhắc bác sĩ hoàn thành
         const canRemindDoctor =
-          record.doctorId && // có bác sĩ
+          record.doctorId &&
           record.status !== appointmentStatusEnum.Completed &&
           [
             appointmentStatusEnum.Paid,
-            appointmentStatusEnum.Deposited,
-            appointmentStatusEnum.Approved,
+            appointmentStatusEnum.Arrived,
+            appointmentStatusEnum.InService,
           ].includes(record.status);
 
         if (canRemindDoctor) {

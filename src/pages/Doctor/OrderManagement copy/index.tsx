@@ -6,7 +6,6 @@ import {
   Row,
   Space,
   Table,
-  Divider,
   Select,
   Modal,
   Descriptions,
@@ -14,7 +13,7 @@ import {
   Typography,
   List,
 } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import dayjs from "dayjs";
 import { AppointmentColumn } from "./_components/columnTypes";
 import { useGetAppointmentsManagedByDoctorMutation } from "@/services/appointment";
@@ -27,26 +26,34 @@ const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
 
 export default function HistoryOrderManagementDoctor() {
-  const [isLoading, setIsLoading] = useState(false);
+  // State chính
+  const [isLoading, setIsLoading] = useState(true);
   const [appointments, setAppointments] = useState<AppointmentTableProps[]>([]);
 
+  // Bộ lọc
   const [search, setSearch] = useState("");
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(
     null
   );
-  const [statusFilter, setStatusFilter] = useState<string[] | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string[]>([]); // [] = hiện hết
 
-  const [getAppointmentsForManagement] =
-    useGetAppointmentsManagedByDoctorMutation();
-
+  // Modal chi tiết
   const [detailModalVisible, setDetailModalVisible] = useState(false);
-  const [selectedDetailAppointment, setSelectedDetailAppointment] =
+  const [selectedAppointment, setSelectedAppointment] =
     useState<AppointmentTableProps | null>(null);
 
+  // Mutation & Auth
+  const [getAppointmentsForManagement] =
+    useGetAppointmentsManagedByDoctorMutation();
   const { auth } = useAuthStore();
 
-  const handleGetAppointments = async () => {
-    if (!auth?.accountId) return;
+  // Hàm gọi API lấy toàn bộ lịch sử của bác sĩ
+  const fetchAppointments = async () => {
+    if (!auth?.accountId) {
+      setAppointments([]);
+      setIsLoading(false);
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -54,237 +61,256 @@ export default function HistoryOrderManagementDoctor() {
         doctorId: auth.accountId,
       }).unwrap();
 
-      const tempRes = res ?? [];
+      const data = (res ?? []) as any[];
 
-      const completedAppointments = tempRes.filter(
-        (appointment: any) =>
-          appointment.status === appointmentStatusEnum.Completed
-      );
+      const mappedData: AppointmentTableProps[] = data.map((appt: any) => ({
+        ...appt,
+        key: appt.id, // Rất quan trọng cho Antd Table
+        onViewDetails: () => {
+          setSelectedAppointment(appt);
+          setDetailModalVisible(true);
+        },
+      }));
 
-      setAppointments(
-        completedAppointments.map((appointment: any) => ({
-          ...appointment,
-          onViewDetails: () => {
-            setSelectedDetailAppointment(appointment);
-            setDetailModalVisible(true);
-          },
-        }))
-      );
+      setAppointments(mappedData);
     } catch (error) {
-      console.error("Lỗi lấy lịch sử:", error);
+      console.error("Lỗi khi tải lịch sử khám bệnh:", error);
       setAppointments([]);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Gọi API khi component mount hoặc auth thay đổi
   useEffect(() => {
-    handleGetAppointments();
-  }, [auth]);
+    fetchAppointments();
+  }, [auth?.accountId]);
 
-  const filteredAppointments = appointments.filter((a) => {
-    const matchSearch =
-      search === "" ||
-      a.customer.full_name.toLowerCase().includes(search.toLowerCase()) ||
-      a.customer.email.toLowerCase().includes(search.toLowerCase()) ||
-      a.customer.phone?.toLowerCase().includes(search.toLowerCase());
+  // Lọc dữ liệu bằng useMemo (tối ưu hiệu suất)
+  const filteredAppointments = useMemo(() => {
+    if (appointments.length === 0) return [];
 
-    const matchStatus = !statusFilter || statusFilter.includes(a.status);
+    const searchLower = search.trim().toLowerCase();
 
-    const matchDate =
-      !dateRange ||
-      (dayjs(a.appointment_date).isSameOrAfter(dateRange[0], "day") &&
-        dayjs(a.appointment_date).isSameOrBefore(dateRange[1], "day"));
+    return appointments.filter((appt) => {
+      // Tìm kiếm theo tên, email, sđt
+      const matchesSearch =
+        searchLower === "" ||
+        appt.customer.full_name.toLowerCase().includes(searchLower) ||
+        appt.customer.email.toLowerCase().includes(searchLower) ||
+        (appt.customer.phone?.toLowerCase().includes(searchLower) ?? false);
 
-    return matchSearch && matchStatus && matchDate;
-  });
+      // Lọc trạng thái
+      const matchesStatus =
+        statusFilter.length === 0 || statusFilter.includes(appt.status);
+
+      // Lọc theo ngày
+      const matchesDate =
+        !dateRange ||
+        (dayjs(appt.appointment_date).isSameOrAfter(dateRange[0], "day") &&
+          dayjs(appt.appointment_date).isSameOrBefore(dateRange[1], "day"));
+
+      return matchesSearch && matchesStatus && matchesDate;
+    });
+  }, [appointments, search, statusFilter, dateRange]);
 
   return (
     <>
-      <Row className="mx-2 my-2">
+      {/* Tiêu đề */}
+      <Row className="mx-2 my-4">
         <Col>
-          <h4 className="cus-text-primary">
+          <Title level={4} className="cus-text-primary">
             <strong>Lịch sử khám bệnh</strong>
-          </h4>
+          </Title>
         </Col>
       </Row>
 
-      <Card className="mt-2">
+      {/* Card chính */}
+      <Card>
+        {/* Bộ lọc */}
         <Row
+          gutter={[16, 16]}
           justify="space-between"
           align="middle"
-          style={{ marginBottom: 16 }}
+          style={{ marginBottom: 24 }}
         >
-          <Col>
-            <Space>
+          <Col xs={24} md={12} lg={14}>
+            <Space wrap>
               <Input.Search
-                placeholder="Tìm theo tên khách hàng..."
+                placeholder="Tìm tên khách hàng, email, số điện thoại..."
                 allowClear
+                enterButton
+                size="large"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                style={{ width: 250 }}
+                onSearch={(value) => setSearch(value)}
+                style={{ width: 320 }}
               />
+
               <RangePicker
-                onChange={(val) =>
-                  setDateRange(val as [dayjs.Dayjs, dayjs.Dayjs] | null)
-                }
                 format="DD/MM/YYYY"
+                placeholder={["Từ ngày", "Đến ngày"]}
+                onChange={(dates) => setDateRange(dates as any)}
+                style={{ width: 240 }}
               />
             </Space>
           </Col>
 
-          <Col>
-            <Space>
-              <Select
-                mode="multiple"
-                allowClear
-                placeholder="Chọn trạng thái"
-                value={statusFilter ?? undefined}
-                onChange={setStatusFilter}
-                style={{ width: 300 }}
-                options={[
-                  {
-                    label: "Đã thanh toán",
-                    value: appointmentStatusEnum.Paid,
-                  },
-                  {
-                    label: "Hoàn thành",
-                    value: appointmentStatusEnum.Completed,
-                  },
-                ]}
-              />
-            </Space>
+          <Col xs={24} md={12} lg={8}>
+            <Select
+              mode="multiple"
+              allowClear
+              placeholder="Lọc theo trạng thái"
+              value={statusFilter}
+              onChange={setStatusFilter}
+              style={{ width: "100%" }}
+              options={[
+                { label: "Đã thanh toán", value: appointmentStatusEnum.Paid },
+                { label: "Hoàn thành", value: appointmentStatusEnum.Completed },
+                { label: "Đã hủy", value: appointmentStatusEnum.Cancelled },
+                { label: "Đang xử lý", value: appointmentStatusEnum.Pending },
+                {
+                  label: "Đã xác nhận",
+                  value: appointmentStatusEnum.Confirmed,
+                },
+              ]}
+            />
           </Col>
         </Row>
 
+        {/* Bảng dữ liệu */}
         <Table
           loading={isLoading}
-          rowKey="id"
           columns={AppointmentColumn()}
           dataSource={filteredAppointments}
-          scroll={{ x: "max-content" }}
+          rowKey="id"
+          scroll={{ x: 1200 }}
+          locale={{
+            emptyText: isLoading
+              ? "Đang tải dữ liệu..."
+              : "Không tìm thấy lịch sử khám bệnh nào",
+          }}
           pagination={{
             pageSize: 10,
             showSizeChanger: true,
-            pageSizeOptions: ["10", "20", "50"],
-            position: ["bottomRight"],
+            showQuickJumper: true,
+            pageSizeOptions: ["10", "20", "50", "100"],
             showTotal: (total, range) =>
-              `Hiển thị ${range[0]}-${range[1]} trong ${total} lịch hẹn`,
+              `Hiển thị ${range[0]}-${range[1]} trong tổng cộng ${total} lịch hẹn`,
+            position: ["bottomRight"],
           }}
         />
       </Card>
 
-      {/* Details Modal */}
+      {/* Modal chi tiết */}
       <Modal
-        title="Chi tiết lịch hẹn"
+        title={<Title level={4}>Chi tiết lịch hẹn</Title>}
         open={detailModalVisible}
-        onCancel={() => setDetailModalVisible(false)}
+        onCancel={() => {
+          setDetailModalVisible(false);
+          setSelectedAppointment(null);
+        }}
         footer={null}
-        width={800}
+        width={1000}
+        destroyOnClose
       >
-        {selectedDetailAppointment && (
-          <Descriptions bordered column={1}>
+        {selectedAppointment && (
+          <Descriptions bordered column={{ xs: 1, sm: 1, md: 2 }}>
             <Descriptions.Item label="Mã lịch hẹn">
-              {selectedDetailAppointment.id}
-            </Descriptions.Item>
-            <Descriptions.Item label="Khách hàng">
-              <Space>
-                <div>
-                  <Title level={5}>
-                    {selectedDetailAppointment.customer.full_name}
-                  </Title>
-                  <Text>{selectedDetailAppointment.customer.email}</Text>
-                  <br />
-                  <Text>{selectedDetailAppointment.customer.phone}</Text>
-                </div>
-              </Space>
-            </Descriptions.Item>
-            <Descriptions.Item label="Bác sĩ">
-              {selectedDetailAppointment.doctor ? (
-                <Space>
-                  <div>
-                    <Title level={5}>
-                      {selectedDetailAppointment.doctor.full_name}
-                    </Title>
-                    <Text>{selectedDetailAppointment.doctor.email}</Text>
-                  </div>
-                </Space>
-              ) : (
-                <Text type="secondary">Chưa phân công bác sĩ</Text>
-              )}
-            </Descriptions.Item>
-            <Descriptions.Item label="Nhân viên">
-              {selectedDetailAppointment.staff ? (
-                <Space>
-                  <div>
-                    <Title level={5}>
-                      {selectedDetailAppointment.staff.full_name}
-                    </Title>
-                    <Text>{selectedDetailAppointment.staff.email}</Text>
-                  </div>
-                </Space>
-              ) : (
-                <Text type="secondary">Chưa có nhân viên</Text>
-              )}
-            </Descriptions.Item>
-            <Descriptions.Item label="Dịch vụ">
-              <List
-                dataSource={selectedDetailAppointment.details}
-                renderItem={(item) => (
-                  <List.Item>
-                    <div>
-                      <Title level={5}>{item.service.name}</Title>
-                      <Text>
-                        Số lượng: {item.quantity} | Giá:{" "}
-                        {Number(item.price).toLocaleString("vi-VN")} VND
-                      </Text>
-                    </div>
-                  </List.Item>
-                )}
-                bordered
-              />
-            </Descriptions.Item>
-            <Descriptions.Item label="Ngày hẹn">
-              {dayjs(selectedDetailAppointment.appointment_date).format(
-                "DD/MM/YYYY"
-              )}
-            </Descriptions.Item>
-            <Descriptions.Item label="Thời gian">
-              {dayjs(selectedDetailAppointment.startTime).format("HH:mm")} -{" "}
-              {dayjs(selectedDetailAppointment.endTime).format("HH:mm")}
+              <strong>{selectedAppointment.id}</strong>
             </Descriptions.Item>
             <Descriptions.Item label="Trạng thái">
-              <Tag color={statusTagColor(selectedDetailAppointment.status)}>
-                {translateStatus(selectedDetailAppointment.status)}
+              <Tag color={statusTagColor(selectedAppointment.status)}>
+                {translateStatus(selectedAppointment.status)}
               </Tag>
             </Descriptions.Item>
+
+            <Descriptions.Item label="Khách hàng" span={2}>
+              <Space direction="vertical">
+                <Title level={5}>
+                  {selectedAppointment.customer.full_name}
+                </Title>
+                <Text>{selectedAppointment.customer.email}</Text>
+                <Text>
+                  {selectedAppointment.customer.phone || "Chưa có SĐT"}
+                </Text>
+              </Space>
+            </Descriptions.Item>
+
+            <Descriptions.Item label="Bác sĩ" span={2}>
+              {selectedAppointment.doctor ? (
+                <Space direction="vertical">
+                  <Text strong>{selectedAppointment.doctor.full_name}</Text>
+                  <Text type="secondary">
+                    {selectedAppointment.doctor.email}
+                  </Text>
+                </Space>
+              ) : (
+                <Text type="secondary">Chưa phân công</Text>
+              )}
+            </Descriptions.Item>
+
+            <Descriptions.Item label="Ngày khám">
+              {dayjs(selectedAppointment.appointment_date).format(
+                "DD/MM/YYYY (dddd)"
+              )}
+            </Descriptions.Item>
+            <Descriptions.Item label="Giờ khám">
+              {dayjs(selectedAppointment.startTime).format("HH:mm")} -{" "}
+              {dayjs(selectedAppointment.endTime).format("HH:mm")}
+            </Descriptions.Item>
+
+            <Descriptions.Item label="Dịch vụ đã chọn" span={2}>
+              <List
+                size="small"
+                bordered
+                dataSource={selectedAppointment.details}
+                renderItem={(item: any) => (
+                  <List.Item>
+                    <Space direction="vertical">
+                      <Text strong>{item.service.name}</Text>
+                      <Text type="secondary">
+                        Số lượng: {item.quantity} ×{" "}
+                        {Number(item.price).toLocaleString("vi-VN")} VND
+                      </Text>
+                    </Space>
+                  </List.Item>
+                )}
+              />
+            </Descriptions.Item>
+
             <Descriptions.Item label="Tổng tiền">
-              {Number(selectedDetailAppointment.totalAmount).toLocaleString(
+              <Text strong type="danger" style={{ fontSize: 18 }}>
+                {Number(selectedAppointment.totalAmount).toLocaleString(
+                  "vi-VN"
+                )}{" "}
+                VND
+              </Text>
+            </Descriptions.Item>
+            <Descriptions.Item label="Đã đặt cọc">
+              {Number(selectedAppointment.depositAmount).toLocaleString(
                 "vi-VN"
               )}{" "}
               VND
             </Descriptions.Item>
-            <Descriptions.Item label="Tiền đặt cọc">
-              {Number(selectedDetailAppointment.depositAmount).toLocaleString(
-                "vi-VN"
-              )}{" "}
-              VND
+
+            <Descriptions.Item label="Ghi chú" span={2}>
+              {selectedAppointment.note || (
+                <Text type="secondary">Không có ghi chú</Text>
+              )}
             </Descriptions.Item>
-            <Descriptions.Item label="Ghi chú">
-              {selectedDetailAppointment.note || "Không có"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Lý do hủy">
-              {selectedDetailAppointment.cancelReason || "-"}
-            </Descriptions.Item>
+
+            {selectedAppointment.cancelReason && (
+              <Descriptions.Item label="Lý do hủy" span={2}>
+                <Text type="danger">{selectedAppointment.cancelReason}</Text>
+              </Descriptions.Item>
+            )}
+
             <Descriptions.Item label="Ngày tạo">
-              {dayjs(selectedDetailAppointment.createdAt).format(
-                "DD/MM/YYYY HH:mm"
-              )}
+              {dayjs(selectedAppointment.createdAt).format("DD/MM/YYYY HH:mm")}
             </Descriptions.Item>
-            <Descriptions.Item label="Ngày cập nhật">
-              {dayjs(selectedDetailAppointment.updatedAt).format(
-                "DD/MM/YYYY HH:mm"
-              )}
+            <Descriptions.Item label="Cập nhật gần nhất">
+              {dayjs(selectedAppointment.updatedAt).format("DD/MM/YYYY HH:mm")}
             </Descriptions.Item>
           </Descriptions>
         )}
