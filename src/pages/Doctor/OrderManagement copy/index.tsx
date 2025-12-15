@@ -67,7 +67,8 @@ export default function HistoryOrderManagementDoctor() {
 
       const tempRes = (res ?? []).filter(
         (appointment: any) =>
-          appointment.status === appointmentStatusEnum.Completed
+          appointment.status === appointmentStatusEnum.Completed ||
+          appointment.status === appointmentStatusEnum.Paid
       );
 
       const mapped = tempRes.map((appointment: any) => ({
