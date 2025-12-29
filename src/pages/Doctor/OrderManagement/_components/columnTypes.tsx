@@ -313,6 +313,14 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => {
 
         if (isInService && !isRequestCancel) {
           items.push({
+            key: "update",
+            label: (
+              <Space onClick={record.onUpdate}>
+                <EditOutlined /> Cập nhật lịch hẹn
+              </Space>
+            ),
+          });
+          items.push({
             key: "complete",
             label: (
               <Space onClick={record.onComplete}>
