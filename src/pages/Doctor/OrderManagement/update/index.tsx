@@ -8,6 +8,7 @@ import {
   message,
   Space,
   Modal,
+  DatePicker,
 } from "antd";
 import dayjs from "dayjs";
 import {
@@ -136,47 +137,35 @@ const UpdateAppointmentModal: React.FC<Props> = ({
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleSubmit = async (values: any) => {
+    if (!appointment) return;
+    
     try {
-      const appointmentDate = values.date;
-      const startTime = values.time[0];
-      const endTime = values.time[1];
-
-      const startDateTime = appointmentDate
-        .hour(startTime.hour())
-        .minute(startTime.minute())
-        .second(0);
-
-      const endDateTime = appointmentDate
-        .hour(endTime.hour())
-        .minute(endTime.minute())
-        .second(0);
-
       const payload = {
-        customerId: values.customerId,
-        doctorId: doctorSelected,
-        staffId: appointment?.staffId || null,
-        appointment_date: values.date.format("YYYY-MM-DD"),
-        startTime: startDateTime.toISOString(),
-        endTime: endDateTime.toISOString(),
+        customerId: appointment.customer.id,
+        doctorId: appointment.doctor.id,
+        staffId: appointment.staffId || null,
+        appointment_date: appointment.appointment_date,
+        startTime: appointment.startTime,
+        endTime: appointment.endTime,
         details: values.services.map((id: string) => ({
           serviceId: id,
           price: services.find((s) => s.id === id)?.price || 0,
         })),
-        note: values.note || "",
-        voucherId: null,
+        note: appointment.note || "",
+        voucherId: appointment.voucherId || null,
       };
 
       await updateAppointment({
         appointmentId,
         data: payload,
       }).unwrap();
-      message.success("Cập nhật lịch hẹn thành công!");
+      message.success("Cập nhật dịch vụ thành công!");
       form.resetFields();
       onClose();
       onReload?.();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      message.error(err?.data?.message || "Không thể cập nhật lịch hẹn");
+      message.error(err?.data?.message || "Không thể cập nhật dịch vụ");
     }
   };
 
@@ -195,20 +184,35 @@ const UpdateAppointmentModal: React.FC<Props> = ({
         onFinish={handleSubmit}
         className={styles.form}
       >
-        <Form.Item
-          label="Chọn khách hàng"
-          name="customerId"
-          rules={[{ required: true, message: "Vui lòng chọn khách hàng" }]}
-        >
-          <Select
-            placeholder="Chọn khách hàng"
-            options={customers.map((customer) => ({
-              label: customer.full_name,
-              value: customer.id,
-            }))}
+        {/* Hiển thị thông tin khách hàng - chỉ xem */}
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ fontWeight: 500, marginBottom: 8, display: 'block' }}>
+            Khách hàng
+          </label>
+          <Input 
+            value={appointment?.customer?.full_name || ""} 
+            disabled 
+            style={{ backgroundColor: '#f5f5f5' }}
           />
-        </Form.Item>
+        </div>
 
+        {/* Hiển thị ngày giờ - chỉ xem */}
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ fontWeight: 500, marginBottom: 8, display: 'block' }}>
+            Giờ hẹn
+          </label>
+          <Input 
+            value={
+              appointment 
+                ? `${dayjs(appointment.startTime).format("HH:mm")} - ${dayjs(appointment.endTime).format("HH:mm")}`
+                : ""
+            } 
+            disabled 
+            style={{ backgroundColor: '#f5f5f5' }}
+          />
+        </div>
+
+        {/* Chỉ cho phép chỉnh sửa dịch vụ */}
         <Form.Item
           label="Dịch vụ"
           name="services"
@@ -226,44 +230,20 @@ const UpdateAppointmentModal: React.FC<Props> = ({
           />
         </Form.Item>
 
-        <Form.Item
-          label="Giờ hẹn"
-          name="time"
-          rules={[
-            { required: true, message: "Vui lòng chọn giờ từ 09:00 đến 17:00" },
-          ]}
-        >
-          <TimePicker.RangePicker
-            format="HH:mm"
-            style={{ width: "100%" }}
-            minuteStep={15}
-            disabledTime={() => {
-              const disabledHours = Array.from(
-                { length: 24 },
-                (_, i) => i
-              ).filter((h) => h < 9 || h > 16);
-              return {
-                disabledHours: () => disabledHours,
-                disabledMinutes: () => [],
-                disabledSeconds: () => [],
-              };
-            }}
-            onChange={(times) => {
-              if (times && times[0]) {
-                const start = times[0];
-                const end = start.clone().add(1, "hour");
-                const endHour = end.hour() > 17 ? 17 : end.hour();
-                const endMinute = end.hour() > 17 ? 0 : end.minute();
-                const finalEnd = end.clone().hour(endHour).minute(endMinute);
-                form.setFieldsValue({ time: [start, finalEnd] });
-              }
-            }}
-          />
-        </Form.Item>
-
-        <Form.Item label="Ghi chú" name="note">
-          <Input.TextArea rows={3} placeholder="Nhập ghi chú (nếu có)" />
-        </Form.Item>
+        {/* Hiển thị ghi chú - chỉ xem */}
+        {appointment?.note && (
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ fontWeight: 500, marginBottom: 8, display: 'block' }}>
+              Ghi chú
+            </label>
+            <Input.TextArea 
+              value={appointment.note} 
+              disabled 
+              rows={3}
+              style={{ backgroundColor: '#f5f5f5' }}
+            />
+          </div>
+        )}
 
         <Form.Item className={styles.actions}>
           <Space>
