@@ -504,7 +504,7 @@ export const appointmentApi = createApi({
       }
     >({
       query: (data) => ({
-        url: `/payment/create-link`,
+        url: `/api/payment/create-link`,
         method: "POST",
         body: data,
       }),
@@ -517,7 +517,7 @@ export const appointmentApi = createApi({
       }
     >({
       query: (data) => ({
-        url: `/payment/update-status-deposited`,
+        url: `/api/payment/update-status-deposited`,
         method: "POST",
         body: data,
       }),
@@ -530,7 +530,7 @@ export const appointmentApi = createApi({
       }
     >({
       query: (data) => ({
-        url: `/payment/update-status-paid`,
+        url: `/api/payment/update-status-paid`,
         method: "POST",
         body: data,
       }),
@@ -538,7 +538,7 @@ export const appointmentApi = createApi({
 
     getInvoice: build.mutation<InvoiceProps[], void>({
       query: () => ({
-        url: `/payment/invoice`,
+        url: `/api/payment/invoice`,
         method: "GET",
       }),
     }),
@@ -577,7 +577,7 @@ export const appointmentApi = createApi({
 
     getPaymentStats: build.mutation<PaymentStatsResponse, PaymentStatsDto>({
       query: (dto) => ({
-        url: `/payment/stats`,
+        url: `/api/payment/stats`,
         method: "GET",
         params: dto, 
       })
