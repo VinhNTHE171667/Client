@@ -32,7 +32,18 @@ async function bootstrap() {
     }),
   );
 
-  app.enableCors();
+  app.enableCors({
+    origin: [
+      'http://localhost:5173',
+      'https://g52-genspa.xyz',
+      'http://g52-genspa.xyz',
+      'https://www.g52-genspa.xyz',
+      'http://www.g52-genspa.xyz'
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  });
 
   await app.listen(process.env.PORT ?? 8080);
 

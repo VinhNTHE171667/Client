@@ -13,7 +13,9 @@ import { Category } from '@/entities/category.entity';
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: process.env.EXPIRE_TIME_ACCESS },
+     signOptions: {
+    expiresIn: Number(process.env.EXPIRE_TIME_ACCESS),
+  }
     }),
   ],
   controllers: [CategoryController],

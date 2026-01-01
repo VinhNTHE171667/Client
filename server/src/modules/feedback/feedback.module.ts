@@ -27,7 +27,7 @@ import { AppointmentDetail } from '@/entities/appointmentDetails.entity';
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: process.env.EXPIRE_TIME_ACCESS },
+      signOptions: { expiresIn: (process.env.EXPIRE_TIME_ACCESS || '1d') as any },
     }),
   ],
   controllers: [FeedbackController],

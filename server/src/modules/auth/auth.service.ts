@@ -134,14 +134,14 @@ export class AuthService {
         this.jwtService.signAsync(
           { id: payload.id, role: payload.role },
           {
-            expiresIn: this.configService.get<string>('EXPIRE_TIME_ACCESS'),
+            expiresIn: (this.configService.get<string>('EXPIRE_TIME_ACCESS') || '1d') as any,
             secret: this.configService.get<string>('JWT_SECRET'),
           },
         ),
         this.jwtService.signAsync(
           { id: payload.id, role: payload.role },
           {
-            expiresIn: this.configService.get<string>('EXPIRE_TIME_REFRESH'),
+            expiresIn: (this.configService.get<string>('EXPIRE_TIME_REFRESH') || '7d') as any,
             secret: this.configService.get<string>('JWT_SECRET'),
           },
         ),

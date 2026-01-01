@@ -372,20 +372,29 @@ class BookingAgent:
 				intent="action"
 			)
 		
-		# Validation: Chỉ cho phép đặt lịch từ 9h sáng đến 16h chiều
-		if slot_start_time.hour < 9 or slot_start_time.hour >= 16:
+		# Validation: Giờ làm việc 9h-17h (slot cuối 16-17h)
+		if slot_start_time.hour < 9 or slot_start_time.hour >= 17:
 			return ChatResponse(
-				answer="❌ Chỉ cho phép đặt lịch từ 9:00 sáng đến 16:00 chiều!\n\n⏰ Giờ làm việc: 09:00 - 16:00\n\n💡 Vui lòng chọn khung giờ trong khoảng thời gian trên.\n\nVí dụ:\n- '9 giờ sáng'\n- '2 giờ chiều' (14:00)\n- '3 giờ chiều' (15:00)",
+				answer=f"❌ Giờ đặt lịch không hợp lệ!\n\n⏰ Giờ làm việc: 09:00 - 17:00 (slot cuối 16:00-17:00)\n\n🚫 Bạn đã chọn: {slot_start_time.strftime('%H:%M')}\n\n💡 Vui lòng chọn giờ từ 9 giờ sáng đến 4 giờ chiều.\n\nVí dụ:\n- 'ngày mai 9 giờ sáng' (09:00)\n- 'hôm nay 2 giờ chiều' (14:00)\n- 'chiều mai 3 giờ' (15:00)\n- 'mai 4 giờ chiều' (16:00)",
 				intent="action"
 			)
 		
 		# Kiểm tra slot có available không (use slot_start_time/slot_end_time)
 		doctor_id = session["doctor_id"]
 		if not self._is_slot_available(doctor_id, appointment_date, slot_start_time, slot_end_time):
-			return ChatResponse(
-				answer="❌ Khung giờ này bác sĩ đã có lịch hẹn rồi!\n\n🕐 Vui lòng chọn thời gian khác.\n\n💡 Gợi ý: Hãy thử khung giờ sáng (9:00-11:00) hoặc chiều (14:00-17:00).",
-				intent="action"
-			)
+			# Tìm các slot trống trong ngày này
+			available_slots = self._get_available_slots(doctor_id, appointment_date)
+			if available_slots:
+				slot_list = "\n".join([f"- {s['start_time']} - {s['end_time']}" for s in available_slots])
+				return ChatResponse(
+					answer=f"❌ Khung giờ {slot_start_time.strftime('%H:%M')} - {slot_end_time.strftime('%H:%M')} đã có người đặt rồi!\n\n📅 Ngày: {appointment_date.strftime('%d/%m/%Y')}\n👨‍⚕️ Bác sĩ: {self._get_doctor_by_id(doctor_id)['full_name']}\n\n✅ Các khung giờ còn trống:\n{slot_list}\n\n💡 Vui lòng chọn một trong các khung giờ trên hoặc chọn ngày khác.",
+					intent="action"
+				)
+			else:
+				return ChatResponse(
+					answer=f"❌ Ngày {appointment_date.strftime('%d/%m/%Y')} bác sĩ đã hết lịch!\n\n💡 Vui lòng chọn ngày khác.\n\nVí dụ:\n- 'ngày mai lúc 2 giờ chiều'\n- 'thứ 5 tuần sau lúc 10 giờ sáng'",
+					intent="action"
+				)
 		# Save as server schema expects: appointment_date stored as start datetime,
 		# and startTime/endTime stored as full timestamps when inserting.
 		session["appointment_date"] = appointment_date.strftime("%Y-%m-%d")
@@ -447,8 +456,17 @@ class BookingAgent:
 					intent="action"
 				)
 		
-		# Xử lý "không" để bỏ qua chọn dịch vụ (khi chưa chọn dịch vụ nào)
+		# Xử lý "không" để bỏ qua chọn dịch vụ (CHỈ khi đã chọn ít nhất 1 dịch vụ)
 		if query_lower in ["không", "no", "skip", ""]:
+			# Kiểm tra đã chọn dịch vụ chưa
+			if not session.get("services"):
+				services = self._list_services()
+				service_list = "\n".join([f"- {s['name']} ({s['price']:,} VND)" for s in services])
+				return ChatResponse(
+					answer=f"⚠️ Bạn PHẢI chọn ít nhất 1 dịch vụ để tiếp tục!\n\n💆 Vui lòng chọn dịch vụ từ danh sách:\n\n{service_list}\n\n💡 Nhập tên dịch vụ.",
+					intent="action"
+				)
+			# Đã chọn rồi thì được phép bỏ qua
 			session["stage"] = "select_voucher"
 			return self._handle_select_voucher(session, "")
 		
@@ -582,6 +600,24 @@ class BookingAgent:
 
 	def _generate_confirmation_message(self, session: Dict[str, Any]) -> ChatResponse:
 		"""Tạo message xác nhận trước khi lưu"""
+		# VALIDATION: Kiểm tra đầy đủ dữ liệu bắt buộc
+		missing_fields = []
+		if not session.get("doctor_id"):
+			missing_fields.append("Bác sĩ")
+		if not session.get("appointment_date") or not session.get("start_time"):
+			missing_fields.append("Thời gian hẹn")
+		if not session.get("services") or len(session["services"]) == 0:
+			missing_fields.append("Dịch vụ (ít nhất 1)")
+		if not session.get("customer_id") or not session.get("customer_info"):
+			missing_fields.append("Thông tin khách hàng")
+		
+		if missing_fields:
+			logger.error(f"[CONFIRM] Missing required fields: {missing_fields}")
+			return ChatResponse(
+				answer=f"❌ Thiếu thông tin bắt buộc:\n\n" + "\n".join([f"- {f}" for f in missing_fields]) + "\n\n💡 Vui lòng nhập 'hủy' để bắt đầu lại.",
+				intent="action"
+			)
+		
 		doctor = self._get_doctor_by_id(session["doctor_id"])
 		doctor_name = doctor["full_name"] if doctor else "bác sĩ"
 		
@@ -898,12 +934,14 @@ Bạn có xác nhận đặt lịch không? (Nhập 'có' hoặc 'không')"""
 			if any(k in text_lower for k in ["giờ", "lúc", "hôm", "mai", "ngày", "thứ"]):
 				base_date = today
 
-		# Time parsing: patterns like 'lúc 2 giờ chiều', '2 giờ', '14:30'
-		time_re = re.search(r'(?:lúc\s*)?(\d{1,2})(?:\s*(?:giờ|h|:))?(?:\s*(\d{1,2}))?(?:\s*(?:phút|p))?(?:\s*(sáng|chiều|tối|trưa|đêm))?', text_lower)
+		# Time parsing: catch period BEFORE or AFTER hour: 'chiều 3 giờ', '3 giờ chiều', 'lúc 2 giờ chiều'
+		time_re = re.search(r'(?:lúc\s*)?(?:(sáng|chiều|tối|trưa|đêm)\s*)?(\d{1,2})(?:\s*(?:giờ|h|:))?(?:\s*(\d{1,2}))?(?:\s*(?:phút|p))?(?:\s*(sáng|chiều|tối|trưa|đêm))?', text_lower)
 		if time_re and base_date:
-			hour_s = time_re.group(1)
-			min_s = time_re.group(2)
-			period = time_re.group(3)
+			period_before = time_re.group(1)  # period before hour
+			hour_s = time_re.group(2)
+			min_s = time_re.group(3)
+			period_after = time_re.group(4)  # period after hour
+			period = period_after or period_before  # prioritize after, fallback to before
 			try:
 				hour = int(hour_s)
 				minute = int(min_s) if min_s else 0
@@ -956,6 +994,40 @@ Bạn có xác nhận đặt lịch không? (Nhập 'có' hoặc 'không')"""
 			).fetchone()
 			
 			return result[0] == 0 if result else True
+
+	def _get_available_slots(self, doctor_id: str, appointment_date: Any) -> List[Dict[str, str]]:
+		"""
+		Lấy danh sách các slot còn trống của bác sĩ trong ngày
+		Chỉ trả về các slot từ thời điểm hiện tại trở đi (không trả về slot quá khứ)
+		"""
+		available = []
+		now = datetime.now()
+		
+		# Định nghĩa các slot trong ngày (9h-17h, mỗi slot 1 tiếng)
+		slot_starts = [
+			dtime(9, 0), dtime(10, 0), dtime(11, 0), 
+			dtime(12, 0), dtime(13, 0), dtime(14, 0), 
+			dtime(15, 0), dtime(16, 0)
+		]
+		
+		slot_len = timedelta(minutes=self.SLOT_LENGTH_MINUTES)
+		
+		for start_time in slot_starts:
+			end_time = (datetime.combine(appointment_date, start_time) + slot_len).time()
+			
+			# Kiểm tra không phải quá khứ
+			slot_datetime = datetime.combine(appointment_date, start_time)
+			if slot_datetime < now:
+				continue
+			
+			# Kiểm tra slot có available không
+			if self._is_slot_available(doctor_id, appointment_date, start_time, end_time):
+				available.append({
+					"start_time": start_time.strftime("%H:%M"),
+					"end_time": end_time.strftime("%H:%M")
+				})
+		
+		return available
 
 	def _list_services(self) -> List[Dict[str, Any]]:
 		"""Lấy danh sách dịch vụ"""

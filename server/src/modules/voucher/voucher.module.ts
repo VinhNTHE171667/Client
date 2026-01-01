@@ -20,7 +20,7 @@ import { CacheModule } from '@nestjs/cache-manager';
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: process.env.EXPIRE_TIME_ACCESS },
+      signOptions: { expiresIn: (process.env.EXPIRE_TIME_ACCESS || '1d') as any },
     }),
   ],
   controllers: [VoucherController],

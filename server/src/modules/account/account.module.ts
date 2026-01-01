@@ -9,6 +9,7 @@ import { Internal } from '@/entities/internal.entity';
 import { Role } from '@/entities/role.entity';
 import { Doctor } from '@/entities/doctor.entity';
 import { Service } from '@/entities/service.entity';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
@@ -17,8 +18,9 @@ import { Service } from '@/entities/service.entity';
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: process.env.EXPIRE_TIME_ACCESS },
+      signOptions: { expiresIn: (process.env.EXPIRE_TIME_ACCESS || '1d') as any },
     }),
+    MailModule,
   ],
   controllers: [AccountController],
   providers: [AccountService],

@@ -8,6 +8,7 @@ import {
   message,
   Space,
   Modal,
+  DatePicker,
 } from "antd";
 import dayjs from "dayjs";
 import {
@@ -223,6 +224,20 @@ const UpdateAppointmentModal: React.FC<Props> = ({
               label: `${service.name} - ${service.price.toLocaleString()} VND`,
               value: service.id,
             }))}
+          />
+        </Form.Item>
+
+        <Form.Item
+          label="Ngày hẹn"
+          name="date"
+          rules={[{ required: true, message: "Vui lòng chọn ngày hẹn" }]}
+        >
+          <DatePicker
+            format="DD/MM/YYYY"
+            style={{ width: "100%" }}
+            disabledDate={(current) => {
+              return current && current < dayjs().startOf("day");
+            }}
           />
         </Form.Item>
 

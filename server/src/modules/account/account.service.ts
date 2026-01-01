@@ -18,6 +18,8 @@ import { Doctor } from '@/entities/doctor.entity';
 import { CreateInternalDto, UpdateInternalDto } from './dto/internal.dto';
 import { CreateDoctorDto, UpdateDoctorDto } from './dto/doctor.dto';
 import { Service } from '@/entities/service.entity';
+import { MailService } from '../mail/mail.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AccountService {
@@ -39,6 +41,8 @@ export class AccountService {
 
     private dataSource: DataSource,
     private jwtService: JwtService,
+    private readonly mailService: MailService,
+    private readonly configService: ConfigService,
   ) {}
 
   async checkDuplicateEmailWithRole(email: string): Promise<RoleType | null> {
@@ -87,11 +91,43 @@ export class AccountService {
 
     const customer = this.customerRepository.create(data);
     customer.password = await hashPassword(data.password);
-    return this.customerRepository.save({
+    
+    // Tạo token xác thực
+    const verifyToken = await this.jwtService.signAsync(
+      { email: customer.email },
+      { 
+        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: '24h' 
+      },
+    );
+
+    const savedCustomer = await this.customerRepository.save({
       ...customer,
       refreshToken: '',
-      isVerified: true,
+      isVerified: false,
+      isEmailVerified: false,
+      emailVerificationToken: verifyToken,
+      emailVerificationTokenExpire: new Date(Date.now() + 24 * 60 * 60 * 1000),
     });
+
+    // Tạo URL xác thực
+    const clientUrl = this.configService.get<string>('CLIENT_URL');
+    const verifyUrl = `${clientUrl}/verify-email?token=${verifyToken}`;
+
+    // Gửi email xác thực
+    try {
+      await this.mailService.sendVerifyEmail({
+        to: savedCustomer.email,
+        customerName: savedCustomer.full_name || savedCustomer.email,
+        verifyUrl,
+      });
+      console.log('Đã gửi email xác thực đến:', savedCustomer.email);
+    } catch (error) {
+      console.error('Lỗi khi gửi email xác thực:', error);
+      // Không throw error để không làm gián đoạn việc tạo tài khoản
+    }
+
+    return savedCustomer;
   }
 
   async findAllCustomers(): Promise<Customer[]> {

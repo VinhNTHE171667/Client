@@ -1,6 +1,6 @@
 node_modules
 npm-debug.log
-dist
+#dist
 .git
 .gitignore
 README.md
@@ -11,6 +11,7 @@ README.md
 coverage
 .test
 jest.config.js
-test
-mysql-data
-mysql-data/**
+# tsconfig.json
+# tsconfig.build.json
+# src
+# test

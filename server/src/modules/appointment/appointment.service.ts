@@ -331,18 +331,19 @@ export class AppointmentService {
   }
 
   async confirmAppointment(id: string, staffId: string) {
-    const appointment = await this.findOne(id);
-    appointment.status = AppointmentStatus.Confirmed;
-    const staff = await this.internalRepo.findOne({ where: { id: staffId } });
+    try {
+      const appointment = await this.findOne(id);
+      const staff = await this.internalRepo.findOne({ where: { id: staffId } });
 
-    appointment.staff = staff as Internal;
-    appointment.staffId = staffId;
+      if (!staff) {
+        throw new NotFoundException('Nhân viên không tồn tại');
+      }
 
-    if (!staff) {
-      throw new NotFoundException('Nhân viên không tồn tại');
-    }
+      appointment.status = AppointmentStatus.Confirmed;
+      appointment.staff = staff;
+      appointment.staffId = staffId;
 
-    const spa = await this.getSpa();
+      const spa = await this.getSpa();
 
     const services = appointment.details.map((d) => ({
       name: d.service.name,
@@ -372,6 +373,10 @@ export class AppointmentService {
     await this.appointmentRepo.save(appointment);
 
     return appointment;
+    } catch (error) {
+      console.error('❌ Error in confirmAppointment:', error);
+      throw error;
+    }
   }
 
   // async DepositedAppointment(id: string) {

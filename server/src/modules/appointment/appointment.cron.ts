@@ -44,16 +44,16 @@ export class AppointmentCronReminderService {
     private readonly notificationService: NotificationService, 
   ) {}
 
-  @Cron(CronExpression.EVERY_30_MINUTES)
+  @Cron(CronExpression.EVERY_DAY_AT_7PM)
   async sendUpcomingAppointmentsReminder() {
     this.logger.log('Đang kiểm tra appointment sắp đến giờ...');
 
     const now = new Date();
     const next24h = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-    // Fix: Only query appointments within the next 24 hours to optimize
     const appointments = await this.appointmentRepo.find({
       where: { 
+        status: AppointmentStatus.Deposited,
         startTime: Between(now, next24h) 
       },
       relations: ['customer', 'details', 'details.service', 'staff'],

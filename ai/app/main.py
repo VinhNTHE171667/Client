@@ -274,15 +274,20 @@ def chat(request: ChatRequest) -> ChatResponse:
 
     session_id = request.session_id or "default"
     
+    # Log đầy đủ request để debug
+    logger.info(f"[CHAT] Session={session_id}, Query='{query[:50]}...', CustomerID={request.customer_id}")
+    
     # Set customer_id vào booking session nếu có trong request
     if request.customer_id:
-        logger.info(f"Setting customer_id={request.customer_id} for session={session_id}")
+        logger.info(f"[AUTH] Setting customer_id={request.customer_id} for session={session_id}")
         booking_agent.set_customer_id(session_id, request.customer_id)
     else:
-        logger.warning(f"No customer_id in request for session={session_id}")
+        logger.warning(f"[AUTH] ⚠️ No customer_id in request for session={session_id} - User might not be logged in")
     
     active_intent = sessions.get(session_id)
     predicted_intent = intent_classifier.predict(query)
+    
+    logger.info(f"[INTENT] Active={active_intent}, Predicted={predicted_intent}")
 
     override_path = getattr(request, "full_context_path", None)
     override_key = getattr(request, "full_context_api_key", None)

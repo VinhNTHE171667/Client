@@ -5,6 +5,7 @@ import { Service } from '@/entities/service.entity';
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -95,67 +96,81 @@ export class CartService {
   return omit(cartResponse, ['createdAt', 'updatedAt']);
 }
 
-   async addItemToCart(
+async addItemToCart(
   customerId: string,
   itemData: { itemId: string; quantity?: number },
-  doctorId?: string | null, // Optional, allow null
+  doctorId?: string | null,
 ) {
-  const { itemId, quantity = 1 } = itemData;
+  try {
+    const { itemId, quantity = 1 } = itemData;
 
-  let cart = await this.cartRepo.findOne({
-    where: { customerId },
-    relations: ['details', 'details.service'],
-  });
-
-  if (!cart) {
-    cart = this.cartRepo.create({
-      customerId,
-      details: [],
+    let cart = await this.cartRepo.findOne({
+      where: { customerId },
+      relations: ['details', 'details.service'],
     });
-    cart = await this.cartRepo.save(cart);
-  }
 
-  const service = await this.serviceRepo.findOne({
-    where: { id: itemId },
-    relations: ['doctors'],
-  });
-  if (!service) throw new NotFoundException('Không tìm thấy dịch vụ');
-
-  if (doctorId) {
-    const doctors = service.doctors || [];
-    if (!doctors.find((doc) => doc.id === doctorId)) {
-      throw new BadRequestException(
-        'Bác sĩ không được phép thêm dịch vụ này vào giỏ hàng',
-      );
+    if (!cart) {
+      cart = this.cartRepo.create({
+        customerId,
+        details: [],
+      });
+      cart = await this.cartRepo.save(cart);
     }
+
+    const service = await this.serviceRepo.findOne({
+      where: { id: itemId },
+      relations: ['doctors'],
+    });
+    if (!service) {
+      throw new NotFoundException('Không tìm thấy dịch vụ');
+    }
+
+    if (doctorId) {
+      const doctors = service.doctors || [];
+      if (!doctors.find((doc) => doc.id === doctorId)) {
+        throw new BadRequestException(
+          'Bác sĩ không được phép thêm dịch vụ này vào giỏ hàng',
+        );
+      }
+    }
+
+    const whereClause = doctorId
+      ? { cartId: cart.id, serviceId: service.id, doctorId }
+      : { cartId: cart.id, serviceId: service.id, doctorId: IsNull() };
+
+    const existingDetail = await this.cartDetailRepo.findOne({
+      where: whereClause,
+    });
+
+    if (existingDetail) {
+      throw new BadRequestException('Dịch vụ này đã có trong giỏ hàng');
+    }
+
+    const newDetail = this.cartDetailRepo.create({
+      cartId: cart.id,
+      serviceId: service.id,
+      quantity,
+      doctorId: doctorId ?? null,
+    });
+
+    await this.cartDetailRepo.save(newDetail);
+
+    return this.getCartById(customerId);
+  } catch (error) {
+    if (
+      error instanceof BadRequestException ||
+      error instanceof NotFoundException
+    ) {
+      throw error;
+    }
+
+    console.error('Add item to cart error:', error);
+
+    throw new InternalServerErrorException(
+      'Không thể thêm dịch vụ vào giỏ hàng',
+    );
   }
-
-  const whereClause = doctorId 
-    ? { serviceId: service.id, doctorId } 
-    : { serviceId: service.id, doctorId: IsNull() }; 
-
-  const existingDetail = await this.cartDetailRepo.findOne({
-    where: whereClause,
-    relations: ['cart'],
-  });
-
-  if (existingDetail) {
-    throw new BadRequestException('Dịch vụ này đã có trong giỏ hàng');
-  }
-
-  const newDetailData = {
-    cartId: cart.id,
-    serviceId: service.id, 
-    quantity,
-    doctorId: doctorId || null,
-  };
-
-  const newDetail = this.cartDetailRepo.create(newDetailData);
-  await this.cartDetailRepo.save(newDetail);
-
-  return this.getCartById(customerId);
 }
-
 
   async removeItemFromCart(customerId: string, itemId: string) {
     const cart = await this.cartRepo.findOne({

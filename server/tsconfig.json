@@ -11,21 +11,21 @@
     "target": "ES2020",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
+
+    "baseUrl": "./src",
+
+    "paths": {
+      "@entities/*": ["entities/*"],
+      "@db/*": ["db/*"],
+      "@/*": ["*"]
+    },
+
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false,
-
-    "typeRoots": ["./node_modules/@types", "./types"],
-
-    "paths": {
-      "@entities/*": ["entities/*"],
-      "@db/*": ["db/*"],
-      "@/*": ["src/*"]
-    }
+    "noFallthroughCasesInSwitch": false
   }
 }
