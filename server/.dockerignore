@@ -1,6 +1,6 @@
 node_modules
 npm-debug.log
-#dist
+dist
 .git
 .gitignore
 README.md
@@ -8,10 +8,9 @@ README.md
 .DS_Store
 .vscode
 .idea
+mysql-data
+mysql-data/**
 coverage
 .test
 jest.config.js
-# tsconfig.json
-# tsconfig.build.json
-# src
-# test
+test
