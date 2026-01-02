@@ -228,15 +228,16 @@ export class PaymentService {
       (sum, d) => sum + Number(d.price) * d.quantity,
       0,
     );
+
     const discount = total - appointment.totalAmount;
 
     const invoice = this.invoiceRepo.create({
       customer: appointment.customer,
       appointmentId: appointment.id,
-      total_amount: appointment.totalAmount * 0.5,
+      total_amount: appointment.totalAmount - appointment.depositAmount,
       total: total,
       discount: discount * 0.5,
-      finalAmount: appointment.totalAmount * 0.5,
+      finalAmount: appointment.totalAmount - appointment.depositAmount,
       status: 'completed',
       payment_status: 'paid',
       invoice_type: 'final',

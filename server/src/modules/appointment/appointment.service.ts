@@ -253,75 +253,75 @@ export class AppointmentService {
   }
 
   async update(id: string, dto: UpdateAppointmentDto) {
-    const original = await this.appointmentRepo.findOne({
+  const original = await this.appointmentRepo.findOne({
+    where: { id },
+  });
+
+  if (!original) {
+    throw new NotFoundException('Lịch hẹn không tồn tại');
+  }
+
+  return await this.dataSource.transaction(async (manager) => {
+    const appointmentRepo = manager.getRepository(Appointment);
+    const detailRepo = manager.getRepository(AppointmentDetail);
+    const serviceRepo = manager.getRepository(Service);
+
+    const managedAppointment = await appointmentRepo.findOne({
       where: { id },
-      relations: ['details'],
     });
 
-    if (!original) {
-      throw new NotFoundException('Lịch hẹn không tồn tại');
+    if (!managedAppointment) {
+      throw new NotFoundException('Lịch hẹn không tồn tại (transaction)');
     }
 
-    // if (original.status !== AppointmentStatus.Pending) {
-    //   throw new BadRequestException('Không thể cập nhật lịch hẹn đã xác nhận');
-    // }
+    // 1️⃣ Xoá toàn bộ detail cũ
+    await detailRepo.delete({ appointment: { id } });
 
-    Object.assign(original, dto);
+    let totalAmount = 0;
 
-    return await this.dataSource.transaction(async (manager) => {
-      const appointmentRepo = manager.getRepository(Appointment);
-      const detailRepo = manager.getRepository(AppointmentDetail);
-      const serviceRepo = manager.getRepository(Service);
+    // 2️⃣ Tạo lại detail + tính tổng
+    if (dto.details?.length) {
+      const newDetails: AppointmentDetail[] = [];
 
-      const managedAppointment = await appointmentRepo.findOne({
-        where: { id },
-      });
-      if (!managedAppointment) {
-        throw new NotFoundException('Lịch hẹn không tồn tại (transaction)');
-      }
+      for (const d of dto.details) {
+        const service = await serviceRepo.findOne({
+          where: { id: d.serviceId },
+        });
 
-      await detailRepo
-        .createQueryBuilder()
-        .delete()
-        .from(AppointmentDetail)
-        .where('appointmentId = :id', { id })
-        .execute();
-
-      if (dto.details && dto.details.length) {
-        const newDetails: AppointmentDetail[] = [];
-        for (const d of dto.details) {
-          const service = await serviceRepo.findOne({
-            where: { id: d.serviceId },
-          });
-          if (!service) {
-            throw new BadRequestException(
-              `Dịch vụ với ID ${d.serviceId} không tồn tại`,
-            );
-          }
-
-          const price = d.price ?? service.price ?? 0;
-
-          const detail = detailRepo.create({
-            ...d,
-            price,
-            service,
-            appointment: managedAppointment,
-          });
-          newDetails.push(detail);
+        if (!service) {
+          throw new BadRequestException(
+            `Dịch vụ với ID ${d.serviceId} không tồn tại`,
+          );
         }
 
-        await detailRepo.save(newDetails);
+        const price = d.price ?? service.price ?? 0;
+        const quantity =  1;
+
+        totalAmount += price * quantity;
+
+        const detail = detailRepo.create({
+          ...d,
+          price,
+          service,
+          appointment: managedAppointment,
+        });
+
+        newDetails.push(detail);
       }
 
-      Object.assign(managedAppointment, {
-        ...dto,
-        details: undefined,
-        totalAmount: dto.totalAmount,
-      });
+      await detailRepo.save(newDetails);
+    }
 
-      return await appointmentRepo.save(managedAppointment);
+    Object.assign(managedAppointment, {
+      ...dto,
+      details: undefined,
+      totalAmount,
     });
-  }
+
+    return await appointmentRepo.save(managedAppointment);
+  });
+}
+
 
   async reschedule(id: string, newDate: Date) {
     const appointment = await this.findOne(id);
