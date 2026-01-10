@@ -4,6 +4,7 @@ import {
   CheckOutlined,
   ScanOutlined,
   BellOutlined,
+  DollarOutlined, // ← ICON HOÀN TIỀN
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import type { AppointmentTableProps } from "./type";
@@ -122,16 +123,18 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => {
       width: 70,
       align: "center",
       render: (_, record) => {
-        // Không hiển thị nút actions nếu đã thanh toán
-        if (record.status === appointmentStatusEnum.Paid) {
+        // Ẩn toàn bộ action nếu đã Paid hoặc Refunded
+        if (
+          record.status === appointmentStatusEnum.Paid ||
+          record.status === appointmentStatusEnum.Refunded
+        ) {
           return <span>—</span>;
         }
 
         const items: MenuProps["items"] = [];
 
-        // Nút: Nhắc bác sĩ hoàn thành
         const canRemindDoctor =
-          record.doctorId && // có bác sĩ
+          record.doctorId &&
           record.status !== appointmentStatusEnum.Completed &&
           [
             appointmentStatusEnum.Paid,
@@ -151,7 +154,7 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => {
           });
         }
 
-        // Nút thanh toán khi đã hoàn thành dịch vụ
+        // Thanh toán khi đã hoàn thành dịch vụ
         if (record.status === appointmentStatusEnum.Completed) {
           items.push(
             {
@@ -173,6 +176,19 @@ export const AppointmentColumn = (): ColumnsType<AppointmentTableProps> => {
               ),
             }
           );
+        }
+
+        // Hoàn tiền khi đã huỷ
+        if (record.status === appointmentStatusEnum.Cancelled) {
+          items.push({
+            key: "refund",
+            label: (
+              <Space onClick={record.onRefund}>
+                <DollarOutlined style={{ color: "#52c41a" }} />
+                <span>Hoàn tiền</span>
+              </Space>
+            ),
+          });
         }
 
         return items.length > 0 ? (
