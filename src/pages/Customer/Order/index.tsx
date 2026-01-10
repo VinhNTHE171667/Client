@@ -55,6 +55,7 @@ import {
   useFindByAppointmentMutation,
   type FeedbackResponse,
 } from "@/services/feedback";
+
 const locales = { vi };
 const localizer = dateFnsLocalizer({
   format,
@@ -63,6 +64,7 @@ const localizer = dateFnsLocalizer({
   getDay,
   locales,
 });
+
 const CustomerOrders: React.FC = () => {
   const { auth } = useAuthStore();
   const [getAppointments, { isLoading }] =
@@ -74,7 +76,7 @@ const CustomerOrders: React.FC = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [detailModal, setDetailModal] = useState(false);
   const [selectedAppointment, setSelectedAppointment] =
-    useState<AppointmentProps>();
+    useState<AppointmentProps | null>(null);
   const [feedbackModal, setFeedbackModal] = useState(false);
   const [feedbacks, setFeedbacks] = useState<
     { serviceId: string; rating?: number; comment?: string }[]
@@ -90,11 +92,14 @@ const CustomerOrders: React.FC = () => {
     [dayjs.Dayjs | null, dayjs.Dayjs | null] | null
   >(null);
   const [viewMode, setViewMode] = useState<"calendar" | "list">("list");
+  const [refundModal, setRefundModal] = useState(false); // Modal hoàn tiền mới
+
   const navigate = useNavigate();
   const [updateCancelAppointment] =
     useUpdateAppointmentMutationCancelMutation();
   const [createPaymentLink] = useCreateLinkPaymentMutation();
   const [createFeedbacks] = useCreateFeedbacksMutation();
+
   const handleEvent = async () => {
     if (auth?.accountId) {
       try {
@@ -107,6 +112,7 @@ const CustomerOrders: React.FC = () => {
       }
     }
   };
+
   useEffect(() => {
     handleEvent();
     const intervalId = setInterval(() => {
@@ -115,6 +121,7 @@ const CustomerOrders: React.FC = () => {
 
     return () => clearInterval(intervalId);
   }, [auth]);
+
   const events: RBCEvent[] = useMemo(
     () =>
       appointments
@@ -135,6 +142,7 @@ const CustomerOrders: React.FC = () => {
         })),
     [appointments]
   );
+
   const filteredAppointments = useMemo(() => {
     if (!statusFilter?.length && !dateRange) {
       return appointments;
@@ -149,25 +157,38 @@ const CustomerOrders: React.FC = () => {
       return matchStatus && matchDate;
     });
   }, [appointments, statusFilter, dateRange]);
+
   const handleSelectSlot = (slotInfo: SlotInfo) => {
     console.log("Slot selected:", slotInfo);
   };
+
   const handleSelectEvent = (event: RBCEvent) => {
     const appointment = event.resource as AppointmentProps;
     setSelectedAppointment(appointment);
     setEditModal(true);
   };
+
   const handleCancelAppointment = async (values: { cancelReason: string }) => {
+    if (!selectedAppointment) return;
+
+    const wasDeposited =
+      selectedAppointment.status === appointmentStatusEnum.Deposited;
+
     try {
       const res = await updateCancelAppointment({
-        appointmentId: selectedAppointment?.id || "",
+        appointmentId: selectedAppointment.id || "",
         reason: values.cancelReason || "Khách hàng huỷ lịch hẹn",
-      });
+      }).unwrap();
+
       if (res) {
         showSuccess("Huỷ lịch hẹn thành công.");
+        if (wasDeposited) {
+          setRefundModal(true); // Hiển thị modal hoàn tiền nếu trước đó đã đặt cọc
+        }
       } else {
         showError("Huỷ lịch hẹn thất bại.");
       }
+
       setCancelModal(false);
       await handleEvent();
     } catch (err) {
@@ -176,24 +197,27 @@ const CustomerOrders: React.FC = () => {
       showError(msg);
     }
   };
+
   const handleSaveEdit = () => {
+    if (!selectedAppointment) return;
     navigate(configRoutes.bookings, {
       state: {
         oldSlot: {
-          start: selectedAppointment?.startTime || null,
-          end: selectedAppointment?.endTime || null,
+          start: selectedAppointment.startTime || null,
+          end: selectedAppointment.endTime || null,
         },
-        appointmentId: selectedAppointment?.id || null,
-        doctorId: selectedAppointment?.doctorId || null,
-        services: selectedAppointment?.details?.map((d) => d.service) || [],
-        full_name: selectedAppointment?.customer?.full_name || null,
-        phone: selectedAppointment?.customer?.phone || null,
-        note: selectedAppointment?.note || null,
-        totalAmount: selectedAppointment?.totalAmount || null,
-        voucherId: selectedAppointment?.voucherId || null,
+        appointmentId: selectedAppointment.id || null,
+        doctorId: selectedAppointment.doctorId || null,
+        services: selectedAppointment.details?.map((d) => d.service) || [],
+        full_name: selectedAppointment.customer?.full_name || null,
+        phone: selectedAppointment.customer?.phone || null,
+        note: selectedAppointment.note || null,
+        totalAmount: selectedAppointment.totalAmount || null,
+        voucherId: selectedAppointment.voucherId || null,
       },
     });
   };
+
   const handleDeposit = async (item: AppointmentProps) => {
     try {
       const total = Number(item.totalAmount);
@@ -223,6 +247,7 @@ const CustomerOrders: React.FC = () => {
       message.error(msg);
     }
   };
+
   const handleCreateFeedbacks = async () => {
     try {
       await createFeedbacks({
@@ -241,6 +266,7 @@ const CustomerOrders: React.FC = () => {
       handleError(err);
     }
   };
+
   const handleViewFeedback = async (appointment: AppointmentProps) => {
     try {
       const res = await getFeedbackByAppointment(appointment.id).unwrap();
@@ -251,6 +277,7 @@ const CustomerOrders: React.FC = () => {
       handleError(err);
     }
   };
+
   return (
     <div className={styles.ordersPageWrapper}>
       {/* Header Section */}
@@ -282,6 +309,7 @@ const CustomerOrders: React.FC = () => {
           </button>
         </div>
       </div>
+
       {/* Calendar View */}
       {viewMode === "calendar" && (
         <div className={styles.calendarContainer}>
@@ -324,9 +352,11 @@ const CustomerOrders: React.FC = () => {
                 eventPropGetter={(event) => ({
                   style: {
                     backgroundColor:
-                      event.resource?.status === "CANCELLED"
+                      (event.resource as AppointmentProps)?.status ===
+                      "CANCELLED"
                         ? "#dc2626"
-                        : event.resource?.status === "COMPLETED"
+                        : (event.resource as AppointmentProps)?.status ===
+                          "COMPLETED"
                         ? "#16a34a"
                         : "#0ea5e9",
                     borderRadius: "8px",
@@ -359,6 +389,7 @@ const CustomerOrders: React.FC = () => {
           </Card>
         </div>
       )}
+
       {/* List View */}
       {viewMode === "list" && (
         <div className={styles.listContainer}>
@@ -415,6 +446,7 @@ const CustomerOrders: React.FC = () => {
               Xoá Bộ Lọc
             </Button>
           </div>
+
           {/* Appointments List */}
           {isLoading ? (
             <div className={styles.loadingContainer}>
@@ -431,10 +463,13 @@ const CustomerOrders: React.FC = () => {
                 const totalPrice = Number(item.totalAmount).toLocaleString(
                   "vi-VN"
                 );
-                const isPending = item.status === appointmentStatusEnum.Pending;
+                const isPending =
+                  item.status === appointmentStatusEnum.Pending ||
+                  item.status === appointmentStatusEnum.Deposited;
                 const isConfirmed =
                   item.status === appointmentStatusEnum.Confirmed;
                 const isPay = item.status === appointmentStatusEnum.Paid;
+
                 return (
                   <div key={item.id} className={styles.appointmentCard}>
                     {/* Card Header */}
@@ -449,7 +484,13 @@ const CustomerOrders: React.FC = () => {
                           <h3 className={styles.customerName}>
                             {item.customer?.full_name || "Khách hàng"}
                           </h3>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                            }}
+                          >
                             <Tag
                               color={statusTagColor(item.status)}
                               className={styles.statusTag}
@@ -462,7 +503,10 @@ const CustomerOrders: React.FC = () => {
                                 size="small"
                                 icon={<QuestionCircleOutlined />}
                                 onClick={() => {
-                                  setRejectionReason(item.rejectionReason || "Không có lý do cụ thể");
+                                  setRejectionReason(
+                                    item.rejectionReason ||
+                                      "Không có lý do cụ thể"
+                                  );
                                   setReasonModal(true);
                                 }}
                                 style={{ padding: 0, color: "#ff4d4f" }}
@@ -478,6 +522,7 @@ const CustomerOrders: React.FC = () => {
                         <span className={styles.priceValue}>{totalPrice}₫</span>
                       </div>
                     </div>
+
                     {/* Card Details */}
                     <div className={styles.cardDetails}>
                       <div className={styles.detailItem}>
@@ -516,6 +561,7 @@ const CustomerOrders: React.FC = () => {
                         </div>
                       )}
                     </div>
+
                     {/* Card Actions */}
                     <div className={styles.cardActions}>
                       <Button
@@ -529,23 +575,23 @@ const CustomerOrders: React.FC = () => {
                       >
                         Chi Tiết
                       </Button>
+
                       {isPending && (
-                        <>
-                          <Button
-                            type="text"
-                            size="small"
-                            danger
-                            icon={<DeleteOutlined />}
-                            onClick={() => {
-                              setSelectedAppointment(item);
-                              setCancelModal(true);
-                            }}
-                            className={styles.actionBtn}
-                          >
-                            Huỷ
-                          </Button>
-                        </>
+                        <Button
+                          type="text"
+                          size="small"
+                          danger
+                          icon={<DeleteOutlined />}
+                          onClick={() => {
+                            setSelectedAppointment(item);
+                            setCancelModal(true);
+                          }}
+                          className={styles.actionBtn}
+                        >
+                          Huỷ
+                        </Button>
                       )}
+
                       {isConfirmed && (
                         <Button
                           type="primary"
@@ -556,6 +602,7 @@ const CustomerOrders: React.FC = () => {
                           Đặt Cọc 20%
                         </Button>
                       )}
+
                       {isPay && (
                         <>
                           <Button
@@ -577,6 +624,7 @@ const CustomerOrders: React.FC = () => {
                           >
                             {item.isFeedbackGiven ? "Đã Đánh Giá" : "Đánh Giá"}
                           </Button>
+
                           {item.isFeedbackGiven && (
                             <Button
                               type="text"
@@ -598,7 +646,8 @@ const CustomerOrders: React.FC = () => {
           )}
         </div>
       )}
-      {/* Modals */}
+
+      {/* Các Modal hiện có */}
       <Modal
         title="Chỉnh Sửa Lịch Hẹn"
         open={editModal}
@@ -616,6 +665,7 @@ const CustomerOrders: React.FC = () => {
           {dayjs(selectedAppointment?.startTime).format("DD/MM/YYYY HH:mm")}
         </p>
       </Modal>
+
       <Modal
         title="Huỷ Lịch Hẹn"
         open={cancelModal}
@@ -633,12 +683,17 @@ const CustomerOrders: React.FC = () => {
         </p>
         <p className={styles.cautionText}>Hành động này không thể hoàn tác.</p>
       </Modal>
+
       <Modal
         title="Lý Do Từ Chối"
         open={reasonModal}
         onCancel={() => setReasonModal(false)}
         footer={[
-          <Button key="close" type="primary" onClick={() => setReasonModal(false)}>
+          <Button
+            key="close"
+            type="primary"
+            onClick={() => setReasonModal(false)}
+          >
             Đóng
           </Button>,
         ]}
@@ -650,6 +705,7 @@ const CustomerOrders: React.FC = () => {
           </p>
         </div>
       </Modal>
+
       <Modal
         title="Chi Tiết Lịch Hẹn"
         open={detailModal}
@@ -705,36 +761,32 @@ const CustomerOrders: React.FC = () => {
             </div>
             <div className={styles.voucherSection}>
               <h4>Voucher</h4>
-
               {selectedAppointment.voucher ? (
                 <div className={styles.voucherItem}>
                   <p className={styles.voucherCode}>
                     Mã voucher: {selectedAppointment.voucher.code}
                   </p>
-
-                  {selectedAppointment.voucher.discountAmount && 
-                   Number(selectedAppointment.voucher.discountAmount) > 0 && (
-                    <p className={styles.voucherDiscount}>
-                      Giảm:{" "}
-                      {Number(
-                        selectedAppointment.voucher.discountAmount
-                      ).toLocaleString("vi-VN")}
-                      ₫
-                    </p>
-                  )}
-
-                  {selectedAppointment.voucher.discountPercent && 
-                   Number(selectedAppointment.voucher.discountPercent) > 0 && (
-                    <p className={styles.voucherDiscount}>
-                      Giảm: {selectedAppointment.voucher.discountPercent}%
-                    </p>
-                  )}
+                  {selectedAppointment.voucher.discountAmount &&
+                    Number(selectedAppointment.voucher.discountAmount) > 0 && (
+                      <p className={styles.voucherDiscount}>
+                        Giảm:{" "}
+                        {Number(
+                          selectedAppointment.voucher.discountAmount
+                        ).toLocaleString("vi-VN")}
+                        ₫
+                      </p>
+                    )}
+                  {selectedAppointment.voucher.discountPercent &&
+                    Number(selectedAppointment.voucher.discountPercent) > 0 && (
+                      <p className={styles.voucherDiscount}>
+                        Giảm: {selectedAppointment.voucher.discountPercent}%
+                      </p>
+                    )}
                 </div>
               ) : (
                 <p className={styles.noVoucher}>Không dùng voucher nào</p>
               )}
             </div>
-
             <div className={styles.totalAmount}>
               <span>Đã đặt cọc:</span>
               <span>
@@ -744,7 +796,6 @@ const CustomerOrders: React.FC = () => {
                 ₫
               </span>
             </div>
-
             <div className={styles.totalAmount}>
               <span>Tổng cộng:</span>
               <span>
@@ -757,6 +808,7 @@ const CustomerOrders: React.FC = () => {
           </div>
         )}
       </Modal>
+
       <Modal
         title="Đánh Giá Dịch Vụ"
         open={feedbackModal}
@@ -800,6 +852,7 @@ const CustomerOrders: React.FC = () => {
           </div>
         </div>
       </Modal>
+
       <Modal
         title="Xem Đánh Giá"
         open={viewFeedbackModal}
@@ -828,7 +881,34 @@ const CustomerOrders: React.FC = () => {
           </div>
         )}
       </Modal>
+
+      <Modal
+        title="Thông Báo Hoàn Tiền Đặt Cọc"
+        open={refundModal}
+        onCancel={() => setRefundModal(false)}
+        footer={[
+          <Button
+            key="close"
+            type="primary"
+            onClick={() => setRefundModal(false)}
+          >
+            Đóng
+          </Button>,
+        ]}
+        wrapClassName={styles.modal}
+      >
+        <p style={{ fontSize: "16px", lineHeight: "1.6" }}>
+          Lịch hẹn đã được huỷ thành công. Vì bạn đã đặt cọc, vui lòng liên hệ
+          thu ngân để được hỗ trợ hoàn tiền:
+        </p>
+        <p style={{ marginTop: "12px" }}>
+          <strong>Số điện thoại:</strong> 0123 456 789
+          <br />
+          <strong>Email:</strong> support@genspa.com
+        </p>
+      </Modal>
     </div>
   );
 };
+
 export default CustomerOrders;
