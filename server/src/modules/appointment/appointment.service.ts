@@ -26,6 +26,7 @@ import { DoctorCancelRequest } from '@/entities/doctorCancelRequest.entity';
 import { NotificationType } from '@/entities/enums/notification-type.enum';
 import { NotificationService } from '../notification/notification.service';
 import { VoucherService } from '../voucher/voucher.service';
+import { AppointmentRefund, RefundStatus } from '@entities/appointmentRefund.entity';
 
 @Injectable()
 export class AppointmentService {
@@ -62,6 +63,9 @@ export class AppointmentService {
     private readonly invoiceRepo: Repository<Invoice>,
     @InjectRepository(InvoiceDetail)
     private readonly invoiceDetailRepo: Repository<InvoiceDetail>,
+
+    @InjectRepository(AppointmentRefund)
+    private readonly refundRepo: Repository<AppointmentRefund>,
 
     @InjectRepository(DoctorCancelRequest)
     private readonly cancelRepo: Repository<DoctorCancelRequest>,
@@ -705,7 +709,10 @@ export class AppointmentService {
 
     await this.notificationService.create({
       title: 'Lịch hẹn của bạn đã bị hủy',
-      content: `Lịch hẹn của bạn đã bị hủy. Chúng tôi xin lỗi vì sự bất tiện này. Để bù đắp, chúng tôi đã tạo voucher giảm ${appointment.depositAmount} cho bạn. Voucher sẽ được gửi qua email và thông báo.`,
+      content: `Lịch hẹn của bạn đã bị hủy. Chúng tôi xin lỗi vì sự bất tiện này. 
+      Để bù đắp, chúng tôi đã tạo voucher giảm ${appointment.depositAmount} cho bạn. 
+      Voucher sẽ được gửi qua email và thông báo. 
+      Vui lòng liên hệ bộ phận chăm sóc khách hàng để được hỗ trợ hoàn tiền đặt cọc.`,
       type: NotificationType.Warning,
       userId: appointment.customer.id,
       userType: 'customer',
@@ -713,6 +720,16 @@ export class AppointmentService {
       relatedId: appointment.id,
       relatedType: 'appointment',
     });
+
+    await this.mailService.sendCancelAppointmentEmail({
+      to: appointment.customer.email,
+      appointment: {
+        customer: { full_name: appointment.customer.full_name },
+        startTime: appointment.startTime,
+        cancelReason: 'Nhân viên bận đột xuất',
+      },
+    });
+
 
     const voucherCode = `CANCEL_${appointment.id.slice(0, 8).toUpperCase()}_${Date.now()}`;
     const createVoucherDto = {
@@ -823,4 +840,74 @@ export class AppointmentService {
       relations: ['appointment', 'doctor'],
     });
   }
+
+async refundAppointment(
+  appointmentId: string,
+  dto: {
+    refundAmount: number;
+    refundMethod: 'cash' | 'qr' | 'card';
+    refundReason?: string;
+    staffId: string; 
+  },
+) {
+  const appointment = await this.findOne(appointmentId);
+
+  if (![AppointmentStatus.Cancelled, AppointmentStatus.Rejected].includes(appointment.status)) {
+    throw new BadRequestException('Chỉ có thể hoàn tiền cho lịch hẹn đã hủy hoặc bị từ chối');
+  }
+
+  const staff = await this.internalRepo.findOne({ where: { id: dto.staffId } });
+  if (!staff) {
+    throw new NotFoundException('Nhân viên xử lý hoàn tiền không tồn tại');
+  }
+
+  const refund = new AppointmentRefund();
+
+  refund.appointment = appointment;
+  refund.staff = staff; 
+
+  refund.refundAmount = dto.refundAmount;
+  refund.refundMethod = dto.refundMethod;
+  refund.refundReason = dto.refundReason;
+  refund.processedAt = new Date();
+
+  refund.refundStatus = RefundStatus.Completed;
+
+  await this.refundRepo.save(refund);
+
+  appointment.status = AppointmentStatus.Refunded;
+  await this.appointmentRepo.save(appointment);
+  return {
+    message: 'Hoàn tiền thành công',
+    refund, 
+    appointment,
+  };
+}
+
+async findRefundedAppointments() {
+  try {
+    const appointments = await this.appointmentRepo.find({
+      where: { status: AppointmentStatus.Refunded },
+      relations: ['customer', 'doctor', 'details', 'details.service', 'voucher'],
+      order: { createdAt: 'DESC' },
+    });
+    return appointments;
+  } catch (error) {
+    console.error('Error in findRefundedAppointments:', error);
+    throw new BadRequestException('Không thể lấy danh sách lịch hẹn đã hoàn tiền. Vui lòng thử lại sau.');
+  }
+}
+
+async findAllRefunds() {
+  try {
+    const refunds = await this.refundRepo.find({
+      relations: ['appointment', 'appointment.customer', 'appointment.doctor', 'staff'],
+      order: { createdAt: 'DESC' },
+    });
+    return refunds;
+  } catch (error) {
+    console.error('Error in findAllRefunds:', error);
+    throw new BadRequestException('Không thể lấy danh sách bản ghi hoàn tiền. Vui lòng thử lại sau.');
+  }
+}
 }

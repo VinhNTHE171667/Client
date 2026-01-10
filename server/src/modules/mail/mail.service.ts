@@ -332,4 +332,35 @@ export class MailService implements OnModuleInit {
       text,
     });
   }
+
+async sendCancelAppointmentEmail({
+  to,
+  text,
+  appointment,
+}: {
+  to: string;
+  text?: string;
+  appointment: {
+    customer: { full_name: string };
+    startTime: Date;
+    cancelReason: string;
+  };
+}) {
+  await this.transporter.sendMail({
+    from: this.configService.get<string>('EMAIL_USER'),
+    to,
+    subject: 'Thông báo hủy lịch hẹn - GenSpa',
+    template: 'appointment-cancelled',
+    context: {
+      customerName: appointment.customer.full_name,
+      startTime: appointment.startTime.toLocaleString('vi-VN'),
+      cancelReason: appointment.cancelReason,
+      spaName: 'GenSpa',
+      year: new Date().getFullYear(),
+    },
+    text,
+  });
+}
+
+
 }

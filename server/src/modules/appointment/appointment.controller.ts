@@ -83,6 +83,16 @@ export class AppointmentController {
     return this.appointmentService.findAll();
   }
 
+  @Get('/refunded')
+findRefundedAppointments() {
+  return this.appointmentService.findRefundedAppointments();
+}
+
+@Get('/refunds')
+findAllRefunds() {
+  return this.appointmentService.findAllRefunds();
+}
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.appointmentService.findOne(id);
@@ -154,4 +164,27 @@ export class AppointmentController {
     }
     return this.appointmentService.requestCompleteByStaff(id, staffName);
   }
+
+  @Patch(':id/refund')
+async refundAppointment(
+  @Param('id') id: string,
+  @Body() body: {
+    refundAmount: number;
+    refundMethod: 'cash' | 'qr' | 'card';
+    refundReason?: string;
+    staffId: string;
+  },
+) {
+  if (!body.refundAmount || !body.refundMethod || !body.staffId) {
+    throw new BadRequestException('Thiếu thông tin hoàn tiền');
+  }
+  return this.appointmentService.refundAppointment(id, {
+    refundAmount: body.refundAmount,
+    refundMethod: body.refundMethod,
+    refundReason: body.refundReason,
+    staffId: body.staffId,
+  });
+}
+
+
 }

@@ -714,6 +714,7 @@ export class AuthService {
     if (!doctor) throw new NotFoundException('Không tìm thấy bác sĩ');
     return doctor;
   }
+  
 
   async updateDoctorProfile(id: string, dto: Partial<Doctor>) {
     const doctor = await this.doctorRepository.findOne({ where: { id } });

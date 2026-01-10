@@ -26,6 +26,7 @@ import { Doctor } from '@/entities/doctor.entity';
 import { Service } from '@/entities/service.entity';
 import { VoucherModule } from '../voucher/voucher.module';
 import { NotificationModule } from '../notification/notification.module'; 
+import { AppointmentRefund } from '@entities/appointmentRefund.entity';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { NotificationModule } from '../notification/notification.module';
       Invoice,
       InvoiceDetail,
       DoctorCancelRequest,
+      AppointmentRefund
     ]),
     JwtModule.register({
       global: true,

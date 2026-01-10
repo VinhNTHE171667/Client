@@ -9,7 +9,7 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: false, // <-- tắt tất cả log mặc định
+    // logger: false, // <-- tắt tất cả log mặc định
   });
 
   app.setGlobalPrefix('api');
@@ -34,6 +34,7 @@ async function bootstrap() {
 
   app.enableCors({
     origin: [
+        'http://localhost:3000',
       'http://localhost:5173',
       'https://g52-genspa.xyz',
       'http://g52-genspa.xyz',
