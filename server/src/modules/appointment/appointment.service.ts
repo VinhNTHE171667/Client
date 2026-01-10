@@ -458,6 +458,48 @@ export class AppointmentService {
       }
     }
 
+    const staffUsers = await this.internalRepo.find({
+      where: {
+        role: { name: 'cashier' }, 
+        isActive: true,
+      },
+      select: ['id', 'full_name', 'email'],
+      relations: ['role'], 
+    });
+
+    if (staffUsers.length === 0) {
+      console.warn('Không có staff nào trong hệ thống để gửi thông báo hủy lịch');
+    }
+
+    if (staffUsers.length > 0) {
+      const customerName = appointment.customer?.full_name || 'Khách lẻ';
+
+      const notificationPromises = staffUsers.map((staff) =>
+        this.notificationService.create({
+          title: 'Yêu cầu hủy lịch hẹn từ khách hàng',
+          content: `Khách hàng ${customerName} yêu cầu hủy lịch hẹn. (Mã: #${id.slice(-8).toUpperCase()}). Lý do: ${reason}`,
+          type: NotificationType.Warning,
+          userId: staff.id,
+          userType: 'internal',
+          actionUrl: ``, 
+          relatedType: 'cancel_request',
+        }),
+      );
+
+      Promise.allSettled(notificationPromises).catch((err) =>
+        console.error('Lỗi khi gửi thông báo cho staff:', err),
+      );
+    }
+
+    await this.mailService.sendCancelAppointmentEmail({
+      to: appointment.customer.email,
+      appointment: {
+        customer: { full_name: appointment.customer.full_name },
+        startTime: appointment.startTime,
+        cancelReason: 'Được yêu cầu hủy bởi khách hàng',
+      },
+    });
+
     await this.appointmentRepo.save(appointment);
     return appointment;
   }

@@ -34,7 +34,7 @@ async function bootstrap() {
 
   app.enableCors({
     origin: [
-        'http://localhost:3000',
+      'http://localhost:3000',
       'http://localhost:5173',
       'https://g52-genspa.xyz',
       'http://g52-genspa.xyz',
