@@ -678,8 +678,8 @@ const CustomerOrders: React.FC = () => {
         wrapClassName={styles.modal}
       >
         <p>
-          Bạn có chắc chắn muốn huỷ lịch hẹn với{" "}
-          {selectedAppointment?.customer?.full_name}?
+          Bạn có chắc chắn muốn huỷ lịch hẹn với bác sĩ{" "}
+          {selectedAppointment?.doctor?.full_name}?
         </p>
         <p className={styles.cautionText}>Hành động này không thể hoàn tác.</p>
       </Modal>
@@ -902,9 +902,11 @@ const CustomerOrders: React.FC = () => {
           thu ngân để được hỗ trợ hoàn tiền:
         </p>
         <p style={{ marginTop: "12px" }}>
-          <strong>Số điện thoại:</strong> 0123 456 789
+          <strong>Nhân viên:</strong> Nguyễn Thị Sinh
           <br />
-          <strong>Email:</strong> support@genspa.com
+          <strong>Số điện thoại:</strong> 0912377448
+          <br />
+          <strong>Email:</strong> staff@gmail.com
         </p>
       </Modal>
     </div>
