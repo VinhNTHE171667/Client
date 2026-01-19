@@ -1,0 +1,75 @@
+.fancy-form-item {
+    .ant-form-item-label>label {
+        font-weight: 600;
+        color: #1f1f1f;
+        font-size: 0.95rem;
+    }
+
+    .ant-input,
+    .ant-input-affix-wrapper,
+    .ant-select-selector,
+    .ant-picker {
+        border-radius: 8px !important;
+        border: 1px solid #ff0101;
+        transition: all 0.25s ease;
+        box-shadow: none;
+        height: 60px;
+
+        &:hover {
+            border-color: var(--color-accent, #1677ff) !important;
+        }
+
+        &:focus,
+        &.ant-input-focused,
+        &.ant-select-focused,
+        &.ant-picker-focused {
+            border-color: var(--color-accent, #1677ff);
+            box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.15);
+        }
+    }
+
+    .ant-input-textarea {
+        .ant-input {
+            min-height: 80px;
+            resize: vertical;
+        }
+    }
+
+    .ant-select {
+        width: 100%;
+
+        .ant-select-selector {
+            display: flex;
+            align-items: center;
+            height: 40px;
+            border-radius: 8px !important;
+        }
+    }
+
+    .ant-picker {
+        width: 100%;
+        height: 40px;
+        border-radius: 8px !important;
+        display: flex;
+        align-items: center;
+    }
+
+    .ant-input-affix-wrapper .anticon {
+        color: var(--color-accent, #1677ff);
+        font-size: 1rem;
+    }
+
+    .ant-input-affix-wrapper-focused,
+    .ant-select-focused .ant-select-selector,
+    .ant-picker-focused {
+        border-color: var(--color-accent, #1677ff);
+        box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.15);
+    }
+
+    margin-bottom: 1rem;
+
+    .ant-form-item-explain-error {
+        color: #ff4d4f;
+        font-weight: 500;
+    }
+}

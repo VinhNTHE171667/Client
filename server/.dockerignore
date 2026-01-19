@@ -1,0 +1,16 @@
+node_modules
+npm-debug.log
+dist
+.git
+.gitignore
+README.md
+.env.example
+.DS_Store
+.vscode
+.idea
+mysql-data
+mysql-data/**
+coverage
+.test
+jest.config.js
+test

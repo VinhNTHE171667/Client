@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #ffffff;
+      color: #333333;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background-color: #fefefe;
+    }
+    h2 {
+      color: #d35400;
+      margin-bottom: 16px;
+    }
+    .info {
+      background-color: #f9f9f9;
+      padding: 16px;
+      border-radius: 6px;
+      margin-top: 12px;
+      line-height: 1.6;
+    }
+    .footer {
+      margin-top: 24px;
+      font-size: 14px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Khách hàng mới đặt lịch hẹn</h2>
+    <p>Xin chào <strong>{{spaName}}</strong>,</p>
+    <p>Khách hàng <strong>{{customerName}}</strong> vừa đặt lịch hẹn tại spa. Dưới đây là thông tin chi tiết:</p>
+
+    <div class="info">
+      <p><strong>Thời gian:</strong> {{startTime}}</p>
+      <p><strong>Dịch vụ:</strong> {{serviceName}}</p>
+      <p><strong>Địa điểm Spa:</strong> {{spaAddress}}</p>
+    </div>
+
+    <p>Vui lòng xác nhận và chuẩn bị đầy đủ để đón tiếp khách hàng đúng giờ.</p>
+
+    <p class="footer">Trân trọng,<br /><strong>Hệ thống đặt lịch</strong></p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    .container {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: auto;
+      padding: 16px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background-color: #ffffff;
+    }
+    h2 {
+      color: #008080;
+    }
+    .info {
+      background-color: #f9f9f9;
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 12px;
+    }
+    .highlight {
+      color: #5ca16a;
+      font-weight: bold;
+    }
+    .thankyou {
+      background-color: #e6f7f7;
+      border-left: 4px solid #5ca16a;
+      padding: 10px 12px;
+      margin-top: 16px;
+      border-radius: 6px;
+    }
+    ul {
+      margin: 8px 0 0 16px;
+      padding: 0;
+    }
+    li {
+      margin: 4px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Xác nhận đã đặt cọc thành công</h2>
+    <p>Chào <strong>{{customerName}}</strong>,</p>
+    <p>Cảm ơn bạn đã <strong>đặt cọc thành công</strong> cho lịch hẹn tại <strong>GenSpa</strong>.  
+    Dưới đây là chi tiết đặt cọc của bạn:</p>
+
+    <div class="info">
+      <p><strong>Thời gian hẹn:</strong> {{startTime}}</p>
+      <p><strong>Nhân viên phụ trách:</strong> {{staffName}}</p>
+      <p><strong>Địa điểm:</strong> {{spaAddress}}</p>
+      <p><strong>Các dịch vụ đã đặt:</strong></p>
+      <ul>
+        {{#each services}}
+          <li>{{this.name}} — {{this.price}}</li>
+        {{/each}}
+      </ul>
+      <p><strong>Tổng giá trị dịch vụ:</strong> {{totalAmount}}</p>
+      <p><strong>Số tiền đã đặt cọc:</strong> <span class="highlight">{{depositAmount}}</span></p>
+      <p><strong>Số tiền còn lại cần thanh toán:</strong> {{remainingAmount}}</p>
+    </div>
+
+    <div class="thankyou">
+      <p><strong>Cảm ơn bạn đã tin tưởng và lựa chọn GenSpa!</strong></p>
+      <p>Khoản đặt cọc của bạn đã được ghi nhận và sẽ được trừ trực tiếp vào tổng chi phí dịch vụ khi thanh toán tại spa.</p>
+    </div>
+
+    <p>Vui lòng đến đúng giờ để trải nghiệm dịch vụ tốt nhất.  
+    Nếu bạn cần hỗ trợ hoặc thay đổi thời gian, vui lòng liên hệ với chúng tôi qua số hotline hoặc email hỗ trợ.</p>
+
+    <p>Trân trọng,<br />
+    <strong>GenSpa</strong></p>
+  </div>
+</body>
+</html>

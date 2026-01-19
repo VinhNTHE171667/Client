@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    .container {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: auto;
+      padding: 16px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background-color: #ffffff;
+    }
+    h2 {
+      color: #5ca16a;
+    }
+    .info {
+      background-color: #f9f9f9;
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 12px;
+    }
+    .deposit {
+      background-color: #e6f7f7;
+      border-left: 4px solid #5ca16a;
+      padding: 10px 12px;
+      margin-top: 16px;
+      border-radius: 6px;
+    }
+    ul {
+      margin: 8px 0 0 16px;
+      padding: 0;
+    }
+    li {
+      margin: 4px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Xác nhận lịch hẹn của bạn</h2>
+    <p>Chào <strong>{{customerName}}</strong>,</p>
+    <p>Cảm ơn bạn đã đặt lịch tại <strong>GenSpa</strong>. Dưới đây là thông tin chi tiết lịch hẹn của bạn:</p>
+
+    <div class="info">
+      <p><strong>Thời gian:</strong> {{startTime}}</p>
+      <p><strong>Nhân viên phụ trách:</strong> {{staffName}}</p>
+      <p><strong>Địa điểm:</strong> {{spaAddress}}</p>
+      <p><strong>Các dịch vụ đã đặt:</strong></p>
+      <ul>
+        {{#each services}}
+          <li>{{this.name}} — {{this.price}}</li>
+        {{/each}}
+      </ul>
+    </div>
+
+    <div class="deposit">
+      <p><strong>Lưu ý về đặt cọc:</strong></p>
+      <p>Để đảm bảo giữ chỗ, vui lòng <strong>đặt cọc 50% giá trị dịch vụ</strong> trước khi đến.  
+      Khoản cọc này sẽ được trừ trực tiếp vào tổng chi phí thanh toán khi sử dụng dịch vụ.</p>
+    </div>
+
+    <p>Vui lòng đến đúng giờ để trải nghiệm dịch vụ tốt nhất. Nếu có thay đổi, hãy liên hệ với chúng tôi sớm nhất có thể.</p>
+
+    <p>Trân trọng,<br />
+    <strong>GenSpa</strong></p>
+  </div>
+</body>
+</html>

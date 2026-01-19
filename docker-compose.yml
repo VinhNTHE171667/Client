@@ -1,0 +1,126 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:9.3.0
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ${DB_DATABASE:-gen_spa}
+    ports:
+      - "33061:3306"
+    volumes:
+      - ./server/mysql-data:/var/lib/mysql
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:latest
+    container_name: do_an_fa25_minio
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./minio/data:/data
+    restart: unless-stopped
+
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.9
+    container_name: do_an_fa25_etcd
+    environment:
+      ETCD_AUTO_COMPACTION_MODE: revision
+      ETCD_LISTEN_CLIENT_URLS: http://0.0.0.0:2379
+      ETCD_ADVERTISE_CLIENT_URLS: http://etcd:2379
+      ETCD_LISTEN_PEER_URLS: http://0.0.0.0:2380
+      ETCD_INITIAL_ADVERTISE_PEER_URLS: http://etcd:2380
+      ETCD_INITIAL_CLUSTER: default=http://etcd:2380
+      ETCD_NAME: default
+    ports:
+      - "2379:2379"
+    restart: unless-stopped
+
+  milvus:
+    image: milvusdb/milvus:v2.4.6
+    container_name: do_an_fa25_milvus
+    command: ["milvus", "run", "standalone"]
+    ports:
+      - "19530:19530"
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+    depends_on:
+      - etcd
+      - minio
+    restart: unless-stopped
+
+  ai:
+    build:
+      context: ./ai
+      dockerfile: Dockerfile
+    container_name: do_an_fa25_api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - FULL_CONTEXT_DOCS=${FULL_CONTEXT_DOCS}
+      - MYSQL_HOST=${DB_HOST}
+      - MYSQL_PORT=${DB_PORT}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DB=${DB_DATABASE}
+    volumes:
+      - ./ai/app/data:/app/data:ro
+      # Uncomment the next line if recommendation backend needs persistent data
+      # - ./ai/recommendation/backend/data:/app/backend/data
+    depends_on:
+      - mysql
+      - milvus
+    restart: unless-stopped
+
+  recommender:
+    build:
+      context: ./ai/recommendation
+      dockerfile: Dockerfile
+    container_name: spa_recommender
+    ports:
+      - "8001:8000"
+    env_file:
+      - .env
+    environment:
+      - MYSQL_HOST=${DB_HOST}
+      - MYSQL_PORT=${DB_PORT}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DB=${DB_DATABASE}
+    depends_on:
+      - mysql
+    restart: unless-stopped
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: spa_main_server
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE=${DB_DATABASE}
+    volumes:
+      - ./server/mysql-data:/var/lib/mysql:rw
+    depends_on:
+      - mysql
+    restart: unless-stopped
+
+networks:
+  default:
+    name: sp_genspa_net

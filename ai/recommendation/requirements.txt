@@ -1,0 +1,18 @@
+flask>=3.0
+flask-cors>=4.0
+pandas>=2.2
+sqlalchemy>=2.0
+mysql-connector-python>=8.3
+pymysql>=1.1
+prophet>=1.1
+scikit-learn>=1.4
+numpy>=1.25
+requests>=2.32
+python-dotenv>=1.0
+streamlit>=1.37
+plotly>=5.22
+scipy>=1.10
+# `implicit` versions >=0.9 are not available on PyPI; pin to latest published release.
+implicit==0.7.2
+# Note: `implicit` may require a C compiler or pre-built wheel on Windows. If pip fails,
+# prefer installing a compatible wheel or use WSL / Linux container for model training.

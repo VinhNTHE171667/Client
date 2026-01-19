@@ -1,0 +1,70 @@
+name: Deploy Backend to VPS
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "server/**"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ===========================
+      # Checkout code
+      # ===========================
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # ===========================
+      # Upload Backend to VPS
+      # ===========================
+      - name: Upload Backend to VPS
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "server/*"
+          target: "/var/www/genspa-server"
+          strip_components: 1
+
+      # ===========================
+      # Install, Build & Restart Backend
+      # ===========================
+      - name: Run BE install, build & restart
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            echo "=== LOAD NVM + NODE 20 ==="
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm use 20 || (nvm install 20 && nvm use 20)
+
+            echo "=== MOVE TO BACKEND FOLDER ==="
+            cd /var/www/genspa-server
+
+            echo "=== INSTALL DEPENDENCIES ==="
+            npm install
+
+            echo "=== BUILD BACKEND ==="
+            npm run clean || true
+            npm run build
+
+            echo "=== CHECK & INSTALL PM2 ==="
+            if ! command -v pm2 &> /dev/null; then
+              sudo npm install -g pm2
+            fi
+
+            echo "=== RESTART BACKEND ==="
+            pm2 restart genspa-api || pm2 start npm --name "genspa-api" -- run start:prod
+
+            pm2 save

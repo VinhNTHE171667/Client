@@ -1,0 +1,16 @@
+{
+  "insights": [
+    {
+      "title": "Tăng doanh thu 12% với Combo VIP",
+      "description": "Kết hợp dịch vụ Massage & Facial cho nhóm khách Dormant nhằm kích hoạt lại.",
+      "impact": "+12%",
+      "effort": "Medium"
+    },
+    {
+      "title": "Đẩy mạnh upsell ngày cuối tuần",
+      "description": "Triển khai ưu đãi 10% cho gói chăm sóc da nâng cao vào thứ 6 - CN để tối ưu công suất.",
+      "impact": "+8%",
+      "effort": "Low"
+    }
+  ]
+}
