@@ -85,7 +85,10 @@ export default function RefundManagementCasher() {
       (dayjs(r.processedAt).isAfter(dateRange[0].startOf("day")) &&
         dayjs(r.processedAt).isBefore(dateRange[1].endOf("day")));
 
-    return matchSearch && matchDate;
+    // Lọc bỏ các hoàn tiền 0đ
+    const hasRefundAmount = Number(r.refundAmount) > 0;
+
+    return matchSearch && matchDate && hasRefundAmount;
   });
 
   // === TÍNH THỐNG KÊ ===
