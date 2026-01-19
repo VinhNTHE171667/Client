@@ -225,7 +225,7 @@ const CustomerOrders: React.FC = () => {
         message.error("Không có giá trị dịch vụ để đặt cọc.");
         return;
       }
-      const depositAmount = Math.ceil(total * 0.2);
+      const depositAmount = Math.ceil(total * 0.5);
       const payload = {
         appointmentId: item.id,
         amount: depositAmount,
@@ -599,7 +599,7 @@ const CustomerOrders: React.FC = () => {
                           onClick={() => handleDeposit(item)}
                           className={styles.actionBtn}
                         >
-                          Đặt Cọc 20%
+                          Đặt Cọc 50%
                         </Button>
                       )}
 
