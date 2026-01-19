@@ -715,10 +715,10 @@ const CartPage = () => {
                   <ShoppingCart size={64} strokeWidth={1.5} />
                 </div>
                 <div className={styles.emptyText}>
-                  Chưa có dịch vụ nào trong giỏ dịch vụ
+                  Chưa có dịch vụ nào trong giỏ dịch vụ 2
                 </div>
                 <button className={styles.emptyButton} onClick={handleBack}>
-                  Tiếp tục chọn dịch vụ
+                  Tiếp tục chọn dịch vụ 2
                 </button>
               </div>
             ) : (
