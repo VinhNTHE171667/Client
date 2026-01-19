@@ -164,6 +164,12 @@ export const getSidebarItemsByRole = (role: string): SiderItem[] => {
       activeLink: [configRoutes.casherOrderManagement],
     },
     {
+      name: "Hoàn tiền",
+      link: configRoutes.casherRefundManagement,
+      icon: <FaFileInvoiceDollar className="ml-3" />,
+      activeLink: [configRoutes.casherRefundManagement],
+    },
+    {
       name: "Hoá đơn",
       link: configRoutes.casherInvoice,
       icon: <FaFileInvoiceDollar className="ml-3" />,

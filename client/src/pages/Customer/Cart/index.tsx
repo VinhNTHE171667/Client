@@ -715,10 +715,10 @@ const CartPage = () => {
                   <ShoppingCart size={64} strokeWidth={1.5} />
                 </div>
                 <div className={styles.emptyText}>
-                  Chưa có dịch vụ nào trong giỏ dịch vụ 2
+                  Chưa có dịch vụ nào trong giỏ hàng
                 </div>
                 <button className={styles.emptyButton} onClick={handleBack}>
-                  Tiếp tục chọn dịch vụ 2
+                  Tiếp tục mua sắm
                 </button>
               </div>
             ) : (
@@ -801,7 +801,7 @@ const CartPage = () => {
           <div className={styles.sidebar}>
             {selectedDoctorId && (
               <Card className={styles.summaryCard}>
-                <h3 className={styles.summaryTitle}>Tóm tắt dịch vụ</h3>
+                <h3 className={styles.summaryTitle}>Tóm tắt đơn hàng</h3>
 
                 <div className={styles.summaryRow}>
                   <span className={styles.label}>Tạm tính:</span>
