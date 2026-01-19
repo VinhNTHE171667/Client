@@ -14,6 +14,7 @@ import {
   Select,
   Input,
   Rate,
+  Tooltip,
 } from "antd";
 import {
   Calendar,
@@ -79,8 +80,6 @@ const CustomerOrders: React.FC = () => {
   const [feedbacks, setFeedbacks] = useState<
     { serviceId: string; rating?: number; comment?: string }[]
   >([]);
-  const [reasonModal, setReasonModal] = useState(false);
-  const [rejectionReason, setRejectionReason] = useState<string>("");
   const [viewFeedbackModal, setViewFeedbackModal] = useState(false);
   const [viewFeedbacks, setViewFeedbacks] = useState<FeedbackResponse[]>([]);
   const [getFeedbackByAppointment, { isLoading: isLoadingFeedback }] =
@@ -457,18 +456,11 @@ const CustomerOrders: React.FC = () => {
                               {translateStatus(item.status)}
                             </Tag>
                             {item.status === appointmentStatusEnum.Rejected && (
-                              <Button
-                                type="link"
-                                size="small"
-                                icon={<QuestionCircleOutlined />}
-                                onClick={() => {
-                                  setRejectionReason(item.rejectionReason || "Không có lý do cụ thể");
-                                  setReasonModal(true);
-                                }}
-                                style={{ padding: 0, color: "#ff4d4f" }}
-                              >
-                                Lý do
-                              </Button>
+                              <Tooltip title={item.rejectionReason || "Không có lý do cụ thể"} placement="top">
+                                <Tag color="red" icon={<QuestionCircleOutlined />} style={{ cursor: "help" }}>
+                                  Lý do
+                                </Tag>
+                              </Tooltip>
                             )}
                           </div>
                         </div>
@@ -529,7 +521,7 @@ const CustomerOrders: React.FC = () => {
                       >
                         Chi Tiết
                       </Button>
-                      {isPending && (
+                      {(isPending || isConfirmed) && (
                         <>
                           <Button
                             type="text"
@@ -632,23 +624,6 @@ const CustomerOrders: React.FC = () => {
           {selectedAppointment?.customer?.full_name}?
         </p>
         <p className={styles.cautionText}>Hành động này không thể hoàn tác.</p>
-      </Modal>
-      <Modal
-        title="Lý Do Từ Chối"
-        open={reasonModal}
-        onCancel={() => setReasonModal(false)}
-        footer={[
-          <Button key="close" type="primary" onClick={() => setReasonModal(false)}>
-            Đóng
-          </Button>,
-        ]}
-        wrapClassName={styles.modal}
-      >
-        <div style={{ padding: "20px 0" }}>
-          <p style={{ fontSize: "16px", lineHeight: "1.6", color: "#333" }}>
-            {rejectionReason}
-          </p>
-        </div>
       </Modal>
       <Modal
         title="Chi Tiết Lịch Hẹn"
