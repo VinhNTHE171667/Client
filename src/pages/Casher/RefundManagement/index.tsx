@@ -85,7 +85,7 @@ export default function RefundManagementCasher() {
       (dayjs(r.processedAt).isAfter(dateRange[0].startOf("day")) &&
         dayjs(r.processedAt).isBefore(dateRange[1].endOf("day")));
 
-    return matchSearch && matchDate;
+    return matchSearch && matchDate && r.refundAmount > 0;
   });
 
   // === TÍNH THỐNG KÊ ===
