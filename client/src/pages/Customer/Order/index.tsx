@@ -519,7 +519,7 @@ const CustomerOrders: React.FC = () => {
                     {/* Card Actions */}
                     <div className={styles.cardActions}>
                       <Button
-                        type="text"
+                        type="primary"
                         size="small"
                         onClick={() => {
                           setSelectedAppointment(item);
