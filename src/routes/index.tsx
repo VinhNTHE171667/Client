@@ -51,6 +51,7 @@ import PaymentStatsPage from "@/pages/Casher/PaymentStats";
 import NotificationDoctor from "@/pages/Doctor/Notification";
 import NotificationInternal from "@/pages/Staff/Notification";
 import HistoryOrderManagementDoctor from "@/pages/Doctor/OrderManagement copy";
+import RefundManagementCasher from "@/pages/Casher/RefundManagement";
 
 const router = createBrowserRouter([
   {
@@ -389,6 +390,24 @@ const router = createBrowserRouter([
           {
             index: true,
             element: <OrderManagementCasher />,
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: configRoutes.casherRefundManagement,
+    element: (
+      <ProtectedRoute allowedRoles={[RoleEnum.Casher, RoleEnum.Admin]} />
+    ),
+    children: [
+      {
+        element: <SystemLayoutReposive />,
+        children: [
+          {
+            index: true,
+            element: <RefundManagementCasher />,
           },
         ],
       },

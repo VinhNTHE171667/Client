@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState, useRef } from "react";
 import {
   Card,
@@ -21,11 +23,17 @@ import {
   StarOutlined,
   FireOutlined,
   ArrowRightOutlined,
+  UndoOutlined, // Icon mới cho hoàn tiền
 } from "@ant-design/icons";
 import FancyIconBox from "@/components/FancyIconBox";
 import FancyCounting from "@/components/FancyCounting";
 import { motion } from "framer-motion";
 import { useDashboardMutation } from "@/services/auth";
+import {
+  useGetRefundedAppointmentsMutation,
+  type AppointmentRefundProps,
+} from "@/services/appointment";
+import dayjs from "dayjs";
 
 const { Title } = Typography;
 const { useBreakpoint } = Grid;
@@ -35,18 +43,21 @@ const currentYear = new Date().getFullYear();
 export default function AdminDashboardPage() {
   const [year, setYear] = useState(currentYear);
   const [month, setMonth] = useState<number>(0);
-  const [viewMode, setViewMode] = useState<'year' | 'month'>('year'); // Thêm viewMode
+  const [viewMode, setViewMode] = useState<"year" | "month">("year");
   const [getDashboard] = useDashboardMutation();
+  const [getAllRefunds] = useGetRefundedAppointmentsMutation();
   const [loading, setLoading] = useState(false);
-  const [fullDashboard, setFullDashboard] = useState(null);
+  const [fullDashboard, setFullDashboard] = useState<any>(null);
   const pieChartRef = useRef<any>(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // Theo dõi trạng thái sidebar
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const [dataTop, setDataTop] = useState({
     totalInvoices: 0,
     totalAmount: 0,
     totalCustomers: 0,
   });
+
+  const [refundStats, setRefundStats] = useState({ count: 0, amount: 0 }); // Thống kê hoàn tiền
 
   const [chartData, setChartData] = useState<
     { month: number; total: number }[]
@@ -85,10 +96,8 @@ export default function AdminDashboardPage() {
       setTopServices(res.topServices || []);
       setTopCustomers(res.topCustomers || []);
 
-      // Xử lý doanh thu theo tháng hoặc ngày
       if (month === 0) {
-        // Hiển thị theo 12 tháng
-        setViewMode('year');
+        setViewMode("year");
         const monthlyTotals: Record<number, number> = {};
 
         (res.invoices || []).forEach((inv: any) => {
@@ -110,8 +119,7 @@ export default function AdminDashboardPage() {
 
         setChartData(chartArr);
       } else {
-        // Hiển thị theo từng ngày trong tháng
-        setViewMode('month');
+        setViewMode("month");
         const daysInMonth = new Date(year, month, 0).getDate();
         const dailyTotals: Record<number, number> = {};
 
@@ -129,7 +137,7 @@ export default function AdminDashboardPage() {
         });
 
         const chartArr = Array.from({ length: daysInMonth }, (_, i) => ({
-          month: i + 1, // Sử dụng month cho day để tương thích
+          month: i + 1,
           total: dailyTotals[i + 1] || 0,
         }));
 
@@ -142,31 +150,55 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const handleGetRefundStats = async () => {
+    try {
+      const res = await getAllRefunds().unwrap();
+      const allRefunds: AppointmentRefundProps[] = res ?? [];
+
+      const filtered = allRefunds.filter((r) => {
+        const date = dayjs(r.processedAt);
+        if (month === 0) {
+          return date.year() === year;
+        } else {
+          return date.year() === year && date.month() + 1 === month;
+        }
+      });
+
+      const count = filtered.length;
+      const amount = filtered.reduce(
+        (sum, r) => sum + Number(r.refundAmount || 0),
+        0
+      );
+
+      setRefundStats({ count, amount });
+    } catch (error) {
+      console.error("Lỗi lấy dữ liệu hoàn tiền:", error);
+      setRefundStats({ count: 0, amount: 0 });
+    }
+  };
+
   useEffect(() => {
     handleGetData();
+    handleGetRefundStats();
   }, [year, month]);
 
-  // Thêm useEffect để theo dõi sidebar và update chart size
+  // useEffect theo dõi sidebar và reflow chart (giữ nguyên từ code gốc)
   useEffect(() => {
     const checkSidebarState = () => {
-      // Kiểm tra icon trigger để xác định trạng thái sidebar
-      const siderTrigger = document.querySelector('.ant-layout-sider-trigger');
-      const sider = document.querySelector('.ant-layout-sider');
-      
+      const siderTrigger = document.querySelector(".ant-layout-sider-trigger");
+      const sider = document.querySelector(".ant-layout-sider");
+
       let isCollapsed = false;
-      
+
       if (sider) {
-        // Check bằng class collapsed
-        isCollapsed = sider.classList.contains('ant-layout-sider-collapsed');
-        
-        // Hoặc check bằng width
+        isCollapsed = sider.classList.contains("ant-layout-sider-collapsed");
+
         if (!isCollapsed) {
           const width = sider.getBoundingClientRect().width;
-          isCollapsed = width <= 80; // Sidebar collapsed thường có width khoảng 80px
+          isCollapsed = width <= 80;
         }
       }
-      
-      console.log('Sidebar collapsed:', isCollapsed); // Debug log
+
       setSidebarCollapsed(isCollapsed);
     };
 
@@ -179,24 +211,20 @@ export default function AdminDashboardPage() {
       }
     };
 
-    // Lắng nghe window resize
-    window.addEventListener('resize', handleReflow);
-    
-    // Sử dụng MutationObserver để theo dõi thay đổi DOM (sidebar toggle)
+    window.addEventListener("resize", handleReflow);
+
     const observer = new MutationObserver(() => {
       handleReflow();
     });
 
-    // Theo dõi thay đổi trên body
     observer.observe(document.body, {
       attributes: true,
-      attributeFilter: ['class', 'style'],
+      attributeFilter: ["class", "style"],
       subtree: true,
       childList: true,
     });
 
-    // Check initial state và trigger reflow
-    const intervals = [100, 300, 500, 1000].map(delay =>
+    const intervals = [100, 300, 500, 1000].map((delay) =>
       setTimeout(() => {
         checkSidebarState();
         handleReflow();
@@ -204,7 +232,7 @@ export default function AdminDashboardPage() {
     );
 
     return () => {
-      window.removeEventListener('resize', handleReflow);
+      window.removeEventListener("resize", handleReflow);
       observer.disconnect();
       intervals.forEach(clearTimeout);
     };
@@ -212,11 +240,12 @@ export default function AdminDashboardPage() {
 
   const chartOptions = {
     chart: { type: "line", backgroundColor: "transparent", height: 320 },
-    title: { 
-      text: month === 0 
-        ? `Doanh thu năm ${year}` 
-        : `Doanh thu tháng ${month}/${year}`, 
-      style: { fontWeight: "bold" } 
+    title: {
+      text:
+        month === 0
+          ? `Doanh thu năm ${year}`
+          : `Doanh thu tháng ${month}/${year}`,
+      style: { fontWeight: "bold" },
     },
     credits: { enabled: false },
     tooltip: {
@@ -228,20 +257,26 @@ export default function AdminDashboardPage() {
         const index = this.point.index;
         const actualValue = chartData[index]?.month || this.x;
         if (month === 0) {
-          return `<b>Tháng ${actualValue}</b><br/>Doanh thu: <b>${this.y.toLocaleString("vi-VN")} VNĐ</b>`;
+          return `<b>Tháng ${actualValue}</b><br/>Doanh thu: <b>${this.y.toLocaleString(
+            "vi-VN"
+          )} VNĐ</b>`;
         } else {
-          return `<b>Ngày ${actualValue}</b><br/>Doanh thu: <b>${this.y.toLocaleString("vi-VN")} VNĐ</b>`;
+          return `<b>Ngày ${actualValue}</b><br/>Doanh thu: <b>${this.y.toLocaleString(
+            "vi-VN"
+          )} VNĐ</b>`;
         }
       },
     },
     xAxis: {
-      categories: chartData.map((d) => viewMode === 'year' ? `Tháng ${d.month}` : `N-${d.month}`),
-      labels: { 
-        style: { color: "#666", fontSize: '9px' },
+      categories: chartData.map((d) =>
+        viewMode === "year" ? `Tháng ${d.month}` : `N-${d.month}`
+      ),
+      labels: {
+        style: { color: "#666", fontSize: "9px" },
         rotation: -45,
-        step: null, // Hiển thị tất cả labels
+        step: null,
       },
-      tickInterval: 1, // Đảm bảo mỗi ngày có tick
+      tickInterval: 1,
     },
     yAxis: {
       title: { text: "Doanh thu (VNĐ)" },
@@ -276,53 +311,55 @@ export default function AdminDashboardPage() {
     },
     title: {
       text: "Top 5 dịch vụ được đặt nhiều nhất",
-      style: { fontWeight: "bold", fontSize: '16px' },
+      style: { fontWeight: "bold", fontSize: "16px" },
     },
     credits: { enabled: false },
     tooltip: {
       pointFormat: "<b>{point.y} lượt đặt</b> ({point.percentage:.1f}%)",
     },
     responsive: {
-      rules: [{
-        condition: {
-          maxWidth: 500
+      rules: [
+        {
+          condition: {
+            maxWidth: 500,
+          },
+          chartOptions: {
+            plotOptions: {
+              pie: {
+                size: "80%",
+                dataLabels: {
+                  distance: 10,
+                  style: {
+                    fontSize: "10px",
+                  },
+                },
+              },
+            },
+          },
         },
-        chartOptions: {
-          plotOptions: {
-            pie: {
-              size: '80%',
-              dataLabels: {
-                distance: 10,
-                style: {
-                  fontSize: '10px'
-                }
-              }
-            }
-          }
-        }
-      }]
+      ],
     },
     plotOptions: {
       pie: {
         allowPointSelect: true,
         cursor: "pointer",
         borderRadius: 5,
-        size: sidebarCollapsed ? '70%' : '70%', // Giữ nguyên size
-        center: ['50%', '50%'],
+        size: sidebarCollapsed ? "70%" : "70%",
+        center: ["50%", "50%"],
         dataLabels: {
-          enabled: sidebarCollapsed, // Chỉ hiển thị label khi sidebar ĐÓNG
+          enabled: sidebarCollapsed,
           connectorWidth: 2,
-          connectorColor: '#999',
+          connectorColor: "#999",
           distance: 15,
           style: {
-            color: '#333',
-            fontSize: '11px',
-            textOutline: 'none',
-            fontWeight: 'normal',
+            color: "#333",
+            fontSize: "11px",
+            textOutline: "none",
+            fontWeight: "normal",
           },
-          format: '{point.name}: {point.y} lượt',
+          format: "{point.name}: {point.y} lượt",
         },
-        showInLegend: !sidebarCollapsed, // Hiển thị legend khi sidebar MỞ (thay cho labels)
+        showInLegend: !sidebarCollapsed,
       },
     },
     series: [
@@ -392,13 +429,13 @@ export default function AdminDashboardPage() {
         </Col>
       </Row>
 
+      {/* Các card thống kê - thêm card Hoàn tiền */}
       <Row gutter={[16, 16]}>
         {[
           {
             title: "Khách hàng",
             icon: <UserOutlined />,
             value: dataTop.totalCustomers,
-            expected: dataTop.expectedCustomers,
             bg: "bg-gradient-danger",
           },
           {
@@ -409,6 +446,15 @@ export default function AdminDashboardPage() {
             type: "money",
             bg: "bg-gradient-info",
             onClickDetail: () => (window.location.href = "/casher/stats"),
+          },
+          {
+            title: "Hoàn tiền",
+            icon: <UndoOutlined />,
+            value: refundStats.amount,
+            type: "money",
+            bg: "bg-gradient-warning",
+            extraInfo: refundStats.count,
+            onClickDetail: () => (window.location.href = "/casher/refunds"),
           },
           {
             title: "Đơn hàng",
@@ -423,10 +469,10 @@ export default function AdminDashboardPage() {
             title: "Dịch vụ",
             icon: <ShoppingOutlined />,
             value: topServices.length,
-            bg: "bg-gradient-warning",
+            bg: "bg-gradient-success",
           },
         ].map((item, idx) => (
-          <Col xs={24} md={6} key={idx}>
+          <Col xs={24} sm={12} md={8} lg={6} key={idx}>
             <Card
               className={item.bg}
               style={{ borderRadius: 12, height: "100%", position: "relative" }}
@@ -437,7 +483,6 @@ export default function AdminDashboardPage() {
                 height: "100%",
               }}
             >
-              {/* Header */}
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <FancyIconBox icon={item.icon} />
                 <Title level={5} className="text-light m-0">
@@ -445,51 +490,56 @@ export default function AdminDashboardPage() {
                 </Title>
               </div>
 
-              {/* Value + Dự kiến */}
-              <div className="flex justify-between items-end mt-3">
+              <div style={{ marginTop: 16 }}>
                 <FancyCounting
                   className="text-light"
-                  to={item.value}
+                  to={item.value || 0}
                   duration={2}
-                  style={{ fontSize: 24, fontWeight: "bold" }}
+                  style={{ fontSize: 28, fontWeight: "bold" }}
                   format={(v) =>
                     item.type === "money"
                       ? v.toLocaleString("vi-VN", {
                           style: "currency",
                           currency: "VND",
                         })
-                      : v
+                      : v.toLocaleString("vi-VN")
                   }
                 />
-                {item.expected && item.expected >= 0 && (
-                  <span
+
+                {item.title === "Hoàn tiền" && item.extraInfo !== undefined && (
+                  <div
                     style={{
-                      color: "rgba(255, 255, 255, 0.85)",
+                      marginTop: 8,
                       fontSize: 14,
-                      fontWeight: 500,
+                      color: "rgba(255,255,255,0.85)",
+                    }}
+                  >
+                    Số lượt hoàn: <strong>{item.extraInfo}</strong>
+                  </div>
+                )}
+
+                {item.expected !== undefined && (
+                  <div
+                    style={{
+                      marginTop: 8,
+                      fontSize: 14,
+                      color: "rgba(255,255,255,0.85)",
                       fontStyle: "italic",
-                      marginLeft: 4,
                     }}
                   >
                     Dự kiến:{" "}
                     {item.type === "money"
-                      ? item.expected.toLocaleString("vi-VN", {
+                      ? item.expected?.toLocaleString("vi-VN", {
                           style: "currency",
                           currency: "VND",
                         })
                       : item.expected}
-                  </span>
+                  </div>
                 )}
               </div>
 
               {item.onClickDetail && (
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: 12,
-                    right: 12,
-                  }}
-                >
+                <div style={{ position: "absolute", bottom: 12, right: 12 }}>
                   <ArrowRightOutlined
                     style={{ fontSize: 20, color: "white", cursor: "pointer" }}
                     onClick={item.onClickDetail}
@@ -508,14 +558,21 @@ export default function AdminDashboardPage() {
           </Card>
         </Col>
         <Col xs={24} lg={8}>
-          <Card className="shadow-md" style={{ height: '100%' }}>
-            <div style={{ height: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <HighchartsReact 
+          <Card className="shadow-md" style={{ height: "100%" }}>
+            <div
+              style={{
+                height: "400px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <HighchartsReact
                 key={`pie-chart-${sidebarCollapsed}`}
-                highcharts={Highcharts} 
+                highcharts={Highcharts}
                 options={pieOptions}
                 ref={pieChartRef}
-                containerProps={{ style: { height: '100%', width: '100%' } }}
+                containerProps={{ style: { height: "100%", width: "100%" } }}
               />
             </div>
           </Card>

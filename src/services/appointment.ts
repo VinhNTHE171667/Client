@@ -102,6 +102,25 @@ export type CreateAppointmentProps = {
   membershipDiscount?: number;
 };
 
+export type AppointmentRefundProps = {
+  id: string;
+  appointmentId: string;
+  refundAmount: string;
+  refundMethod: "cash" | "qr" | "card";
+  refundStatus: string;
+  refundReason?: string;
+  processedBy: string;
+  processedAt: string;
+  createdAt: string;
+  updatedAt: string;
+  appointment: AppointmentProps;
+  staff: {
+    id: string;
+    full_name: string;
+    avatar?: string;
+  } | null;
+};
+
 export type InvoiceProps = {
   id: string;
   customerId: string;
@@ -527,6 +546,8 @@ export const appointmentApi = createApi({
       void,
       {
         orderCode: string;
+        paymentMethod?: "cash" | "qr"; // thêm tùy chọn nếu cần gửi method
+        staffId?: string; // thêm nếu backend yêu cầu staffId khi thanh toán cash
       }
     >({
       query: (data) => ({
@@ -581,7 +602,33 @@ export const appointmentApi = createApi({
         method: "GET",
         params: dto, 
       })
-   }),
+    }),
+
+    refundAppointment: build.mutation<
+      { message: string; appointment: AppointmentProps },
+      {
+        id: string;
+        body: {
+          refundAmount: number;
+          refundMethod: "cash" | "qr" | "card";
+          refundReason?: string;
+          staffId: string;
+        };
+      }
+    >({
+      query: ({ id, body }) => ({
+        url: `/appointment/${id}/refund`,
+        method: "PATCH",
+        body,
+      }),
+    }),
+
+    getRefundedAppointments: build.mutation<AppointmentRefundProps[], void>({
+      query: () => ({
+        url: `/appointment/refunds`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -615,5 +662,7 @@ export const {
   useApproveDoctorCancelRequestMutation,
   useRejectDoctorCancelRequestMutation,
   useGetPaymentStatsMutation,
-  useRequestCompleteAppointmentMutation
+  useRequestCompleteAppointmentMutation,
+  useRefundAppointmentMutation,
+  useGetRefundedAppointmentsMutation,
 } = appointmentApi;

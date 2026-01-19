@@ -50,6 +50,7 @@ export const configRoutes = {
 
   // casherDashboard: "/casher/dashboard",
   casherOrderManagement: "/casher/orders",
+  casherRefundManagement: "/casher/refunded",
   casherProfile: "/casher/profile",
   casherInvoice: "/casher/invoices",
     casherStats: "/casher/stats",
