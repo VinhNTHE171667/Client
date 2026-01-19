@@ -36,6 +36,7 @@ export const appointmentStatusEnum = {
   Cancelled: "cancelled",
   Completed: "completed",
   Overdue: "overdue",
+  Refunded: "refunded",
   
 } as const;
 

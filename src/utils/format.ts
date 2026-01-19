@@ -36,6 +36,8 @@ export const translateStatus = (status?: string) => {
       return "Đã huỷ";
     case appointmentStatusEnum.Overdue:
       return "Quá hạn";
+    case appointmentStatusEnum.Refunded:
+      return "Đã hoàn tiền";
     default:
       return status ?? "Không xác định";
   }
@@ -65,6 +67,8 @@ export const statusTagColor = (status?: string) => {
       return "purple";
     case appointmentStatusEnum.Overdue:
       return "red";
+     case appointmentStatusEnum.Refunded:
+      return "magenta";
     default:
       return "default";
   }
