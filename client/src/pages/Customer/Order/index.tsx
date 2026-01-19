@@ -14,6 +14,7 @@ import {
   Select,
   Input,
   Rate,
+  Tooltip,
 } from "antd";
 import {
   Calendar,
@@ -457,18 +458,36 @@ const CustomerOrders: React.FC = () => {
                               {translateStatus(item.status)}
                             </Tag>
                             {item.status === appointmentStatusEnum.Rejected && (
-                              <Button
-                                type="link"
-                                size="small"
-                                icon={<QuestionCircleOutlined />}
-                                onClick={() => {
-                                  setRejectionReason(item.rejectionReason || "Không có lý do cụ thể");
-                                  setReasonModal(true);
-                                }}
-                                style={{ padding: 0, color: "#ff4d4f" }}
+                              <Tooltip 
+                                title={
+                                  <div style={{ 
+                                    maxWidth: 300, 
+                                    padding: '8px 4px',
+                                    fontSize: '14px',
+                                    lineHeight: '1.6'
+                                  }}>
+                                    <strong style={{ display: 'block', marginBottom: 8, color: '#fff' }}>Lý do từ chối:</strong>
+                                    <div style={{ color: 'rgba(255, 255, 255, 0.95)' }}>
+                                      {item.rejectionReason || "Không có lý do cụ thể"}
+                                    </div>
+                                  </div>
+                                }
+                                color="#ff4d4f"
+                                overlayStyle={{ maxWidth: 350 }}
                               >
-                                Lý do
-                              </Button>
+                                <Tag 
+                                  icon={<QuestionCircleOutlined />} 
+                                  color="error"
+                                  style={{ 
+                                    cursor: 'help',
+                                    fontSize: '13px',
+                                    padding: '2px 8px',
+                                    borderRadius: '6px'
+                                  }}
+                                >
+                                  Lý do
+                                </Tag>
+                              </Tooltip>
                             )}
                           </div>
                         </div>
